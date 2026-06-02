@@ -102,7 +102,7 @@ webkit_process_dir() {
 }
 
 appdir_webkit_process_dir() {
-  echo "$APPDIR/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1"
+  echo "$APPDIR/usr/lib/webkit2gtk-4.1"
 }
 
 bundle_webkit_processes() {
@@ -119,14 +119,38 @@ bundle_webkit_processes() {
   fi
 }
 
+patch_file_webkit_paths() {
+  local file="$1"
+  [ -f "$file" ] || return 0
+  sed -i \
+    -e 's|/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1|webkit2gtk-4.1|g' \
+    -e 's|/usr/lib64/webkit2gtk-4.1|webkit2gtk-4.1|g' \
+    -e 's|/usr/lib/webkit2gtk-4.1|webkit2gtk-4.1|g' \
+    "$file" 2>/dev/null || true
+}
+
 patch_webkit_libraries() {
-  echo "Patching WebKit library paths for AppImage ..."
-  find "$APPDIR" \( -name 'libwebkit*.so*' -o -name 'libjavascriptcoregtk*.so*' \) -type f ! -type l | while read -r lib; do
-    sed -i \
-      -e 's|/usr/lib/x86_64-linux-gnu|./usr/lib/x86_64-linux-gnu|g' \
-      -e 's|/usr/lib64|./usr/lib64|g' \
-      "$lib" 2>/dev/null || true
+  echo "Patching WebKit paths (relative to usr/lib) ..."
+  find "$APPDIR/usr/lib/webkit2gtk-4.1" -type f ! -type l 2>/dev/null | while read -r f; do
+    patch_file_webkit_paths "$f"
   done
+  find "$APPDIR/usr/lib" -maxdepth 1 \( -name 'libwebkit*.so*' -o -name 'libjavascriptcoregtk*.so*' \) -type f ! -type l | while read -r lib; do
+    patch_file_webkit_paths "$lib"
+  done
+}
+
+verify_webkit_path_patch() {
+  local lib
+  lib="$(find "$APPDIR/usr/lib" -maxdepth 1 -name 'libwebkit2gtk-4.1.so.0' -type f | head -1)"
+  if [ -z "$lib" ]; then
+    echo "libwebkit2gtk-4.1.so.0 not found in AppDir" >&2
+    exit 1
+  fi
+  if strings "$lib" | grep -q '/usr/lib/.*/webkit2gtk-4.1'; then
+    echo "libwebkit still contains absolute /usr paths after patch:" >&2
+    strings "$lib" | grep '/usr/lib/.*/webkit2gtk-4.1' | head -3 >&2
+    exit 1
+  fi
 }
 
 verify_bundled_webkit_processes() {
@@ -226,6 +250,7 @@ run_linuxdeploy() {
   fi
 
   patch_webkit_libraries
+  verify_webkit_path_patch
   verify_bundled_webkit_processes
   install_custom_apprun
 
