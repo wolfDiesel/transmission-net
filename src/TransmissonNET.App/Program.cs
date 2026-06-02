@@ -20,7 +20,7 @@ internal static class WebAppFactory
 {
     public static WebApplication Build(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
+        var builder = CreateBuilder(args);
         builder.WebHost.UseUrls("http://127.0.0.1:0");
 
         builder.Services.ConfigureHttpJsonOptions(options =>
@@ -39,6 +39,28 @@ internal static class WebAppFactory
         app.MapTransmissonNetApi();
 
         return app;
+    }
+
+    private static WebApplicationBuilder CreateBuilder(string[] args)
+    {
+        var testing = string.Equals(
+            Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
+            "Testing",
+            StringComparison.OrdinalIgnoreCase);
+        if (testing)
+            return WebApplication.CreateBuilder(args);
+
+        var appDir = AppContext.BaseDirectory;
+        var wwwroot = Path.Combine(appDir, "wwwroot");
+        if (!Directory.Exists(wwwroot))
+            return WebApplication.CreateBuilder(args);
+
+        return WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            Args = args,
+            ContentRootPath = appDir,
+            WebRootPath = wwwroot,
+        });
     }
 }
 

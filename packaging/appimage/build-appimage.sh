@@ -101,8 +101,43 @@ webkit_process_dir() {
   exit 1
 }
 
-find_appdir_webkit_dir() {
-  find "$APPDIR" -type d -name 'webkit2gtk-4.1' 2>/dev/null | head -1
+appdir_webkit_process_dir() {
+  echo "$APPDIR/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1"
+}
+
+bundle_webkit_processes() {
+  local src="$1"
+  local dest
+  dest="$(appdir_webkit_process_dir)"
+  echo "Bundling WebKit helper processes into $dest ..."
+  rm -rf "$dest"
+  mkdir -p "$dest"
+  cp -a "$src/." "$dest/"
+  chmod +x "$dest"/WebKitNetworkProcess "$dest"/WebKitWebProcess 2>/dev/null || true
+  if [ -x "$dest/WebKitGPUProcess" ]; then
+    chmod +x "$dest/WebKitGPUProcess"
+  fi
+}
+
+patch_webkit_libraries() {
+  echo "Patching WebKit library paths for AppImage ..."
+  find "$APPDIR" \( -name 'libwebkit*.so*' -o -name 'libjavascriptcoregtk*.so*' \) -type f ! -type l | while read -r lib; do
+    sed -i \
+      -e 's|/usr/lib/x86_64-linux-gnu|./usr/lib/x86_64-linux-gnu|g' \
+      -e 's|/usr/lib64|./usr/lib64|g' \
+      "$lib" 2>/dev/null || true
+  done
+}
+
+verify_bundled_webkit_processes() {
+  local dest
+  dest="$(appdir_webkit_process_dir)"
+  for name in WebKitNetworkProcess WebKitWebProcess; do
+    if [ ! -x "$dest/$name" ]; then
+      echo "Missing bundled WebKit helper: $dest/$name" >&2
+      exit 1
+    fi
+  done
 }
 
 publish_app() {
@@ -177,19 +212,16 @@ run_linuxdeploy() {
     --icon-file="$icon" \
     --plugin gtk
 
-  local webkit_app
-  webkit_app="$(find_appdir_webkit_dir)"
-  if [ -z "$webkit_app" ]; then
-    mkdir -p "$APPDIR/usr/lib"
-    webkit_app="$APPDIR/usr/lib/webkit2gtk-4.1"
-    cp -a "$webkit_sys/." "$webkit_app/"
-  fi
+  bundle_webkit_processes "$webkit_sys"
 
-  mapfile -t extra < <(webkit_deploy_args "$webkit_app")
+  mapfile -t extra < <(webkit_deploy_args "$(appdir_webkit_process_dir)")
   if [ "${#extra[@]}" -gt 0 ]; then
     echo "Deploying WebKit helper process dependencies (pass 2)..."
     "$deploy" --appdir="$APPDIR" "${extra[@]}"
   fi
+
+  patch_webkit_libraries
+  verify_bundled_webkit_processes
 
   local out="$ROOT/dist/$OUTPUT_NAME"
   mkdir -p "$ROOT/dist"

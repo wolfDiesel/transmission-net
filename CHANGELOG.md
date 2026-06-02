@@ -14,6 +14,8 @@ Release flow: update this file → commit → push → publish a GitHub release 
 - AppImage packaging: publish into `AppDir/usr/bin` with `Exec=TransmissonNET.App` so linuxdeploy can wire AppRun; split bundling and AppImage output into separate passes.
 - AppImage CI: create the `.AppImage` in `build/appimage/` (linuxdeploy writes to CWD); `finalize` also checks repo root as fallback.
 - AppImage CI: build with `appimagetool` into `dist/$OUTPUT_NAME` (explicit path); strip POSIX ACLs before packaging to avoid xattr noise.
+- AppImage runtime: bundle WebKit helpers under `usr/lib/x86_64-linux-gnu/webkit2gtk-4.1`, patch `libwebkit` paths, set `LD_LIBRARY_PATH` in AppRun hook.
+- Desktop host: use `AppContext.BaseDirectory` for content root and `wwwroot` so the AppImage finds UI when launched from any working directory.
 
 ### Added
 
