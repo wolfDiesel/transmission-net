@@ -4,17 +4,18 @@ HERE="$(dirname "$(readlink -f "$0")")"
 export APPDIR="${HERE}"
 export APPIMAGE="${APPIMAGE:-$0}"
 cd "${APPDIR}"
-for hook in "${APPDIR}/apprun-hooks/"*.sh; do
-  [ -f "${hook}" ] || continue
-  # shellcheck disable=SC1090
-  . "${hook}"
-done
 
-if ! ldconfig -p 2>/dev/null | grep -q 'libwebkit2gtk-4\.1\.so'; then
+if ! env -u LD_LIBRARY_PATH ldconfig -p 2>/dev/null | /usr/bin/grep -q 'libwebkit2gtk-4\.1\.so'; then
   echo "TransmissionNET needs WebKitGTK 4.1 from the system (not bundled in the AppImage)." >&2
   echo "Fedora: sudo dnf install webkit2gtk4.1" >&2
   echo "Ubuntu/Debian: sudo apt install libwebkit2gtk-4.1-0" >&2
   exit 1
 fi
+
+for hook in "${APPDIR}/apprun-hooks/"*.sh; do
+  [ -f "${hook}" ] || continue
+  # shellcheck disable=SC1090
+  . "${hook}"
+done
 
 exec "${APPDIR}/usr/bin/TransmissonNET.App" "$@"

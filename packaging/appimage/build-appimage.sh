@@ -27,6 +27,12 @@ PHOTINO_SYSTEM_GUI_EXCLUDES=(
   --exclude-library=libpango-1.0.so.0
   --exclude-library=libatk-1.0.so.0
   --exclude-library=libharfbuzz.so.0
+  --exclude-library=libmount.so.1
+  --exclude-library=libblkid.so.1
+  --exclude-library=libuuid.so.1
+  --exclude-library=libselinux.so.1
+  --exclude-library=libpcre2-8.so.0
+  --exclude-library=libffi.so.8
 )
 
 need_cmd() {
@@ -104,7 +110,19 @@ strip_bundled_gui_libs() {
   find "$APPDIR" -name 'libpango*.so*' -delete
   find "$APPDIR" -name 'libatk*.so*' -delete
   find "$APPDIR" -name 'libharfbuzz.so*' -delete
+  find "$APPDIR" -name 'libmount.so*' -delete
+  find "$APPDIR" -name 'libblkid.so*' -delete
+  find "$APPDIR" -name 'libuuid.so*' -delete
+  find "$APPDIR" -name 'libselinux.so*' -delete
+  find "$APPDIR" -name 'libpcre2-8.so*' -delete
+  find "$APPDIR" -name 'libffi.so*' -delete
   find "$APPDIR" -type d -name 'webkit2gtk-4.1' -prune -exec rm -rf {} +
+}
+
+strip_conflicting_usr_lib() {
+  if [ -d "$APPDIR/usr/lib" ]; then
+    find "$APPDIR/usr/lib" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+  fi
 }
 
 verify_system_gui_only() {
@@ -190,6 +208,7 @@ run_linuxdeploy() {
     --icon-file="$icon"
 
   strip_bundled_gui_libs
+  strip_conflicting_usr_lib
   verify_system_gui_only
   install_custom_apprun
 

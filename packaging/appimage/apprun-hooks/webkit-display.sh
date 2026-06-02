@@ -1,5 +1,5 @@
 #!/bin/sh
-export LD_LIBRARY_PATH="${APPDIR}/usr/bin:${APPDIR}/usr/lib:${LD_LIBRARY_PATH:-}"
+export LD_LIBRARY_PATH="${APPDIR}/usr/bin"
 export LANG="${LANG:-en_US.UTF-8}"
 export LC_ALL="${LC_ALL:-$LANG}"
 if [ -f /etc/fonts/fonts.conf ]; then
