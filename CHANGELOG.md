@@ -18,6 +18,7 @@ Release flow: update this file → commit → push → publish a GitHub release 
 - AppImage runtime: custom `AppRun` `cd`s into mount dir (fixes `./usr` WebKit paths); default `GDK_BACKEND=x11` and `WEBKIT_DISABLE_SANDBOX=1` on Linux.
 - AppImage runtime: use **system** WebKitGTK 4.1 and **system** GTK 3 (not bundled); fixes gray window / EGL mismatch on Fedora. Runtime: `dnf install webkit2gtk4.1` if missing.
 - AppImage runtime: `LD_LIBRARY_PATH` only `usr/bin` (avoids Ubuntu `libmount` vs Fedora `libgio` symbol clash).
+- AppImage runtime: drop default `WEBKIT_DISABLE_COMPOSITING_MODE` and `LIBGL_ALWAYS_SOFTWARE` so CSS hover/accent styles repaint in WebKit.
 - Desktop host: use `AppContext.BaseDirectory` for content root and `wwwroot` so the AppImage finds UI when launched from any working directory.
 
 ### Added
