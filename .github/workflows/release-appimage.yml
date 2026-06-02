@@ -29,11 +29,11 @@ jobs:
 
       - name: Build AppImage
         env:
-          RAW_VERSION: ${{ github.event.release.tag_name || format('build-{0}', github.run_number) }}
+          RAW_VERSION: ${{ github.event.release.tag_name || format('0.0.0-ci.{0}', github.run_number) }}
         run: |
-          VERSION="${RAW_VERSION#v}"
-          export VERSION
-          export OUTPUT_NAME="TransmissionNET-${VERSION}-x86_64.AppImage"
+          APPIMAGE_VERSION="${RAW_VERSION#v}"
+          export APPIMAGE_VERSION
+          export OUTPUT_NAME="TransmissionNET-${APPIMAGE_VERSION}-x86_64.AppImage"
           ./packaging/appimage/build-appimage.sh
 
       - name: Upload workflow artifact

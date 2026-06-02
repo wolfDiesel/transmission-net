@@ -8,10 +8,10 @@ BUILD="$ROOT/build/appimage"
 APPDIR="$BUILD/AppDir"
 PUBLISH="$BUILD/publish"
 TOOLS="$BUILD/tools"
-OUTPUT_NAME="${OUTPUT_NAME:-TransmissionNET-x86_64.AppImage}"
 
 export ARCH="${ARCH:-x86_64}"
-export VERSION="${VERSION:-0.0.0}"
+APPIMAGE_VERSION="${APPIMAGE_VERSION:-0.0.0}"
+OUTPUT_NAME="${OUTPUT_NAME:-TransmissionNET-${APPIMAGE_VERSION}-x86_64.AppImage}"
 export APPIMAGE_EXTRACT_AND_RUN=1
 
 need_cmd() {
