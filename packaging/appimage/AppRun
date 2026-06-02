@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+HERE="$(dirname "$(readlink -f "$0")")"
+export APPDIR="${HERE}"
+export APPIMAGE="${APPIMAGE:-$0}"
+cd "${APPDIR}"
+for hook in "${APPDIR}/apprun-hooks/"*.sh; do
+  [ -f "${hook}" ] || continue
+  # shellcheck disable=SC1090
+  . "${hook}"
+done
+exec "${APPDIR}/usr/bin/TransmissonNET.App" "$@"

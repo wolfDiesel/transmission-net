@@ -140,6 +140,11 @@ verify_bundled_webkit_processes() {
   done
 }
 
+install_custom_apprun() {
+  cp "$PKG/AppRun" "$APPDIR/AppRun"
+  chmod +x "$APPDIR/AppRun"
+}
+
 publish_app() {
   echo "Publishing .NET app (linux-x64, self-contained)..."
   rm -rf "$PUBLISH"
@@ -222,6 +227,7 @@ run_linuxdeploy() {
 
   patch_webkit_libraries
   verify_bundled_webkit_processes
+  install_custom_apprun
 
   local out="$ROOT/dist/$OUTPUT_NAME"
   mkdir -p "$ROOT/dist"
