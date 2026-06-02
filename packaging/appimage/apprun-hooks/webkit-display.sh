@@ -3,7 +3,7 @@ export LD_LIBRARY_PATH="${APPDIR}/usr/lib:${APPDIR}/usr/lib/x86_64-linux-gnu:${L
 export GTK_EXE_PREFIX="${APPDIR}"
 export GTK_DATA_PREFIX="${APPDIR}"
 export XDG_DATA_DIRS="${APPDIR}/usr/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
-webkit_dir="${APPDIR}/usr/lib/webkit2gtk-4.1"
+webkit_dir="${APPDIR}/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1"
 if [ -d "${webkit_dir}/injected-bundle" ]; then
   export WEBKIT_INJECTED_BUNDLE_PATH="${webkit_dir}/injected-bundle"
 fi
