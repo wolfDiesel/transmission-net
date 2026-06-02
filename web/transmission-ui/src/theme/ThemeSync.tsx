@@ -17,8 +17,8 @@ export function ThemeSync() {
 
   useEffect(() => {
     if (settingsLoading) return
-    applyAccentPalette(colorScheme)
-  }, [colorScheme, settingsLoading])
+    applyAccentPalette(colorScheme, resolvedAppearance)
+  }, [colorScheme, resolvedAppearance, settingsLoading])
 
   useEffect(() => {
     document.documentElement.style.colorScheme = resolvedAppearance

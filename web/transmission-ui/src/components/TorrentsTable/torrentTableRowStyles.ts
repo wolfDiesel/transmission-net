@@ -1,7 +1,5 @@
-const rowActiveBg =
-  'color-mix(in srgb, var(--app-brand-500, #F07818) 11%, var(--chakra-colors-bg-emphasized, #141414))'
-const rowHoverBg =
-  'color-mix(in srgb, var(--app-brand-500, #F07818) 7%, var(--chakra-colors-surface-raised, #1A1A1A))'
+const rowActiveBg = 'var(--app-row-active-bg, #1f1a14)'
+const rowHoverBg = 'var(--app-row-hover-bg, #1c1814)'
 const rowMenuBar = 'inset 4px 0 0 var(--app-brand-500, #F07818)'
 
 export function getTorrentTableRowProps(

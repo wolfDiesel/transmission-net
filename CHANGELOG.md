@@ -19,6 +19,7 @@ Release flow: update this file → commit → push → publish a GitHub release 
 - AppImage runtime: use **system** WebKitGTK 4.1 and **system** GTK 3 (not bundled); fixes gray window / EGL mismatch on Fedora. Runtime: `dnf install webkit2gtk4.1` if missing.
 - AppImage runtime: `LD_LIBRARY_PATH` only `usr/bin` (avoids Ubuntu `libmount` vs Fedora `libgio` symbol clash).
 - AppImage runtime: drop default `WEBKIT_DISABLE_COMPOSITING_MODE` and `LIBGL_ALWAYS_SOFTWARE` so CSS hover/accent styles repaint in WebKit.
+- UI: Chakra `_hover` no longer gated on `@media (hover: hover)` (fixes missing hovers in Photino/WebKitGTK); table row accent uses `--app-row-hover-bg` CSS variables.
 - Desktop host: use `AppContext.BaseDirectory` for content root and `wwwroot` so the AppImage finds UI when launched from any working directory.
 
 ### Added
