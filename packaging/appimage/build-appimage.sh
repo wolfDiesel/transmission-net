@@ -178,16 +178,30 @@ run_linuxdeploy() {
   fi
 
   echo "Creating AppImage..."
-  "$deploy" --appdir="$APPDIR" --output appimage
+  (
+    cd "$BUILD"
+    "$deploy" --appdir="$APPDIR" --output appimage
+  )
+}
+
+find_built_appimage() {
+  local candidate
+  for search_dir in "$BUILD" "$ROOT"; do
+    candidate="$(find "$search_dir" -maxdepth 1 -name '*.AppImage' -type f -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)"
+    if [ -n "$candidate" ]; then
+      echo "$candidate"
+      return 0
+    fi
+  done
+  return 1
 }
 
 finalize() {
   local produced
-  produced="$(find "$BUILD" -maxdepth 1 -name '*.AppImage' -type f -printf '%T@ %p\n' | sort -rn | head -1 | cut -d' ' -f2-)"
-  if [ -z "$produced" ]; then
-    echo "AppImage was not produced under $BUILD" >&2
+  produced="$(find_built_appimage)" || {
+    echo "AppImage was not found in $BUILD or $ROOT" >&2
     exit 1
-  fi
+  }
   local out="$ROOT/dist/$OUTPUT_NAME"
   mkdir -p "$ROOT/dist"
   mv -f "$produced" "$out"
