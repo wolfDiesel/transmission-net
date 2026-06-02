@@ -27,6 +27,9 @@
       SourceFiles="@(WebUiDist)"
       DestinationFiles="@(WebUiDist->'$(MSBuildProjectDirectory)/wwwroot/%(RecursiveDir)%(Filename)%(Extension)')"
       SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <Content Include="wwwroot/**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
   </Target>
 
 </Project>

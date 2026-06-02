@@ -14,11 +14,19 @@ export ARCH="${ARCH:-x86_64}"
 APPIMAGE_VERSION="${APPIMAGE_VERSION:-0.0.0}"
 OUTPUT_NAME="${OUTPUT_NAME:-TransmissionNET-${APPIMAGE_VERSION}-x86_64.AppImage}"
 export APPIMAGE_EXTRACT_AND_RUN=1
-export DEPLOY_GTK_VERSION=3
-
-WEBKIT_EXCLUDE_LIBS=(
+PHOTINO_SYSTEM_GUI_EXCLUDES=(
   --exclude-library=libwebkit2gtk-4.1.so.0
   --exclude-library=libjavascriptcoregtk-4.1.so.0
+  --exclude-library=libgtk-3.so.0
+  --exclude-library=libgdk-3.so.0
+  --exclude-library=libgdk_pixbuf-2.0.so.0
+  --exclude-library=libglib-2.0.so.0
+  --exclude-library=libgobject-2.0.so.0
+  --exclude-library=libgio-2.0.so.0
+  --exclude-library=libcairo.so.2
+  --exclude-library=libpango-1.0.so.0
+  --exclude-library=libatk-1.0.so.0
+  --exclude-library=libharfbuzz.so.0
 )
 
 need_cmd() {
@@ -82,16 +90,37 @@ prepare_icon() {
   echo "$icon"
 }
 
-strip_bundled_webkit() {
-  echo "Using system WebKitGTK — removing bundled WebKit from AppDir ..."
+strip_bundled_gui_libs() {
+  echo "Using system GTK/WebKit — removing bundled GUI libs from AppDir ..."
   find "$APPDIR" -name 'libwebkit*.so*' -delete
   find "$APPDIR" -name 'libjavascriptcoregtk*.so*' -delete
+  find "$APPDIR" -name 'libgtk-3.so*' -delete
+  find "$APPDIR" -name 'libgdk-3.so*' -delete
+  find "$APPDIR" -name 'libgdk_pixbuf-2.0.so*' -delete
+  find "$APPDIR" -name 'libglib-2.0.so*' -delete
+  find "$APPDIR" -name 'libgobject-2.0.so*' -delete
+  find "$APPDIR" -name 'libgio-2.0.so*' -delete
+  find "$APPDIR" -name 'libcairo.so*' -delete
+  find "$APPDIR" -name 'libpango*.so*' -delete
+  find "$APPDIR" -name 'libatk*.so*' -delete
+  find "$APPDIR" -name 'libharfbuzz.so*' -delete
   find "$APPDIR" -type d -name 'webkit2gtk-4.1' -prune -exec rm -rf {} +
 }
 
-verify_no_bundled_webkit() {
+verify_system_gui_only() {
   if find "$APPDIR" -name 'libwebkit2gtk-4.1.so.0' | grep -q .; then
     echo "Bundled libwebkit2gtk must not be in the AppImage" >&2
+    exit 1
+  fi
+  if find "$APPDIR" -name 'libgtk-3.so.0' | grep -q .; then
+    echo "Bundled libgtk-3 must not be in the AppImage (use system GTK on Fedora)" >&2
+    exit 1
+  fi
+}
+
+verify_publish_wwwroot() {
+  if [ ! -f "$PUBLISH/wwwroot/index.html" ]; then
+    echo "wwwroot/index.html missing from dotnet publish output" >&2
     exit 1
   fi
 }
@@ -152,17 +181,16 @@ run_linuxdeploy() {
   local main_bin="$APP_BIN_DIR/TransmissonNET.App"
   local photino_so="$APP_BIN_DIR/Photino.Native.so"
 
-  echo "Bundling GTK dependencies (system WebKit at runtime) ..."
+  echo "Bundling .NET deps only (system GTK/WebKit at runtime) ..."
   "$deploy" --appdir="$APPDIR" \
     --executable="$main_bin" \
     --deploy-deps-only="$photino_so" \
-    "${WEBKIT_EXCLUDE_LIBS[@]}" \
+    "${PHOTINO_SYSTEM_GUI_EXCLUDES[@]}" \
     --desktop-file="$PKG/transmission-net.desktop" \
-    --icon-file="$icon" \
-    --plugin gtk
+    --icon-file="$icon"
 
-  strip_bundled_webkit
-  verify_no_bundled_webkit
+  strip_bundled_gui_libs
+  verify_system_gui_only
   install_custom_apprun
 
   local out="$ROOT/dist/$OUTPUT_NAME"
@@ -199,6 +227,7 @@ main() {
   local icon
   icon="$(prepare_icon)"
   publish_app
+  verify_publish_wwwroot
   verify_photino_runtime
   assemble_appdir
   run_linuxdeploy "$icon"

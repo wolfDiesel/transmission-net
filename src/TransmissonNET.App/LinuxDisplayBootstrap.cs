@@ -14,6 +14,7 @@ internal static class LinuxDisplayBootstrap
             SetIfUnset("GDK_BACKEND", "x11");
             SetIfUnset("WEBKIT_DISABLE_SANDBOX", "1");
             SetIfUnset("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+            SetIfUnset("LIBGL_ALWAYS_SOFTWARE", "1");
         }
 
         if (string.Equals(Environment.GetEnvironmentVariable("GSK_RENDERER"), "vulkan", StringComparison.OrdinalIgnoreCase))
