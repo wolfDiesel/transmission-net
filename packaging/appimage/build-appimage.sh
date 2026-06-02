@@ -102,6 +102,22 @@ publish_app() {
     -o "$PUBLISH"
 }
 
+verify_photino_runtime() {
+  local photino="$PUBLISH/Photino.Native.so"
+  [ -f "$photino" ] || {
+    echo "Photino.Native.so not found after publish" >&2
+    exit 1
+  }
+  local missing
+  missing="$(ldd "$photino" | grep 'not found' || true)"
+  if [ -n "$missing" ]; then
+    echo "Host is missing libraries required by Photino.Native.so:" >&2
+    echo "$missing" >&2
+    echo "On Ubuntu run: packaging/appimage/install-deps-ubuntu.sh" >&2
+    exit 1
+  fi
+}
+
 assemble_appdir() {
   echo "Assembling AppDir..."
   rm -rf "$APPDIR"
@@ -203,6 +219,7 @@ main() {
   local icon
   icon="$(prepare_icon)"
   publish_app
+  verify_photino_runtime
   assemble_appdir
   run_linuxdeploy "$icon"
   finalize
