@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TransmissonNET.App/TransmissonNET.App.csproj" />
+    <Project Path="src/TransmissonNET.Application/TransmissonNET.Application.csproj" />
+    <Project Path="src/TransmissonNET.Domain/TransmissonNET.Domain.csproj" />
+    <Project Path="src/TransmissonNET.Infrastructure/TransmissonNET.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TransmissonNET.App.Tests/TransmissonNET.App.Tests.csproj" />
+    <Project Path="tests/TransmissonNET.Application.Tests/TransmissonNET.Application.Tests.csproj" />
+    <Project Path="tests/TransmissonNET.Infrastructure.Tests/TransmissonNET.Infrastructure.Tests.csproj" />
+  </Folder>
+</Solution>

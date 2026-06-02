@@ -1,0 +1,1 @@
+export { TorrentDetailsDialog } from './TorrentDetailsDialog'

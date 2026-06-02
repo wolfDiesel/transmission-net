@@ -1,0 +1,26 @@
+﻿{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "TransmissonNET": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "WEBKIT_DISABLE_DMABUF_RENDERER": "1",
+        "GSK_RENDERER": "ngl"
+      }
+    },
+    "TransmissonNET (X11)": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "WEBKIT_DISABLE_DMABUF_RENDERER": "1",
+        "GSK_RENDERER": "ngl",
+        "GDK_BACKEND": "x11"
+      }
+    }
+  }
+}

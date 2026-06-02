@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <WebUiDir>$(MSBuildProjectDirectory)/../../web/transmission-ui</WebUiDir>
+    <SkipWebUiBuild>false</SkipWebUiBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TransmissonNET.Application\TransmissonNET.Application.csproj" />
+    <ProjectReference Include="..\TransmissonNET.Infrastructure\TransmissonNET.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Photino.NET" Version="4.0.16" />
+  </ItemGroup>
+
+  <Target Name="BuildWebUi" BeforeTargets="Build" Condition="'$(SkipWebUiBuild)' != 'true' AND Exists('$(WebUiDir)/package.json')">
+    <Exec Command="npm ci" WorkingDirectory="$(WebUiDir)" />
+    <Exec Command="npm run build" WorkingDirectory="$(WebUiDir)" />
+    <ItemGroup>
+      <WebUiDist Include="$(WebUiDir)/dist/**/*" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(WebUiDist)"
+      DestinationFiles="@(WebUiDist->'$(MSBuildProjectDirectory)/wwwroot/%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>
