@@ -27,6 +27,7 @@ ensure_tools() {
   mkdir -p "$TOOLS"
   local deploy="$TOOLS/linuxdeploy-${ARCH}.AppImage"
   local gtk_plugin="$TOOLS/linuxdeploy-plugin-gtk.sh"
+  local appimagetool="$TOOLS/appimagetool-${ARCH}.AppImage"
   if [ ! -f "$deploy" ]; then
     echo "Downloading linuxdeploy..."
     curl -fsSL -o "$deploy" \
@@ -39,8 +40,21 @@ ensure_tools() {
       "https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh"
     chmod +x "$gtk_plugin"
   fi
+  if [ ! -f "$appimagetool" ]; then
+    echo "Downloading appimagetool..."
+    curl -fsSL -o "$appimagetool" \
+      "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${ARCH}.AppImage"
+    chmod +x "$appimagetool"
+  fi
   export PATH="$TOOLS:$PATH"
   export LINUXDEPLOY="$deploy"
+  export APPIMAGETOOL="$appimagetool"
+}
+
+strip_appdir_acls() {
+  if command -v setfacl >/dev/null 2>&1; then
+    find "$APPDIR" -exec setfacl -b {} + 2>/dev/null || true
+  fi
 }
 
 prepare_icon() {
@@ -177,35 +191,23 @@ run_linuxdeploy() {
     "$deploy" --appdir="$APPDIR" "${extra[@]}"
   fi
 
-  echo "Creating AppImage..."
-  (
-    cd "$BUILD"
-    "$deploy" --appdir="$APPDIR" --output appimage
-  )
-}
+  local out="$ROOT/dist/$OUTPUT_NAME"
+  mkdir -p "$ROOT/dist"
+  rm -f "$out"
 
-find_built_appimage() {
-  local candidate
-  for search_dir in "$BUILD" "$ROOT"; do
-    candidate="$(find "$search_dir" -maxdepth 1 -name '*.AppImage' -type f -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)"
-    if [ -n "$candidate" ]; then
-      echo "$candidate"
-      return 0
-    fi
-  done
-  return 1
+  echo "Creating AppImage at $out ..."
+  strip_appdir_acls
+  "$APPIMAGETOOL" "$APPDIR" "$out"
+  chmod +x "$out"
 }
 
 finalize() {
-  local produced
-  produced="$(find_built_appimage)" || {
-    echo "AppImage was not found in $BUILD or $ROOT" >&2
-    exit 1
-  }
   local out="$ROOT/dist/$OUTPUT_NAME"
-  mkdir -p "$ROOT/dist"
-  mv -f "$produced" "$out"
-  chmod +x "$out"
+  if [ ! -f "$out" ]; then
+    echo "AppImage was not created: $out" >&2
+    find "$ROOT" "$BUILD" -name '*.AppImage' -type f 2>/dev/null || true
+    exit 1
+  fi
   echo "AppImage: $out"
   ls -lh "$out"
 }
