@@ -10,47 +10,11 @@ for hook in "${APPDIR}/apprun-hooks/"*.sh; do
   . "${hook}"
 done
 
-APP_BIN="${APPDIR}/usr/bin/TransmissonNET.App"
-WEBKIT_LIBDIR="${APPDIR}/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1"
-
-if ! command -v bwrap >/dev/null 2>&1; then
-  echo "TransmissionNET AppImage requires bubblewrap (bwrap)." >&2
-  echo "Fedora: sudo dnf install bubblewrap" >&2
+if ! ldconfig -p 2>/dev/null | grep -q 'libwebkit2gtk-4\.1\.so'; then
+  echo "TransmissionNET needs WebKitGTK 4.1 from the system (not bundled in the AppImage)." >&2
+  echo "Fedora: sudo dnf install webkit2gtk4.1" >&2
+  echo "Ubuntu/Debian: sudo apt install libwebkit2gtk-4.1-0" >&2
   exit 1
 fi
 
-if [ ! -x "${WEBKIT_LIBDIR}/WebKitNetworkProcess" ]; then
-  echo "Bundled WebKit helpers are missing: ${WEBKIT_LIBDIR}" >&2
-  exit 1
-fi
-
-BWRAP=(bwrap
-  --die-with-parent
-  --share-net
-  --proc /proc
-  --dev-bind /dev /dev
-  --ro-bind "${APPDIR}" /app
-  --bind "${WEBKIT_LIBDIR}" /usr/lib/x86_64-linux-gnu/webkit2gtk-4.1
-  --ro-bind /lib64 /lib64
-  --ro-bind /lib /lib
-)
-
-[ -d /usr/lib64 ] && BWRAP+=(--ro-bind /usr/lib64 /usr/lib64)
-[ -d /tmp ] && BWRAP+=(--bind /tmp /tmp)
-[ -n "${XDG_RUNTIME_DIR:-}" ] && [ -d "${XDG_RUNTIME_DIR}" ] && BWRAP+=(--bind "${XDG_RUNTIME_DIR}" "${XDG_RUNTIME_DIR}")
-[ -n "${DISPLAY:-}" ] && BWRAP+=(--setenv DISPLAY "${DISPLAY}")
-[ -n "${WAYLAND_DISPLAY:-}" ] && BWRAP+=(--setenv WAYLAND_DISPLAY "${WAYLAND_DISPLAY}")
-[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ] && BWRAP+=(--setenv DBUS_SESSION_BUS_ADDRESS "${DBUS_SESSION_BUS_ADDRESS}")
-
-for var in \
-  APPIMAGE APPDIR LD_LIBRARY_PATH GTK_EXE_PREFIX GTK_DATA_PREFIX XDG_DATA_DIRS \
-  GDK_BACKEND GSK_RENDERER WEBKIT_INJECTED_BUNDLE_PATH \
-  WEBKIT_DISABLE_DMABUF_RENDERER WEBKIT_DISABLE_SANDBOX WEBKIT_DISABLE_COMPOSITING_MODE; do
-  eval "value=\${${var}:-}"
-  if [ -n "${value}" ]; then
-    BWRAP+=(--setenv "${var}" "${value}")
-  fi
-done
-
-BWRAP+=(--chdir /app --setenv APPDIR /app)
-exec "${BWRAP[@]}" /app/usr/bin/TransmissonNET.App "$@"
+exec "${APPDIR}/usr/bin/TransmissonNET.App" "$@"

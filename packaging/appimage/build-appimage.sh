@@ -16,6 +16,11 @@ OUTPUT_NAME="${OUTPUT_NAME:-TransmissionNET-${APPIMAGE_VERSION}-x86_64.AppImage}
 export APPIMAGE_EXTRACT_AND_RUN=1
 export DEPLOY_GTK_VERSION=3
 
+WEBKIT_EXCLUDE_LIBS=(
+  --exclude-library=libwebkit2gtk-4.1.so.0
+  --exclude-library=libjavascriptcoregtk-4.1.so.0
+)
+
 need_cmd() {
   command -v "$1" >/dev/null 2>&1 || {
     echo "Missing required command: $1" >&2
@@ -77,64 +82,16 @@ prepare_icon() {
   echo "$icon"
 }
 
-webkit_process_dir() {
-  if [ -n "${WEBKIT_PROCESS_DIR:-}" ] && [ -d "$WEBKIT_PROCESS_DIR" ]; then
-    echo "$WEBKIT_PROCESS_DIR"
-    return
-  fi
-  local libdir
-  libdir="$(pkg-config --variable=libdir webkit2gtk-4.1 2>/dev/null || true)"
-  if [ -n "$libdir" ] && [ -d "$libdir/webkit2gtk-4.1" ]; then
-    echo "$libdir/webkit2gtk-4.1"
-    return
-  fi
-  for candidate in \
-    /usr/lib64/webkit2gtk-4.1 \
-    /usr/lib/x86_64-linux-gnu/webkit2gtk-4.1 \
-    /usr/lib/webkit2gtk-4.1; do
-    if [ -d "$candidate" ]; then
-      echo "$candidate"
-      return
-    fi
-  done
-  echo "webkit2gtk-4.1 process directory not found. Install webkit2gtk4.1-devel / webkit2gtk4.1." >&2
-  exit 1
+strip_bundled_webkit() {
+  echo "Using system WebKitGTK — removing bundled WebKit from AppDir ..."
+  find "$APPDIR" -name 'libwebkit*.so*' -delete
+  find "$APPDIR" -name 'libjavascriptcoregtk*.so*' -delete
+  find "$APPDIR" -type d -name 'webkit2gtk-4.1' -prune -exec rm -rf {} +
 }
 
-appdir_webkit_process_dir() {
-  echo "$APPDIR/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1"
-}
-
-bundle_webkit_processes() {
-  local src="$1"
-  local dest
-  dest="$(appdir_webkit_process_dir)"
-  echo "Bundling WebKit helper processes into $dest ..."
-  rm -rf "$dest"
-  mkdir -p "$dest"
-  cp -a "$src/." "$dest/"
-  chmod +x "$dest"/WebKitNetworkProcess "$dest"/WebKitWebProcess 2>/dev/null || true
-  if [ -x "$dest/WebKitGPUProcess" ]; then
-    chmod +x "$dest/WebKitGPUProcess"
-  fi
-}
-
-verify_bundled_webkit_processes() {
-  local dest lib
-  dest="$(appdir_webkit_process_dir)"
-  for name in WebKitNetworkProcess WebKitWebProcess; do
-    if [ ! -x "$dest/$name" ]; then
-      echo "Missing bundled WebKit helper: $dest/$name" >&2
-      exit 1
-    fi
-  done
-  lib="$(find "$APPDIR/usr/lib" -maxdepth 1 -name 'libwebkit2gtk-4.1.so.0' -type f | head -1)"
-  if [ -z "$lib" ]; then
-    echo "libwebkit2gtk-4.1.so.0 not found in AppDir" >&2
-    exit 1
-  fi
-  if ! strings "$lib" | grep -q '/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1'; then
-    echo "libwebkit must keep Ubuntu helper paths (do not sed-patch ELF files)" >&2
+verify_no_bundled_webkit() {
+  if find "$APPDIR" -name 'libwebkit2gtk-4.1.so.0' | grep -q .; then
+    echo "Bundled libwebkit2gtk must not be in the AppImage" >&2
     exit 1
   fi
 }
@@ -166,7 +123,7 @@ verify_photino_runtime() {
   local missing
   missing="$(ldd "$photino" | grep 'not found' || true)"
   if [ -n "$missing" ]; then
-    echo "Host is missing libraries required by Photino.Native.so:" >&2
+    echo "CI builder is missing libraries required by Photino.Native.so:" >&2
     echo "$missing" >&2
     echo "On Ubuntu run: packaging/appimage/install-deps-ubuntu.sh" >&2
     exit 1
@@ -189,42 +146,23 @@ assemble_appdir() {
   chmod +x "$APPDIR/apprun-hooks/webkit-display.sh"
 }
 
-webkit_deploy_args() {
-  local dir="$1"
-  local args=()
-  for name in WebKitNetworkProcess WebKitWebProcess WebKitGPUProcess; do
-    if [ -x "$dir/$name" ]; then
-      args+=(--deploy-deps-only="$dir/$name")
-    fi
-  done
-  printf '%s\n' "${args[@]}"
-}
-
 run_linuxdeploy() {
   local icon="$1"
   local deploy="$LINUXDEPLOY"
   local main_bin="$APP_BIN_DIR/TransmissonNET.App"
   local photino_so="$APP_BIN_DIR/Photino.Native.so"
-  local webkit_sys
-  webkit_sys="$(webkit_process_dir)"
 
-  echo "Bundling GTK/WebKit dependencies (pass 1)..."
+  echo "Bundling GTK dependencies (system WebKit at runtime) ..."
   "$deploy" --appdir="$APPDIR" \
     --executable="$main_bin" \
     --deploy-deps-only="$photino_so" \
+    "${WEBKIT_EXCLUDE_LIBS[@]}" \
     --desktop-file="$PKG/transmission-net.desktop" \
     --icon-file="$icon" \
     --plugin gtk
 
-  bundle_webkit_processes "$webkit_sys"
-
-  mapfile -t extra < <(webkit_deploy_args "$(appdir_webkit_process_dir)")
-  if [ "${#extra[@]}" -gt 0 ]; then
-    echo "Deploying WebKit helper process dependencies (pass 2)..."
-    "$deploy" --appdir="$APPDIR" "${extra[@]}"
-  fi
-
-  verify_bundled_webkit_processes
+  strip_bundled_webkit
+  verify_no_bundled_webkit
   install_custom_apprun
 
   local out="$ROOT/dist/$OUTPUT_NAME"
