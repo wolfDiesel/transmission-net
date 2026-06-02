@@ -166,6 +166,8 @@ run_linuxdeploy() {
   main_bin="$(app_executable)"
   photino_so="$(photino_library)"
 
+  export DEPLOY_GTK_VERSION=3
+
   echo "Bundling GTK/WebKit dependencies..."
   "$deploy" --appdir="$APPDIR" \
     --executable="$main_bin" \
