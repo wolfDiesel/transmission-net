@@ -2,7 +2,7 @@
 Type=Application
 Name=TransmissionNET
 Comment=Desktop client for Transmission RPC
-Exec=opt/TransmissonNET/TransmissonNET.App
+Exec=TransmissonNET.App
 Icon=transmission-net
 Categories=Network;FileTransfer;
 StartupWMClass=TransmissionNET

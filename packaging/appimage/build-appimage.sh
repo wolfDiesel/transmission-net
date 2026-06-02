@@ -8,11 +8,13 @@ BUILD="$ROOT/build/appimage"
 APPDIR="$BUILD/AppDir"
 PUBLISH="$BUILD/publish"
 TOOLS="$BUILD/tools"
+APP_BIN_DIR="$APPDIR/usr/bin"
 
 export ARCH="${ARCH:-x86_64}"
 APPIMAGE_VERSION="${APPIMAGE_VERSION:-0.0.0}"
 OUTPUT_NAME="${OUTPUT_NAME:-TransmissionNET-${APPIMAGE_VERSION}-x86_64.AppImage}"
 export APPIMAGE_EXTRACT_AND_RUN=1
+export DEPLOY_GTK_VERSION=3
 
 need_cmd() {
   command -v "$1" >/dev/null 2>&1 || {
@@ -121,27 +123,17 @@ verify_photino_runtime() {
 assemble_appdir() {
   echo "Assembling AppDir..."
   rm -rf "$APPDIR"
-  local app_home="$APPDIR/opt/TransmissonNET"
-  mkdir -p "$app_home" "$APPDIR/apprun-hooks"
-  cp -a "$PUBLISH/." "$app_home/"
+  mkdir -p "$APP_BIN_DIR" "$APPDIR/apprun-hooks"
+  cp -a "$PUBLISH/." "$APP_BIN_DIR/"
   rm -f \
-    "$app_home/createdump" \
-    "$app_home/libcoreclrtraceptprovider.so" \
-    "$app_home/libmscordbi.so" \
-    "$app_home/libmscordaccore.so"
-  find "$app_home" -name '*.so' -exec chmod -x {} +
-  chmod +x "$app_home/TransmissonNET.App" "$app_home/Photino.Native.so"
-  cp "$PKG/transmission-net.desktop" "$APPDIR/transmission-net.desktop"
+    "$APP_BIN_DIR/createdump" \
+    "$APP_BIN_DIR/libcoreclrtraceptprovider.so" \
+    "$APP_BIN_DIR/libmscordbi.so" \
+    "$APP_BIN_DIR/libmscordaccore.so"
+  find "$APP_BIN_DIR" -name '*.so' -exec chmod -x {} +
+  chmod +x "$APP_BIN_DIR/TransmissonNET.App" "$APP_BIN_DIR/Photino.Native.so"
   cp "$PKG/apprun-hooks/webkit-display.sh" "$APPDIR/apprun-hooks/"
   chmod +x "$APPDIR/apprun-hooks/webkit-display.sh"
-}
-
-app_executable() {
-  echo "$APPDIR/opt/TransmissonNET/TransmissonNET.App"
-}
-
-photino_library() {
-  echo "$APPDIR/opt/TransmissonNET/Photino.Native.so"
 }
 
 webkit_deploy_args() {
@@ -158,39 +150,35 @@ webkit_deploy_args() {
 run_linuxdeploy() {
   local icon="$1"
   local deploy="$LINUXDEPLOY"
-  local gtk_plugin="$TOOLS/linuxdeploy-plugin-gtk.sh"
+  local main_bin="$APP_BIN_DIR/TransmissonNET.App"
+  local photino_so="$APP_BIN_DIR/Photino.Native.so"
   local webkit_sys
   webkit_sys="$(webkit_process_dir)"
 
-  local main_bin photino_so
-  main_bin="$(app_executable)"
-  photino_so="$(photino_library)"
-
-  export DEPLOY_GTK_VERSION=3
-
-  echo "Bundling GTK/WebKit dependencies..."
+  echo "Bundling GTK/WebKit dependencies (pass 1)..."
   "$deploy" --appdir="$APPDIR" \
     --executable="$main_bin" \
     --deploy-deps-only="$photino_so" \
-    --desktop-file="$APPDIR/transmission-net.desktop" \
+    --desktop-file="$PKG/transmission-net.desktop" \
     --icon-file="$icon" \
-    --plugin gtk \
-    --output appimage
+    --plugin gtk
 
   local webkit_app
   webkit_app="$(find_appdir_webkit_dir)"
   if [ -z "$webkit_app" ]; then
     mkdir -p "$APPDIR/usr/lib"
-    local dest="$APPDIR/usr/lib/webkit2gtk-4.1"
-    cp -a "$webkit_sys/." "$dest/"
-    webkit_app="$dest"
+    webkit_app="$APPDIR/usr/lib/webkit2gtk-4.1"
+    cp -a "$webkit_sys/." "$webkit_app/"
   fi
 
   mapfile -t extra < <(webkit_deploy_args "$webkit_app")
   if [ "${#extra[@]}" -gt 0 ]; then
-    echo "Deploying WebKit helper process dependencies..."
-    "$deploy" --appdir="$APPDIR" "${extra[@]}" --output appimage
+    echo "Deploying WebKit helper process dependencies (pass 2)..."
+    "$deploy" --appdir="$APPDIR" "${extra[@]}"
   fi
+
+  echo "Creating AppImage..."
+  "$deploy" --appdir="$APPDIR" --output appimage
 }
 
 finalize() {
