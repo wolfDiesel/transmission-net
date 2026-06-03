@@ -50,19 +50,20 @@ public sealed class LinuxTorrentFileAssociationService : ITorrentFileAssociation
         var applicationsDir = GetApplicationsDirectory();
         Directory.CreateDirectory(applicationsDir);
 
+        var canonicalPath = Path.Combine(applicationsDir, DesktopFileName);
         var matches = FindMatchingDesktopEntries(applicationsDir, execPath);
-        var targetPaths = matches.Count > 0
-            ? matches.Select(entry => entry.FilePath).ToList()
-            : [Path.Combine(applicationsDir, DesktopFileName)];
+        var targetPaths = matches
+            .Where(entry => !IsAppImageManagerDesktop(entry.FilePath))
+            .Select(entry => entry.FilePath)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        targetPaths.Add(canonicalPath);
 
         var desktopContent = BuildDesktopEntry(execPath);
         foreach (var desktopPath in targetPaths)
             await File.WriteAllTextAsync(desktopPath, desktopContent, Encoding.UTF8, cancellationToken);
 
         UpdateDesktopDatabase(applicationsDir);
-
-        var defaultDesktopFile = Path.GetFileName(ResolvePrimaryDesktopEntryPath(targetPaths));
-        ApplyDefaultMimeHandler(defaultDesktopFile);
+        ApplyDefaultMimeHandler(DesktopFileName);
 
         if (!IsDefaultHandler())
         {
@@ -190,6 +191,9 @@ public sealed class LinuxTorrentFileAssociationService : ITorrentFileAssociation
         }
     }
 
+    internal static bool IsAppImageManagerDesktop(string filePath) =>
+        Path.GetFileName(filePath).StartsWith("appimagemanager-", StringComparison.OrdinalIgnoreCase);
+
     private static void ApplyDefaultMimeHandler(string desktopFileName)
     {
         var failures = new List<string>();
@@ -201,7 +205,7 @@ public sealed class LinuxTorrentFileAssociationService : ITorrentFileAssociation
         if (gio.ExitCode != 0 && !string.IsNullOrWhiteSpace(gio.StdErr))
             failures.Add($"gio: {gio.StdErr}");
 
-        var xdg = DesktopProcessRunner.Run("xdg-mime", "default", MimeType, desktopFileName);
+        var xdg = DesktopProcessRunner.Run("xdg-mime", "default", desktopFileName, MimeType);
         if (xdg.ExitCode == 0 && IsDefaultHandlerForDesktop(desktopFileName))
             return;
 

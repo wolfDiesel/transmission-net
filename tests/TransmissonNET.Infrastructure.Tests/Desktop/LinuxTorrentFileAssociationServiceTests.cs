@@ -158,6 +158,15 @@ public class LinuxTorrentFileAssociationServiceTests
     }
 
     [Fact]
+    public void IsAppImageManagerDesktop_DetectsAppImageManagerEntries()
+    {
+        Assert.True(LinuxTorrentFileAssociationService.IsAppImageManagerDesktop(
+            "/home/user/.local/share/applications/appimagemanager-TransmissionNET-018-x86_64-14462256.desktop"));
+        Assert.False(LinuxTorrentFileAssociationService.IsAppImageManagerDesktop(
+            "/home/user/.local/share/applications/transmission-net.desktop"));
+    }
+
+    [Fact]
     public void ResolvePrimaryDesktopEntryPath_PrefersCanonicalName()
     {
         var paths = new[]
