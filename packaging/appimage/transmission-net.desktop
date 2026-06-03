@@ -2,8 +2,9 @@
 Type=Application
 Name=TransmissionNET
 Comment=Desktop client for Transmission RPC
-Exec=TransmissonNET.App
+Exec=TransmissonNET.App %f
 Icon=transmission-net
 Categories=Network;FileTransfer;
 StartupWMClass=TransmissionNET
 Terminal=false
+MimeType=application/x-bittorrent;

@@ -18,6 +18,8 @@ export interface TorrentTableSettingsDto {
   sortDescending: boolean
 }
 
+export type TorrentFileAssociationPromptStatus = 'not_asked' | 'registered' | 'declined'
+
 export interface UiSettingsDto {
   refreshIntervalSeconds: number
   windowWidth: number
@@ -26,6 +28,19 @@ export interface UiSettingsDto {
   colorScheme: string
   appearance: string
   downloadDirHistory?: string[]
+  torrentFileAssociation?: TorrentFileAssociationPromptStatus
+}
+
+export interface TorrentFileAssociationStatusDto {
+  isSupported: boolean
+  hasDesktopEntry: boolean
+  isDefaultHandler: boolean
+  promptStatus: TorrentFileAssociationPromptStatus
+  shouldPrompt: boolean
+}
+
+export interface PendingTorrentPathDto {
+  path: string | null
 }
 
 export interface AppSettingsDto {
@@ -140,6 +155,11 @@ export interface TorrentMetainfoPreviewDto {
   fileName: string
   totalSize: number
   fileTree: TorrentFileNodeDto[]
+}
+
+export interface TorrentMetainfoFromPathDto {
+  metainfoBase64: string
+  preview: TorrentMetainfoPreviewDto
 }
 
 export interface TorrentAddRequestDto {

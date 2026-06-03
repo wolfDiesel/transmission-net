@@ -10,7 +10,10 @@ import type {
   TorrentFileNodeDto,
   TorrentAddRequestDto,
   TorrentAddResultDto,
+  TorrentMetainfoFromPathDto,
   TorrentMetainfoPreviewDto,
+  TorrentFileAssociationStatusDto,
+  PendingTorrentPathDto,
   TorrentRenameBatchResultDto,
   TorrentRenameOperationDto,
 } from './types'
@@ -90,6 +93,18 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ metainfoBase64 }),
     }),
+  inspectTorrentMetainfoFromPath: (filePath: string) =>
+    request<TorrentMetainfoFromPathDto>('/api/torrents/inspect-path', {
+      method: 'POST',
+      body: JSON.stringify({ filePath }),
+    }),
+  getTorrentFileAssociationStatus: () =>
+    request<TorrentFileAssociationStatusDto>('/api/desktop/torrent-association'),
+  registerTorrentFileAssociation: () =>
+    request<{ status: string }>('/api/desktop/torrent-association/register', { method: 'POST' }),
+  declineTorrentFileAssociation: () =>
+    request<{ status: string }>('/api/desktop/torrent-association/decline', { method: 'POST' }),
+  getPendingTorrentPath: () => request<PendingTorrentPathDto>('/api/desktop/pending-torrent-path'),
   addTorrent: (body: TorrentAddRequestDto) =>
     request<TorrentAddResultDto>('/api/torrents/add', {
       method: 'POST',

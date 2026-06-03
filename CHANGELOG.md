@@ -6,6 +6,13 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ## Unreleased
 
+### Added
+
+- Linux `.torrent` integration: register default handler via user `.desktop` entry and `xdg-mime`; scan all `~/.local/share/applications/*.desktop` files and match TransmissionNET by parsed content (`Exec`, `Name`, `StartupWMClass`), update every match on register.
+- Open `.torrent` from the file manager or CLI (`%f` / launch arg): pending path API, UI redirect to Add torrent with metainfo preview from file path.
+- First-run prompt to become the default `.torrent` app (yes/no, stored in settings; not asked again after choice).
+- Settings → Interface: button to register or refresh the `.torrent` association.
+
 ### Fixed
 
 - AppImage CI: install `libnotify4` and related GTK/WebKit runtime libs before `linuxdeploy` (fixes missing `libnotify.so.4`).

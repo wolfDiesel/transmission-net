@@ -87,7 +87,8 @@ public sealed class JsonSettingsStore : ISettingsStore
                     torrentTable,
                     NormalizeColorScheme(Ui?.ColorScheme),
                     NormalizeAppearance(Ui?.Appearance),
-                    NormalizeDownloadDirHistory(Ui?.DownloadDirHistory)));
+                    NormalizeDownloadDirHistory(Ui?.DownloadDirHistory),
+                    TorrentFileAssociationStatuses.Normalize(Ui?.TorrentFileAssociation)));
         }
 
         public static SettingsFile FromDomain(AppSettings settings) =>
@@ -142,6 +143,7 @@ public sealed class JsonSettingsStore : ISettingsStore
         public string? Appearance { get; set; }
         public TorrentTableFile? TorrentTable { get; set; }
         public List<string>? DownloadDirHistory { get; set; }
+        public string? TorrentFileAssociation { get; set; }
 
         public static UiFile FromDomain(UiSettings ui) =>
             new()
@@ -152,7 +154,8 @@ public sealed class JsonSettingsStore : ISettingsStore
                 ColorScheme = ui.ColorScheme,
                 Appearance = ui.Appearance,
                 TorrentTable = TorrentTableFile.FromDomain(ui.TorrentTable),
-                DownloadDirHistory = ui.DownloadDirHistory?.ToList()
+                DownloadDirHistory = ui.DownloadDirHistory?.ToList(),
+                TorrentFileAssociation = ui.TorrentFileAssociation,
             };
     }
 

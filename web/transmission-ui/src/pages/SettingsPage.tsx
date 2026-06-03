@@ -15,6 +15,7 @@ import {
   AppearanceSettingsSection,
   DaemonSessionSettingsSection,
   DaemonSettingsSection,
+  TorrentFileAssociationSection,
 } from '../components/settings'
 import { normalizeAppearance, normalizeColorScheme } from '../theme/accentPalettes'
 import type { DaemonSessionSettingsDto } from '../api/types'
@@ -237,6 +238,14 @@ export function SettingsPage() {
                 setSettings((prev) => ({
                   ...prev,
                   ui: { ...prev.ui, appearance },
+                }))
+              }
+            />
+            <TorrentFileAssociationSection
+              onRegistered={() =>
+                setSettings((prev) => ({
+                  ...prev,
+                  ui: { ...prev.ui, torrentFileAssociation: 'registered' },
                 }))
               }
             />

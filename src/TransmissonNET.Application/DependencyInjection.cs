@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using TransmissonNET.Application.Abstractions;
 using TransmissonNET.Application.Handlers;
 
 namespace TransmissonNET.Application;
@@ -18,7 +19,13 @@ public static class DependencyInjection
         services.AddScoped<ExecuteTorrentActionHandler>();
         services.AddScoped<ExecuteTorrentRenameBatchHandler>();
         services.AddScoped<InspectTorrentMetainfoHandler>();
+        services.AddScoped<InspectTorrentMetainfoFromPathHandler>();
         services.AddScoped<AddTorrentHandler>();
+        services.AddScoped<GetTorrentFileAssociationStatusHandler>();
+        services.AddScoped<RegisterTorrentFileAssociationHandler>();
+        services.AddScoped<DeclineTorrentFileAssociationHandler>();
+        services.AddScoped<GetPendingTorrentLaunchPathHandler>();
+        services.AddSingleton<IPendingTorrentLaunchStore, PendingTorrentLaunchStore>();
         return services;
     }
 }

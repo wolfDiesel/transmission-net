@@ -160,6 +160,65 @@ internal static class ApiEndpoints
             }
         });
 
+        app.MapPost("/api/torrents/inspect-path", async (
+            TorrentMetainfoInspectPathRequestDto dto,
+            InspectTorrentMetainfoFromPathHandler handler,
+            CancellationToken ct) =>
+        {
+            try
+            {
+                var preview = await handler.HandleAsync(dto, ct);
+                return Results.Ok(preview);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (FileNotFoundException ex)
+            {
+                return Results.NotFound(new { error = ex.Message });
+            }
+        });
+
+        app.MapGet("/api/desktop/torrent-association", async (
+            GetTorrentFileAssociationStatusHandler handler,
+            CancellationToken ct) =>
+        {
+            var status = await handler.HandleAsync(ct);
+            return Results.Ok(status);
+        });
+
+        app.MapPost("/api/desktop/torrent-association/register", async (
+            RegisterTorrentFileAssociationHandler handler,
+            CancellationToken ct) =>
+        {
+            try
+            {
+                await handler.HandleAsync(ct);
+                return Results.Ok(new { status = "registered" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        });
+
+        app.MapPost("/api/desktop/torrent-association/decline", async (
+            DeclineTorrentFileAssociationHandler handler,
+            CancellationToken ct) =>
+        {
+            await handler.HandleAsync(ct);
+            return Results.Ok(new { status = "declined" });
+        });
+
+        app.MapGet("/api/desktop/pending-torrent-path", async (
+            GetPendingTorrentLaunchPathHandler handler,
+            CancellationToken ct) =>
+        {
+            var path = await handler.HandleAsync(ct);
+            return Results.Ok(new { path });
+        });
+
         app.MapPost("/api/torrents/add", async (
             TorrentAddRequestDto dto,
             AddTorrentHandler handler,

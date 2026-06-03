@@ -9,7 +9,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api, ApiError } from '../api/client'
 import type { TorrentMetainfoPreviewDto } from '../api/types'
 import { DownloadDirCombobox } from '../components/AddTorrent/DownloadDirCombobox'
@@ -22,6 +22,7 @@ import { formatSize } from '../utils/format'
 
 export function AddTorrentPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { settingsLoading } = useApp()
   const { directories, remember } = useDownloadDirHistory()
   const [downloadDir, setDownloadDir] = useState('')
@@ -60,6 +61,22 @@ export function AddTorrentPage() {
     initialDirSet.current = true
   }, [directories, sessionDir, sessionLoading, settingsLoading])
 
+  const loadFromPath = useCallback(async (filePath: string) => {
+    setInspectError(null)
+    setPreview(null)
+    setMetainfoBase64(null)
+    setInspecting(true)
+    try {
+      const loaded = await api.inspectTorrentMetainfoFromPath(filePath)
+      setMetainfoBase64(loaded.metainfoBase64)
+      setPreview(loaded.preview)
+    } catch (e) {
+      setInspectError(e instanceof ApiError ? e.message : 'Failed to read torrent file')
+    } finally {
+      setInspecting(false)
+    }
+  }, [])
+
   const handleFileChange = useCallback(async (file: File | null) => {
     setInspectError(null)
     setPreview(null)
@@ -84,6 +101,12 @@ export function AddTorrentPage() {
       setInspecting(false)
     }
   }, [])
+
+  useEffect(() => {
+    const torrentPath = searchParams.get('torrentPath')
+    if (!torrentPath) return
+    void loadFromPath(torrentPath)
+  }, [searchParams, loadFromPath])
 
   const handleAdd = async () => {
     if (!metainfoBase64 || !preview) return

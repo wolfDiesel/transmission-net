@@ -3,10 +3,16 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Photino.NET;
 using TransmissonNET.App;
 using TransmissonNET.App.Api;
+using TransmissonNET.App.Desktop;
 using TransmissonNET.Application;
+using TransmissonNET.Application.Abstractions;
 using TransmissonNET.Infrastructure;
 
 var app = WebAppFactory.Build(args);
+
+var launchTorrentPath = CommandLineTorrentLaunch.FindTorrentPath(args);
+if (!string.IsNullOrEmpty(launchTorrentPath))
+    app.Services.GetRequiredService<IPendingTorrentLaunchStore>().SetPendingPath(launchTorrentPath);
 
 if (app.Environment.IsEnvironment("Testing"))
 {

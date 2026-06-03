@@ -1,4 +1,5 @@
 export { AppearanceSettingsSection } from './AppearanceSettingsSection'
+export { TorrentFileAssociationSection } from './TorrentFileAssociationSection'
 export { DaemonSettingsSection } from './DaemonSettingsSection'
 export { DaemonSessionSettingsSection } from './DaemonSessionSettingsSection'
 export { buildRpcUrl } from './buildRpcUrl'

@@ -17,6 +17,10 @@
     <PackageReference Include="Photino.NET" Version="4.0.16" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="TransmissonNET.App.Tests" />
+  </ItemGroup>
+
   <Target Name="BuildWebUi" BeforeTargets="Build" Condition="'$(SkipWebUiBuild)' != 'true' AND Exists('$(WebUiDir)/package.json')">
     <Exec Command="npm ci" WorkingDirectory="$(WebUiDir)" />
     <Exec Command="npm run build" WorkingDirectory="$(WebUiDir)" />

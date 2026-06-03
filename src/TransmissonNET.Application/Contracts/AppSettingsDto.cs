@@ -18,4 +18,5 @@ public sealed record UiSettingsDto(
     TorrentTableSettingsDto TorrentTable,
     string ColorScheme = UiColorSchemes.Default,
     string Appearance = UiAppearances.Default,
-    IReadOnlyList<string>? DownloadDirHistory = null);
+    IReadOnlyList<string>? DownloadDirHistory = null,
+    string TorrentFileAssociation = TorrentFileAssociationStatuses.NotAsked);
