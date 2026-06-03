@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Text;
 using TransmissonNET.Application.Abstractions;
 
@@ -19,11 +18,10 @@ public sealed class LinuxTorrentFileAssociationService : ITorrentFileAssociation
         if (!IsSupported)
             return false;
 
-        var output = RunProcess("xdg-mime", "query", "default", MimeType);
-        if (string.IsNullOrWhiteSpace(output))
+        var defaultFile = QueryDefaultDesktopId();
+        if (string.IsNullOrWhiteSpace(defaultFile))
             return false;
 
-        var defaultFile = output.Trim();
         var execPath = ResolveExecutablePath();
         var matches = FindMatchingDesktopEntries(GetApplicationsDirectory(), execPath);
         if (matches.Count > 0)
@@ -46,6 +44,9 @@ public sealed class LinuxTorrentFileAssociationService : ITorrentFileAssociation
             throw new PlatformNotSupportedException("Linux desktop integration is required.");
 
         var execPath = ResolveExecutablePath();
+        if (!File.Exists(execPath))
+            throw new InvalidOperationException($"Application executable was not found: {execPath}");
+
         var applicationsDir = GetApplicationsDirectory();
         Directory.CreateDirectory(applicationsDir);
 
@@ -58,9 +59,17 @@ public sealed class LinuxTorrentFileAssociationService : ITorrentFileAssociation
         foreach (var desktopPath in targetPaths)
             await File.WriteAllTextAsync(desktopPath, desktopContent, Encoding.UTF8, cancellationToken);
 
-        RunProcess("update-desktop-database", applicationsDir);
+        UpdateDesktopDatabase(applicationsDir);
+
         var defaultDesktopFile = Path.GetFileName(ResolvePrimaryDesktopEntryPath(targetPaths));
-        RunProcess("xdg-mime", "default", MimeType, defaultDesktopFile);
+        ApplyDefaultMimeHandler(defaultDesktopFile);
+
+        if (!IsDefaultHandler())
+        {
+            throw new InvalidOperationException(
+                "Desktop entry was written, but the system did not switch the default .torrent handler. "
+                + "Open Settings → Applications → Default applications and choose TransmissionNET for torrent files.");
+        }
     }
 
     internal static IReadOnlyList<ParsedDesktopEntry> FindMatchingDesktopEntries(
@@ -88,33 +97,76 @@ public sealed class LinuxTorrentFileAssociationService : ITorrentFileAssociation
     internal static string BuildDesktopEntry(string execPath)
     {
         var escapedExec = execPath.Replace("\\", "\\\\").Replace("\"", "\\\"");
-        return $"""
-            [Desktop Entry]
-            Type=Application
-            Name={ApplicationName}
-            Comment=Desktop client for Transmission RPC
-            Exec="{escapedExec}" %f
-            Icon=transmission-net
-            Categories=Network;FileTransfer;
-            StartupWMClass={StartupWmClass}
-            Terminal=false
-            MimeType=application/x-bittorrent;
-            """;
+        return string.Join(
+            '\n',
+            "[Desktop Entry]",
+            "Version=1.0",
+            "Type=Application",
+            $"Name={ApplicationName}",
+            "Comment=Desktop client for Transmission RPC",
+            $"Exec=\"{escapedExec}\" %f",
+            "Icon=transmission-net",
+            "Categories=Network;FileTransfer;",
+            $"StartupWMClass={StartupWmClass}",
+            "Terminal=false",
+            $"MimeType={MimeType};",
+            "") + '\n';
     }
 
     internal static string ResolveExecutablePath()
     {
-        var appImage = Environment.GetEnvironmentVariable("APPIMAGE");
-        if (!string.IsNullOrWhiteSpace(appImage) && File.Exists(appImage))
-            return Path.GetFullPath(appImage);
+        foreach (var candidate in EnumerateExecutableCandidates())
+        {
+            if (string.IsNullOrWhiteSpace(candidate) || !File.Exists(candidate))
+                continue;
+
+            var fullPath = Path.GetFullPath(candidate);
+            if (IsEphemeralAppImageMountPath(fullPath))
+                continue;
+
+            return fullPath;
+        }
+
+        var fallback = Path.GetFullPath(Environment.ProcessPath ?? AppExecutableBaseName);
+        return fallback;
+    }
+
+    private static IEnumerable<string?> EnumerateExecutableCandidates()
+    {
+        yield return Environment.GetEnvironmentVariable("APPIMAGE");
+        yield return Environment.GetEnvironmentVariable("ARGV0");
+
+        foreach (var procPath in TryResolveProcExePath())
+            yield return procPath;
 
         var baseDir = AppContext.BaseDirectory;
-        var bundled = Path.Combine(baseDir, AppExecutableBaseName);
-        if (File.Exists(bundled))
-            return Path.GetFullPath(bundled);
-
-        return Path.GetFullPath(Environment.ProcessPath ?? bundled);
+        yield return Path.Combine(baseDir, AppExecutableBaseName);
+        yield return Environment.ProcessPath;
     }
+
+    private static IEnumerable<string> TryResolveProcExePath()
+    {
+        try
+        {
+            var procExe = Path.Combine("/proc/self", "exe");
+            if (!File.Exists(procExe))
+                return [];
+
+            var link = File.ResolveLinkTarget(procExe, returnFinalTarget: true);
+            return link is null ? [] : [link.FullName];
+        }
+        catch (IOException)
+        {
+            return [];
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return [];
+        }
+    }
+
+    private static bool IsEphemeralAppImageMountPath(string path) =>
+        path.Contains("/.mount_", StringComparison.Ordinal);
 
     private static string GetApplicationsDirectory() =>
         Path.Combine(
@@ -123,26 +175,50 @@ public sealed class LinuxTorrentFileAssociationService : ITorrentFileAssociation
             "share",
             "applications");
 
-    private static string RunProcess(string fileName, params string[] args)
+    private static string? QueryDefaultDesktopId() =>
+        DesktopProcessRunner.TryRun("xdg-mime", "query", "default", MimeType);
+
+    private static void UpdateDesktopDatabase(string applicationsDir)
     {
-        using var process = new Process
+        var result = DesktopProcessRunner.Run("update-desktop-database", applicationsDir);
+        if (result.ExitCode != 0)
         {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = fileName,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            },
-        };
+            throw new InvalidOperationException(
+                string.IsNullOrWhiteSpace(result.StdErr)
+                    ? "update-desktop-database failed."
+                    : $"update-desktop-database failed: {result.StdErr}");
+        }
+    }
 
-        foreach (var arg in args)
-            process.StartInfo.ArgumentList.Add(arg);
+    private static void ApplyDefaultMimeHandler(string desktopFileName)
+    {
+        var failures = new List<string>();
 
-        process.Start();
-        var output = process.StandardOutput.ReadToEnd();
-        process.WaitForExit();
-        return output.Trim();
+        var gio = DesktopProcessRunner.Run("gio", "mime", MimeType, desktopFileName);
+        if (gio.ExitCode == 0 && IsDefaultHandlerForDesktop(desktopFileName))
+            return;
+
+        if (gio.ExitCode != 0 && !string.IsNullOrWhiteSpace(gio.StdErr))
+            failures.Add($"gio: {gio.StdErr}");
+
+        var xdg = DesktopProcessRunner.Run("xdg-mime", "default", MimeType, desktopFileName);
+        if (xdg.ExitCode == 0 && IsDefaultHandlerForDesktop(desktopFileName))
+            return;
+
+        if (xdg.ExitCode != 0 && !string.IsNullOrWhiteSpace(xdg.StdErr))
+            failures.Add($"xdg-mime: {xdg.StdErr}");
+
+        var current = QueryDefaultDesktopId() ?? "(none)";
+        failures.Add($"current default: {current}");
+        throw new InvalidOperationException(
+            "Could not set TransmissionNET as the default .torrent handler. "
+            + string.Join(" ", failures));
+    }
+
+    private static bool IsDefaultHandlerForDesktop(string desktopFileName)
+    {
+        var current = QueryDefaultDesktopId();
+        return !string.IsNullOrWhiteSpace(current)
+            && current.Equals(desktopFileName, StringComparison.OrdinalIgnoreCase);
     }
 }

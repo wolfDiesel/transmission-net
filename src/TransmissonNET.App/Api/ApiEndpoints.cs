@@ -201,6 +201,10 @@ internal static class ApiEndpoints
             {
                 return Results.BadRequest(new { error = ex.Message });
             }
+            catch (PlatformNotSupportedException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
         });
 
         app.MapPost("/api/desktop/torrent-association/decline", async (

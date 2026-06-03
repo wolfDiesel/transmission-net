@@ -25,10 +25,13 @@ export function TorrentAssociationPrompt() {
     setBusy(true)
     try {
       await api.registerTorrentFileAssociation()
+      const status = await api.getTorrentFileAssociationStatus()
       setOpen(false)
       showAppToast({
-        title: 'Файлы .torrent будут открываться в TransmissionNET',
-        variant: 'success',
+        title: status.isDefaultHandler
+          ? 'Файлы .torrent будут открываться в TransmissionNET'
+          : 'Ярлык создан, но система не сменила обработчик. Выберите TransmissionNET в настройках ОС.',
+        variant: status.isDefaultHandler ? 'success' : 'error',
       })
     } catch (e) {
       showAppToast({

@@ -9,10 +9,13 @@ public class LinuxTorrentFileAssociationServiceTests
     {
         var entry = LinuxTorrentFileAssociationService.BuildDesktopEntry("/opt/TransmissionNET.App");
 
+        Assert.StartsWith("[Desktop Entry]", entry);
+        Assert.DoesNotContain("\n            ", entry);
         Assert.Contains("Exec=\"/opt/TransmissionNET.App\" %f", entry);
         Assert.Contains("MimeType=application/x-bittorrent;", entry);
         Assert.Contains("Name=TransmissionNET", entry);
         Assert.Contains("StartupWMClass=TransmissionNET", entry);
+        Assert.Contains("Version=1.0", entry);
     }
 
     [Fact]

@@ -34,11 +34,19 @@ export function TorrentFileAssociationSection({ onRegistered }: TorrentFileAssoc
     try {
       await api.registerTorrentFileAssociation()
       onRegistered()
-      await loadStatus()
-      showAppToast({
-        title: 'Файлы .torrent зарегистрированы для TransmissionNET',
-        variant: 'success',
-      })
+      const refreshed = await api.getTorrentFileAssociationStatus()
+      setStatus(refreshed)
+      if (refreshed.isDefaultHandler) {
+        showAppToast({
+          title: 'Файлы .torrent открываются в TransmissionNET',
+          variant: 'success',
+        })
+      } else {
+        showAppToast({
+          title: 'Ярлык создан, но система не сменила обработчик по умолчанию. Выберите TransmissionNET в настройках ОС.',
+          variant: 'error',
+        })
+      }
     } catch (e) {
       showAppToast({
         title: e instanceof ApiError ? e.message : 'Не удалось зарегистрировать ассоциацию',

@@ -15,6 +15,7 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ### Fixed
 
+- Linux `.torrent` registration: write valid `.desktop` entries (no leading spaces), resolve stable AppImage path for `Exec`, set default handler via `gio mime` / `xdg-mime` with exit-code checks and UI error when the system keeps another app.
 - AppImage CI: install `libnotify4` and related GTK/WebKit runtime libs before `linuxdeploy` (fixes missing `libnotify.so.4`).
 - AppImage CI: use `APPIMAGE_VERSION` instead of `VERSION`; manual runs use SemVer `0.0.0-ci.<n>` so `dotnet publish` does not fail on invalid NuGet version strings.
 - AppImage CI: set `DEPLOY_GTK_VERSION=3` for linuxdeploy gtk plugin (app binary lives under `opt/`, auto-detect fails).
