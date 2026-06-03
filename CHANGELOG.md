@@ -8,6 +8,9 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ### Added
 
+- Linux system tray via libayatana-appindicator (GTK menu Show/Quit, close-to-tray, settings in Interface).
+- Brand icon: orange wolf on transparent background in sidebar, favicon, tray, AppImage/desktop; `sync-brand-icons.sh` syncs SVG/PNG into UI and `wwwroot` on build.
+- `GET /api/desktop/capabilities` and tray options in settings (`trayEnabled`, `closeToTray`, `minimizeToTray`).
 - Linux `.torrent` integration: register default handler via user `.desktop` entry and `xdg-mime`; scan all `~/.local/share/applications/*.desktop` files and match TransmissionNET by parsed content (`Exec`, `Name`, `StartupWMClass`), update every match on register.
 - Open `.torrent` from the file manager or CLI (`%f` / launch arg): pending path API, UI redirect to Add torrent with metainfo preview from file path.
 - First-run prompt to become the default `.torrent` app (yes/no, stored in settings; not asked again after choice).
@@ -16,6 +19,8 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ### Fixed
 
+- Linux single-instance: remove stale `transmission-net.sock` when the previous process died without cleanup.
+- Linux tray: resolve `g_object_unref` from libgobject (fixes crash on Quit from tray menu on Fedora).
 - Linux `.torrent` registration: write valid `.desktop` entries (no leading spaces), resolve stable AppImage path for `Exec`, set default handler via `gio mime` / `xdg-mime` with exit-code checks and UI error when the system keeps another app.
 - Linux `.torrent` registration: fix `xdg-mime default` argument order; always register `transmission-net.desktop` and skip AppImage Manager `appimagemanager-*.desktop` stubs.
 - Linux `.torrent` registration: write `.desktop` and `mimeapps.list` without UTF-8 BOM (fixes gio “could not load handler”); validate desktop entry, install icon, fallback to `mimeapps.list`; bundle `transmission-net.svg` in AppImage.

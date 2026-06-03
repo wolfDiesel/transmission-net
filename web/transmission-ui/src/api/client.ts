@@ -13,6 +13,7 @@ import type {
   TorrentMetainfoFromPathDto,
   TorrentMetainfoPreviewDto,
   TorrentFileAssociationStatusDto,
+  DesktopCapabilitiesDto,
   PendingTorrentPathDto,
   TorrentRenameBatchResultDto,
   TorrentRenameOperationDto,
@@ -50,6 +51,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   getHealth: () => request<{ status: string }>('/api/health'),
+  getDesktopCapabilities: () =>
+    request<DesktopCapabilitiesDto>('/api/desktop/capabilities'),
   getSettings: () => request<AppSettingsDto>('/api/settings'),
   saveSettings: (settings: AppSettingsDto) =>
     request<AppSettingsDto>('/api/settings', {

@@ -88,7 +88,10 @@ public sealed class JsonSettingsStore : ISettingsStore
                     NormalizeColorScheme(Ui?.ColorScheme),
                     NormalizeAppearance(Ui?.Appearance),
                     NormalizeDownloadDirHistory(Ui?.DownloadDirHistory),
-                    TorrentFileAssociationStatuses.Normalize(Ui?.TorrentFileAssociation)));
+                    TorrentFileAssociationStatuses.Normalize(Ui?.TorrentFileAssociation),
+                    Ui?.TrayEnabled ?? true,
+                    Ui?.MinimizeToTray ?? false,
+                    Ui?.CloseToTray ?? true));
         }
 
         public static SettingsFile FromDomain(AppSettings settings) =>
@@ -144,6 +147,9 @@ public sealed class JsonSettingsStore : ISettingsStore
         public TorrentTableFile? TorrentTable { get; set; }
         public List<string>? DownloadDirHistory { get; set; }
         public string? TorrentFileAssociation { get; set; }
+        public bool TrayEnabled { get; set; } = true;
+        public bool MinimizeToTray { get; set; }
+        public bool CloseToTray { get; set; } = true;
 
         public static UiFile FromDomain(UiSettings ui) =>
             new()
@@ -156,6 +162,9 @@ public sealed class JsonSettingsStore : ISettingsStore
                 TorrentTable = TorrentTableFile.FromDomain(ui.TorrentTable),
                 DownloadDirHistory = ui.DownloadDirHistory?.ToList(),
                 TorrentFileAssociation = ui.TorrentFileAssociation,
+                TrayEnabled = ui.TrayEnabled,
+                MinimizeToTray = ui.MinimizeToTray,
+                CloseToTray = ui.CloseToTray,
             };
     }
 

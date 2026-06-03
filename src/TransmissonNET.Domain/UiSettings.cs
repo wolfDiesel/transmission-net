@@ -8,4 +8,7 @@ public sealed record UiSettings(
     string ColorScheme = UiColorSchemes.Default,
     string Appearance = UiAppearances.Default,
     IReadOnlyList<string>? DownloadDirHistory = null,
-    string TorrentFileAssociation = TorrentFileAssociationStatuses.NotAsked);
+    string TorrentFileAssociation = TorrentFileAssociationStatuses.NotAsked,
+    bool TrayEnabled = true,
+    bool MinimizeToTray = false,
+    bool CloseToTray = true);

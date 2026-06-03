@@ -19,6 +19,7 @@ apt-get install -y --no-install-recommends \
   librsvg2-2 \
   libgtk-3-0 \
   libgtk-3-dev \
+  libayatana-appindicator3-1 \
   libnotify4 \
   libnotify-dev \
   libwebkit2gtk-4.1-0 \

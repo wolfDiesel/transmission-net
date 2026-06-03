@@ -18,6 +18,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="wwwroot/transmission-net.svg" CopyToOutputDirectory="PreserveNewest" />
+    <Content Update="wwwroot/transmission-net-mark.svg" CopyToOutputDirectory="PreserveNewest" />
+    <Content Update="wwwroot/transmission-net-tray.svg" CopyToOutputDirectory="PreserveNewest" />
+    <Content Update="wwwroot/transmission-net.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Update="wwwroot/transmission-net-tray.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="SyncBrandIcons" BeforeTargets="BuildWebUi" Condition="Exists('$(MSBuildProjectDirectory)/../../packaging/appimage/sync-brand-icons.sh')">
+    <Exec Command="bash &quot;$(MSBuildProjectDirectory)/../../packaging/appimage/sync-brand-icons.sh&quot;" />
+  </Target>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="TransmissonNET.App.Tests" />
   </ItemGroup>
 

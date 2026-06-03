@@ -90,19 +90,14 @@ internal static class DesktopHost
         LinuxDisplayBootstrap.Configure();
 
         var pendingStore = app.Services.GetRequiredService<IPendingTorrentLaunchStore>();
+        var settingsStore = app.Services.GetRequiredService<ISettingsStore>();
+        await using var session = new PhotinoDesktopSession(baseUrl, settingsStore);
         await using var singleInstance = new SingleInstanceHost(
             pendingStore,
-            DesktopWindowActivator.TryActivate);
+            session.ShowMainWindow);
         singleInstance.Start();
 
-        var window = new PhotinoWindow()
-            .SetTitle("TransmissionNET")
-            .SetUseOsDefaultSize(false)
-            .SetSize(1280, 800)
-            .Center()
-            .Load(baseUrl);
-
-        window.WaitForClose();
+        await session.RunAsync();
 
         await app.StopAsync();
     }

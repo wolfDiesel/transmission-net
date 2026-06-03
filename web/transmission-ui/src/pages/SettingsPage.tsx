@@ -16,9 +16,10 @@ import {
   DaemonSessionSettingsSection,
   DaemonSettingsSection,
   TorrentFileAssociationSection,
+  TraySettingsSection,
 } from '../components/settings'
 import { normalizeAppearance, normalizeColorScheme } from '../theme/accentPalettes'
-import type { DaemonSessionSettingsDto } from '../api/types'
+import type { DaemonSessionSettingsDto, DesktopCapabilitiesDto } from '../api/types'
 import { showAppToast } from '../components/AppToast'
 import { useApp } from '../context/AppProvider'
 
@@ -35,6 +36,11 @@ export function SettingsPage() {
   const [daemonSession, setDaemonSession] = useState<DaemonSessionSettingsDto | null>(null)
   const [daemonSessionLoading, setDaemonSessionLoading] = useState(false)
   const [daemonSessionError, setDaemonSessionError] = useState<string | null>(null)
+  const [desktopCaps, setDesktopCaps] = useState<DesktopCapabilitiesDto | null>(null)
+
+  useEffect(() => {
+    void api.getDesktopCapabilities().then(setDesktopCaps).catch(() => setDesktopCaps(null))
+  }, [])
 
   const loadDaemonSession = async () => {
     setDaemonSessionLoading(true)
@@ -249,6 +255,17 @@ export function SettingsPage() {
                 }))
               }
             />
+            {desktopCaps?.traySettingsAvailable ? (
+              <TraySettingsSection
+                ui={settings.ui}
+                onChange={(patch) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    ui: { ...prev.ui, ...patch },
+                  }))
+                }
+              />
+            ) : null}
           <Box
             borderWidth="1px"
             borderColor="border"

@@ -1,11 +1,10 @@
-import { Box, Flex, Heading, Portal } from '@chakra-ui/react'
+import { Box, Flex, Portal } from '@chakra-ui/react'
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { NAV_ITEMS } from './navItems'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   FloatIcon,
-  MenuIcon,
 } from './SidebarIcons'
 import {
   FLOATING_LAUNCHER_SIZE,
@@ -18,6 +17,7 @@ import { SidebarNavItem } from './SidebarNavItem'
 import { loadSidebarMode, saveFloatPosition, saveSidebarMode } from './storage'
 import type { SidebarMode } from './types'
 import { useDraggable } from './useDraggable'
+import { AppLogo, AppLogoMark } from '../brand/AppLogo'
 
 const EXPANDED_WIDTH = 220
 const COLLAPSED_WIDTH = 64
@@ -83,7 +83,7 @@ export function AppSidebar() {
           dragHandlers={dragHandlers}
           onPointerUp={handleFloatLauncherPointerUp}
         >
-          <MenuIcon size={24} />
+          <AppLogoMark size={28} />
         </FloatingMenuLauncher>
 
         {menuOpen && (
@@ -116,17 +116,13 @@ export function AppSidebar() {
       overflow="hidden"
       {...islandPanelStyle}
     >
-      {mode === 'expanded' ? (
-        <Heading size="sm" px={4} mb={5} color="brand.500" letterSpacing="wider" whiteSpace="nowrap">
-          TransmissionNET
-        </Heading>
-      ) : (
-        <Flex justify="center" mb={5} color="brand.500" title="TransmissionNET">
-          <Box fontWeight="bold" fontSize="md">
-            TN
-          </Box>
-        </Flex>
-      )}
+      <Box px={mode === 'expanded' ? 2 : 0} mb={5} display="flex" justifyContent={mode === 'expanded' ? 'flex-start' : 'center'}>
+        {mode === 'expanded' ? (
+          <AppLogo size={36} showLabel labelSize="sm" />
+        ) : (
+          <AppLogoMark size={32} />
+        )}
+      </Box>
 
       <Flex direction="column" flex="1" gap={1} px={mode === 'collapsed' ? 2 : 0}>
         {NAV_ITEMS.map((item) => (

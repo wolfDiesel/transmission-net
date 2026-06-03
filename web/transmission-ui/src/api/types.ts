@@ -29,6 +29,14 @@ export interface UiSettingsDto {
   appearance: string
   downloadDirHistory?: string[]
   torrentFileAssociation?: TorrentFileAssociationPromptStatus
+  trayEnabled?: boolean
+  minimizeToTray?: boolean
+  closeToTray?: boolean
+}
+
+export interface DesktopCapabilitiesDto {
+  traySupported: boolean
+  traySettingsAvailable: boolean
 }
 
 export interface TorrentFileAssociationStatusDto {

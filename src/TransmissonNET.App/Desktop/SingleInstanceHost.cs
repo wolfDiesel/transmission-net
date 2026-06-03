@@ -45,7 +45,20 @@ internal sealed class SingleInstanceHost : IAsyncDisposable
         }
         catch (SocketException)
         {
+            TryDeleteStaleSocket(path);
             return false;
+        }
+    }
+
+    private static void TryDeleteStaleSocket(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+        catch
+        {
         }
     }
 

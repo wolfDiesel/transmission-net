@@ -12,6 +12,12 @@ internal static class ApiEndpoints
     {
         app.MapGet("/api/health", () => Results.Ok(new { status = "ok" }));
 
+        app.MapGet("/api/desktop/capabilities", () =>
+        {
+            var traySupported = OperatingSystem.IsLinux();
+            return Results.Ok(new DesktopCapabilitiesDto(traySupported, traySupported));
+        });
+
         app.MapGet("/api/settings", async (GetSettingsHandler handler, CancellationToken ct) =>
         {
             var settings = await handler.HandleAsync(ct);

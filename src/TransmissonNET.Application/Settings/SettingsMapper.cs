@@ -21,7 +21,10 @@ internal static class SettingsMapper
                 settings.Ui.ColorScheme,
                 settings.Ui.Appearance,
                 settings.Ui.DownloadDirHistory,
-                settings.Ui.TorrentFileAssociation));
+                settings.Ui.TorrentFileAssociation,
+                settings.Ui.TrayEnabled,
+                settings.Ui.MinimizeToTray,
+                settings.Ui.CloseToTray));
 
     public static AppSettings ToDomain(AppSettingsDto dto, AppSettings? existing = null)
     {
@@ -45,7 +48,10 @@ internal static class SettingsMapper
                 NormalizeAppearance(dto.Ui.Appearance),
                 dto.Ui.DownloadDirHistory ?? existing?.Ui.DownloadDirHistory,
                 TorrentFileAssociationStatuses.Normalize(
-                    dto.Ui.TorrentFileAssociation ?? existing?.Ui.TorrentFileAssociation)));
+                    dto.Ui.TorrentFileAssociation ?? existing?.Ui.TorrentFileAssociation),
+                dto.Ui.TrayEnabled,
+                dto.Ui.MinimizeToTray,
+                dto.Ui.CloseToTray));
     }
 
     public static DaemonConnection ToConnection(DaemonConnectionDto dto, AppSettings? existing = null)
