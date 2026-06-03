@@ -146,6 +146,7 @@ verify_publish_wwwroot() {
 install_custom_apprun() {
   cp "$PKG/AppRun" "$APPDIR/AppRun"
   chmod +x "$APPDIR/AppRun"
+  cp "$PKG/transmission-net.svg" "$APPDIR/transmission-net.svg"
 }
 
 publish_app() {

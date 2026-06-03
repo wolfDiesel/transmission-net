@@ -1,4 +1,3 @@
-using System.Text;
 using TransmissonNET.Application.Abstractions;
 
 namespace TransmissonNET.Infrastructure.Desktop;
@@ -60,9 +59,11 @@ public sealed class LinuxTorrentFileAssociationService : ITorrentFileAssociation
 
         var desktopContent = BuildDesktopEntry(execPath);
         foreach (var desktopPath in targetPaths)
-            await File.WriteAllTextAsync(desktopPath, desktopContent, Encoding.UTF8, cancellationToken);
+            await File.WriteAllTextAsync(desktopPath, desktopContent, DesktopFileEncoding.Instance, cancellationToken);
 
+        TryInstallIcon();
         UpdateDesktopDatabase(applicationsDir);
+        ValidateDesktopEntry(canonicalPath);
         ApplyDefaultMimeHandler(DesktopFileName);
 
         if (!IsDefaultHandler())
@@ -194,9 +195,87 @@ public sealed class LinuxTorrentFileAssociationService : ITorrentFileAssociation
     internal static bool IsAppImageManagerDesktop(string filePath) =>
         Path.GetFileName(filePath).StartsWith("appimagemanager-", StringComparison.OrdinalIgnoreCase);
 
+    private static void ValidateDesktopEntry(string desktopPath)
+    {
+        var bytes = File.ReadAllBytes(desktopPath);
+        if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
+            throw new InvalidOperationException("Desktop entry must not contain a UTF-8 BOM.");
+
+        if (!IsDesktopFileValidateAvailable())
+            return;
+
+        var validate = DesktopProcessRunner.Run("desktop-file-validate", desktopPath);
+        if (validate.ExitCode == 0)
+            return;
+
+        var details = string.IsNullOrWhiteSpace(validate.StdErr) ? validate.StdOut : validate.StdErr;
+        throw new InvalidOperationException(
+            string.IsNullOrWhiteSpace(details)
+                ? "Desktop entry validation failed."
+                : $"Desktop entry validation failed: {details}");
+    }
+
+    private static bool IsDesktopFileValidateAvailable() =>
+        File.Exists("/usr/bin/desktop-file-validate") || File.Exists("/bin/desktop-file-validate");
+
+    private static void TryInstallIcon()
+    {
+        var iconSource = FindBundledIconPath();
+        if (iconSource is null)
+            return;
+
+        var targetDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            ".local",
+            "share",
+            "icons",
+            "hicolor",
+            "scalable",
+            "apps");
+        Directory.CreateDirectory(targetDir);
+        File.Copy(iconSource, Path.Combine(targetDir, "transmission-net.svg"), overwrite: true);
+    }
+
+    private static string? FindBundledIconPath()
+    {
+        var candidates = new[]
+        {
+            Path.Combine(AppContext.BaseDirectory, "transmission-net.svg"),
+            Path.Combine(AppContext.BaseDirectory, "..", "transmission-net.svg"),
+            Environment.GetEnvironmentVariable("APPDIR") is { Length: > 0 } appDir
+                ? Path.Combine(appDir, "transmission-net.svg")
+                : null,
+        };
+
+        foreach (var candidate in candidates)
+        {
+            if (string.IsNullOrWhiteSpace(candidate))
+                continue;
+
+            try
+            {
+                var fullPath = Path.GetFullPath(candidate);
+                if (File.Exists(fullPath))
+                    return fullPath;
+            }
+            catch (ArgumentException)
+            {
+            }
+        }
+
+        return null;
+    }
+
     private static void ApplyDefaultMimeHandler(string desktopFileName)
     {
         var failures = new List<string>();
+
+        var xdg = DesktopProcessRunner.Run("xdg-mime", "default", desktopFileName, MimeType);
+        if (xdg.ExitCode == 0 && IsDefaultHandlerForDesktop(desktopFileName))
+            return;
+
+        if (xdg.ExitCode != 0 && !string.IsNullOrWhiteSpace(xdg.StdErr))
+            failures.Add($"xdg-mime: {xdg.StdErr}");
 
         var gio = DesktopProcessRunner.Run("gio", "mime", MimeType, desktopFileName);
         if (gio.ExitCode == 0 && IsDefaultHandlerForDesktop(desktopFileName))
@@ -205,12 +284,16 @@ public sealed class LinuxTorrentFileAssociationService : ITorrentFileAssociation
         if (gio.ExitCode != 0 && !string.IsNullOrWhiteSpace(gio.StdErr))
             failures.Add($"gio: {gio.StdErr}");
 
-        var xdg = DesktopProcessRunner.Run("xdg-mime", "default", desktopFileName, MimeType);
-        if (xdg.ExitCode == 0 && IsDefaultHandlerForDesktop(desktopFileName))
-            return;
-
-        if (xdg.ExitCode != 0 && !string.IsNullOrWhiteSpace(xdg.StdErr))
-            failures.Add($"xdg-mime: {xdg.StdErr}");
+        try
+        {
+            MimeAppsListWriter.SetDefaultHandler(MimeType, desktopFileName);
+            if (IsDefaultHandlerForDesktop(desktopFileName))
+                return;
+        }
+        catch (Exception ex)
+        {
+            failures.Add($"mimeapps.list: {ex.Message}");
+        }
 
         var current = QueryDefaultDesktopId() ?? "(none)";
         failures.Add($"current default: {current}");
