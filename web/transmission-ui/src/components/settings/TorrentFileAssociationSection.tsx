@@ -97,8 +97,8 @@ export function TorrentFileAssociationSection({ onRegistered }: TorrentFileAssoc
         Файлы .torrent
       </Text>
       <Text fontSize="sm" color="fg.muted" mb={4}>
-        {statusLine} Перед регистрацией проверяются все ярлыки в каталоге приложений и
-        обновляются те, что относятся к TransmissionNET.
+        {statusLine} Проверяются все ярлыки в ~/.local/share/applications (включая созданные
+        AppImage Manager при добавлении в папку) и обновляются те, что относятся к этому приложению.
       </Text>
       <Button
         colorPalette="brand"

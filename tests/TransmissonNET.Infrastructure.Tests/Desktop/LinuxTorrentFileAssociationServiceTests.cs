@@ -167,15 +167,45 @@ public class LinuxTorrentFileAssociationServiceTests
     }
 
     [Fact]
-    public void ResolvePrimaryDesktopEntryPath_PrefersCanonicalName()
+    public void CollectRegistrationTargetPaths_IncludesDaemonAndCanonicalEntries()
     {
-        var paths = new[]
+        var dir = CreateTempApplicationsDir();
+        var daemon = Path.Combine(dir, "appimagemanager-TransmissionNET-1.desktop");
+        var canonical = Path.Combine(dir, LinuxTorrentFileAssociationService.DesktopFileName);
+        var matches = new[]
         {
-            "/home/user/.local/share/applications/legacy.desktop",
-            "/home/user/.local/share/applications/transmission-net.desktop",
+            new ParsedDesktopEntry(daemon, "Application", "TransmissionNET", "/opt/a.AppImage", "TransmissionNET", false),
         };
 
-        Assert.Equal(paths[1], LinuxTorrentFileAssociationService.ResolvePrimaryDesktopEntryPath(paths));
+        var targets = LinuxTorrentFileAssociationService.CollectRegistrationTargetPaths(matches, canonical);
+
+        Assert.Contains(daemon, targets);
+        Assert.Contains(canonical, targets);
+    }
+
+    [Fact]
+    public void ResolveDefaultDesktopHandlerCandidates_PrefersDaemonShortcutFirst()
+    {
+        var daemon = new ParsedDesktopEntry(
+            "/home/user/.local/share/applications/appimagemanager-TransmissionNET-1.desktop",
+            "Application",
+            "TransmissionNET",
+            "/home/user/Apps/TransmissionNET.AppImage",
+            "TransmissionNET",
+            false);
+        var legacy = new ParsedDesktopEntry(
+            "/home/user/.local/share/applications/legacy.desktop",
+            "Application",
+            "TransmissionNET",
+            "/home/user/Apps/TransmissionNET.AppImage",
+            "TransmissionNET",
+            false);
+
+        var candidates = LinuxTorrentFileAssociationService.ResolveDefaultDesktopHandlerCandidates([daemon, legacy]);
+
+        Assert.Equal("appimagemanager-TransmissionNET-1.desktop", candidates[0]);
+        Assert.Equal(LinuxTorrentFileAssociationService.DesktopFileName, candidates[1]);
+        Assert.Equal("legacy.desktop", candidates[2]);
     }
 
     private static string CreateTempApplicationsDir()

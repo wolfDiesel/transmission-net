@@ -5,6 +5,7 @@ import { TorrentListProvider } from './context/TorrentListProvider'
 import { AppShell } from './layout/AppShell'
 import { TorrentAssociationPrompt } from './components/desktop/TorrentAssociationPrompt'
 import { TorrentLaunchRedirect } from './components/desktop/TorrentLaunchRedirect'
+import { TorrentLaunchWatcher } from './components/desktop/TorrentLaunchWatcher'
 import { ThemeSync } from './theme/ThemeSync'
 import { AddTorrentPage } from './pages/AddTorrentPage'
 import { SettingsPage } from './pages/SettingsPage'
@@ -17,6 +18,7 @@ export function App() {
         <TorrentListProvider>
           <ThemeSync />
           <TorrentLaunchRedirect />
+          <TorrentLaunchWatcher />
           <TorrentAssociationPrompt />
           <AppToastHost />
           <Routes>

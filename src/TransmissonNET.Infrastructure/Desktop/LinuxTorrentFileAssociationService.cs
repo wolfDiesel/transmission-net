@@ -12,11 +12,10 @@ public sealed class LinuxTorrentFileAssociationService : ITorrentFileAssociation
 
     public bool IsSupported => OperatingSystem.IsLinux();
 
-    public bool IsDefaultHandler()
-    {
-        if (!IsSupported)
-            return false;
+    public bool IsDefaultHandler() => IsSupported && IsDefaultHandlerResolved();
 
+    private static bool IsDefaultHandlerResolved()
+    {
         var defaultFile = QueryDefaultDesktopId();
         if (string.IsNullOrWhiteSpace(defaultFile))
             return false;
@@ -51,11 +50,7 @@ public sealed class LinuxTorrentFileAssociationService : ITorrentFileAssociation
 
         var canonicalPath = Path.Combine(applicationsDir, DesktopFileName);
         var matches = FindMatchingDesktopEntries(applicationsDir, execPath);
-        var targetPaths = matches
-            .Where(entry => !IsAppImageManagerDesktop(entry.FilePath))
-            .Select(entry => entry.FilePath)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        targetPaths.Add(canonicalPath);
+        var targetPaths = CollectRegistrationTargetPaths(matches, canonicalPath);
 
         var desktopContent = BuildDesktopEntry(execPath);
         foreach (var desktopPath in targetPaths)
@@ -63,8 +58,26 @@ public sealed class LinuxTorrentFileAssociationService : ITorrentFileAssociation
 
         TryInstallIcon();
         UpdateDesktopDatabase(applicationsDir);
-        ValidateDesktopEntry(canonicalPath);
-        ApplyDefaultMimeHandler(DesktopFileName);
+        foreach (var desktopPath in targetPaths)
+            ValidateDesktopEntry(desktopPath);
+
+        var applied = false;
+        foreach (var desktopId in ResolveDefaultDesktopHandlerCandidates(matches))
+        {
+            if (TryApplyDefaultMimeHandler(desktopId))
+            {
+                applied = true;
+                break;
+            }
+        }
+
+        if (!applied)
+        {
+            var current = QueryDefaultDesktopId() ?? "(none)";
+            throw new InvalidOperationException(
+                "Could not set TransmissionNET as the default .torrent handler. "
+                + $"current default: {current}");
+        }
 
         if (!IsDefaultHandler())
         {
@@ -89,11 +102,40 @@ public sealed class LinuxTorrentFileAssociationService : ITorrentFileAssociation
         FindExistingDesktopEntryPath(applicationsDir, execPath)
         ?? Path.Combine(applicationsDir, DesktopFileName);
 
-    internal static string ResolvePrimaryDesktopEntryPath(IReadOnlyList<string> targetPaths)
+    internal static HashSet<string> CollectRegistrationTargetPaths(
+        IReadOnlyList<ParsedDesktopEntry> matches,
+        string canonicalPath)
     {
-        var canonical = targetPaths.FirstOrDefault(path =>
-            Path.GetFileName(path).Equals(DesktopFileName, StringComparison.OrdinalIgnoreCase));
-        return canonical ?? targetPaths[0];
+        var targetPaths = matches
+            .Select(entry => entry.FilePath)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        targetPaths.Add(canonicalPath);
+        return targetPaths;
+    }
+
+    internal static IReadOnlyList<string> ResolveDefaultDesktopHandlerCandidates(
+        IReadOnlyList<ParsedDesktopEntry> matches)
+    {
+        var candidates = new List<string>();
+
+        foreach (var entry in matches.Where(entry => IsAppImageManagerDesktop(entry.FilePath)))
+            candidates.Add(Path.GetFileName(entry.FilePath));
+
+        candidates.Add(DesktopFileName);
+
+        foreach (var entry in matches)
+        {
+            var fileName = Path.GetFileName(entry.FilePath);
+            if (IsAppImageManagerDesktop(entry.FilePath)
+                || fileName.Equals(DesktopFileName, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            candidates.Add(fileName);
+        }
+
+        return candidates
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 
     internal static string BuildDesktopEntry(string execPath)
@@ -266,46 +308,30 @@ public sealed class LinuxTorrentFileAssociationService : ITorrentFileAssociation
         return null;
     }
 
-    private static void ApplyDefaultMimeHandler(string desktopFileName)
+    private static bool TryApplyDefaultMimeHandler(string desktopFileName)
     {
-        var failures = new List<string>();
-
         var xdg = DesktopProcessRunner.Run("xdg-mime", "default", desktopFileName, MimeType);
-        if (xdg.ExitCode == 0 && IsDefaultHandlerForDesktop(desktopFileName))
-            return;
-
-        if (xdg.ExitCode != 0 && !string.IsNullOrWhiteSpace(xdg.StdErr))
-            failures.Add($"xdg-mime: {xdg.StdErr}");
+        if (xdg.ExitCode == 0 && IsDefaultHandlerResolved())
+            return true;
 
         var gio = DesktopProcessRunner.Run("gio", "mime", MimeType, desktopFileName);
-        if (gio.ExitCode == 0 && IsDefaultHandlerForDesktop(desktopFileName))
-            return;
-
-        if (gio.ExitCode != 0 && !string.IsNullOrWhiteSpace(gio.StdErr))
-            failures.Add($"gio: {gio.StdErr}");
+        if (gio.ExitCode == 0 && IsDefaultHandlerResolved())
+            return true;
 
         try
         {
             MimeAppsListWriter.SetDefaultHandler(MimeType, desktopFileName);
-            if (IsDefaultHandlerForDesktop(desktopFileName))
-                return;
+            if (IsDefaultHandlerResolved())
+                return true;
         }
-        catch (Exception ex)
+        catch (IOException)
         {
-            failures.Add($"mimeapps.list: {ex.Message}");
+        }
+        catch (UnauthorizedAccessException)
+        {
         }
 
-        var current = QueryDefaultDesktopId() ?? "(none)";
-        failures.Add($"current default: {current}");
-        throw new InvalidOperationException(
-            "Could not set TransmissionNET as the default .torrent handler. "
-            + string.Join(" ", failures));
+        return IsDefaultHandlerResolved();
     }
 
-    private static bool IsDefaultHandlerForDesktop(string desktopFileName)
-    {
-        var current = QueryDefaultDesktopId();
-        return !string.IsNullOrWhiteSpace(current)
-            && current.Equals(desktopFileName, StringComparison.OrdinalIgnoreCase);
-    }
 }

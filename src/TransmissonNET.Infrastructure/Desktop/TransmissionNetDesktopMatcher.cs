@@ -48,9 +48,15 @@ internal static class TransmissionNetDesktopMatcher
 
         if (string.Equals(entry.Name, LinuxTorrentFileAssociationService.ApplicationName, StringComparison.Ordinal))
             score += 60;
+        else if (entry.Name?.StartsWith(LinuxTorrentFileAssociationService.ApplicationName, StringComparison.Ordinal) == true)
+            score += 40;
 
         if (ExecMatchesCurrentApp(entry.Exec, currentFullPath))
             score += 80;
+
+        if (LinuxTorrentFileAssociationService.IsAppImageManagerDesktop(entry.FilePath)
+            && score > 0)
+            score += 30;
 
         return score;
     }

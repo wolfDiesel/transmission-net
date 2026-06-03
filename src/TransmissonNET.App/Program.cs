@@ -8,9 +8,12 @@ using TransmissonNET.Application;
 using TransmissonNET.Application.Abstractions;
 using TransmissonNET.Infrastructure;
 
+var launchTorrentPath = CommandLineTorrentLaunch.FindTorrentPath(args);
+if (SingleInstanceHost.TryForwardToRunningInstance(launchTorrentPath))
+    return;
+
 var app = WebAppFactory.Build(args);
 
-var launchTorrentPath = CommandLineTorrentLaunch.FindTorrentPath(args);
 if (!string.IsNullOrEmpty(launchTorrentPath))
     app.Services.GetRequiredService<IPendingTorrentLaunchStore>().SetPendingPath(launchTorrentPath);
 
@@ -85,6 +88,12 @@ internal static class DesktopHost
         Console.WriteLine($"UI in browser: {baseUrl}");
 
         LinuxDisplayBootstrap.Configure();
+
+        var pendingStore = app.Services.GetRequiredService<IPendingTorrentLaunchStore>();
+        await using var singleInstance = new SingleInstanceHost(
+            pendingStore,
+            DesktopWindowActivator.TryActivate);
+        singleInstance.Start();
 
         var window = new PhotinoWindow()
             .SetTitle("TransmissionNET")

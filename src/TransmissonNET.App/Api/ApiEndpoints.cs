@@ -216,10 +216,11 @@ internal static class ApiEndpoints
         });
 
         app.MapGet("/api/desktop/pending-torrent-path", async (
+            bool? consume,
             GetPendingTorrentLaunchPathHandler handler,
             CancellationToken ct) =>
         {
-            var path = await handler.HandleAsync(ct);
+            var path = await handler.HandleAsync(consume ?? true, ct);
             return Results.Ok(new { path });
         });
 

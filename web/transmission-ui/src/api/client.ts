@@ -104,7 +104,10 @@ export const api = {
     request<{ status: string }>('/api/desktop/torrent-association/register', { method: 'POST' }),
   declineTorrentFileAssociation: () =>
     request<{ status: string }>('/api/desktop/torrent-association/decline', { method: 'POST' }),
-  getPendingTorrentPath: () => request<PendingTorrentPathDto>('/api/desktop/pending-torrent-path'),
+  getPendingTorrentPath: (options?: { consume?: boolean }) => {
+    const query = options?.consume === false ? '?consume=false' : ''
+    return request<PendingTorrentPathDto>(`/api/desktop/pending-torrent-path${query}`)
+  },
   addTorrent: (body: TorrentAddRequestDto) =>
     request<TorrentAddResultDto>('/api/torrents/add', {
       method: 'POST',
