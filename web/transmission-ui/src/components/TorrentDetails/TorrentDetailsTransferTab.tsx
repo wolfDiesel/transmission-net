@@ -1,5 +1,6 @@
 import { Box } from '@chakra-ui/react'
 import type { TorrentDetailsDto } from '../../api/types'
+import { useI18n } from '../../i18n'
 import {
   formatBytesPerSec,
   formatEta,
@@ -13,16 +14,19 @@ type TorrentDetailsTransferTabProps = {
 }
 
 export function TorrentDetailsTransferTab({ details }: TorrentDetailsTransferTabProps) {
+  const { t } = useI18n()
+  const p = (key: string) => t(`torrentDetails.properties.${key}`)
+
   return (
     <Box>
-      <PropertyRow label="Download speed" value={formatBytesPerSec(details.rateDownload)} />
-      <PropertyRow label="Upload speed" value={formatBytesPerSec(details.rateUpload)} />
-      <PropertyRow label="ETA" value={formatEta(details.eta)} />
-      <PropertyRow label="Left" value={formatSize(details.leftUntilDone)} />
-      <PropertyRow label="Downloaded" value={formatSize(details.downloadedEver)} />
-      <PropertyRow label="Uploaded" value={formatSize(details.uploadedEver)} />
-      <PropertyRow label="Ratio" value={formatRatio(details.uploadRatio)} />
-      <PropertyRow label="Peers" value={details.peersConnected} />
+      <PropertyRow label={p('downloadSpeed')} value={formatBytesPerSec(details.rateDownload)} />
+      <PropertyRow label={p('uploadSpeed')} value={formatBytesPerSec(details.rateUpload)} />
+      <PropertyRow label={p('eta')} value={formatEta(details.eta)} />
+      <PropertyRow label={p('left')} value={formatSize(details.leftUntilDone)} />
+      <PropertyRow label={p('downloaded')} value={formatSize(details.downloadedEver)} />
+      <PropertyRow label={p('uploaded')} value={formatSize(details.uploadedEver)} />
+      <PropertyRow label={p('ratio')} value={formatRatio(details.uploadRatio)} />
+      <PropertyRow label={p('peers')} value={details.peersConnected} />
     </Box>
   )
 }

@@ -68,4 +68,22 @@ public class JsonSettingsStoreTests
         Assert.Equal(3, settings.Ui.RefreshIntervalSeconds);
         Assert.Equal(TorrentTableColumnIds.Name, settings.Ui.TorrentTable.SortColumnId);
     }
+
+    [Fact]
+    public async Task SaveAndLoad_PersistsLanguage()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"transmissionnet-lang-{Guid.NewGuid():N}.json");
+        var store = new JsonSettingsStore(path);
+
+        var settings = new AppSettings(
+            new DaemonConnection("127.0.0.1", 9091, "/transmission/rpc", string.Empty, string.Empty),
+            new UiSettings(3, 1280, 800, TorrentTableSettings.CreateDefault(), Language: UiLanguages.Russian));
+
+        await store.SaveAsync(settings);
+        var loaded = await store.LoadAsync();
+
+        Assert.Equal(UiLanguages.Russian, loaded.Ui.Language);
+
+        File.Delete(path);
+    }
 }

@@ -9,7 +9,8 @@ import {
 } from '@chakra-ui/react'
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import type { TorrentTableSettingsDto } from '../../api/types'
-import { getColumnDef } from '../../features/torrentTable/columns'
+import { useI18n } from '../../i18n'
+import { useTorrentColumnDef } from '../../hooks/useTorrentColumnDef'
 
 type ColumnSettingsPanelProps = {
   tableSettings: TorrentTableSettingsDto
@@ -17,6 +18,8 @@ type ColumnSettingsPanelProps = {
 }
 
 export function ColumnSettingsPanel({ tableSettings, onChange }: ColumnSettingsPanelProps) {
+  const { t } = useI18n()
+  const getColumnDef = useTorrentColumnDef()
   const listRef = useRef<HTMLDivElement>(null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [hoverTargetId, setHoverTargetId] = useState<string | null>(null)
@@ -100,7 +103,7 @@ export function ColumnSettingsPanel({ tableSettings, onChange }: ColumnSettingsP
           color="fg.muted"
           _hover={{ color: 'brand.500', borderColor: 'brand.500' }}
         >
-          Columns
+          {t('torrentsPage.columns')}
         </Button>
       </Popover.Trigger>
       <Portal>
@@ -113,10 +116,10 @@ export function ColumnSettingsPanel({ tableSettings, onChange }: ColumnSettingsP
             p={3}
           >
             <Text fontSize="sm" fontWeight="semibold" color="brand.500" mb={2}>
-              Table columns
+              {t('torrentsPage.columnsPanelTitle')}
             </Text>
             <Text fontSize="xs" color="fg.muted" mb={3}>
-              Drag to reorder · check to show
+              {t('torrentsPage.columnsPanelHint')}
             </Text>
             <Flex ref={listRef} direction="column" gap={1}>
               {tableSettings.columns.map((column) => {

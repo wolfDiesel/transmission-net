@@ -1,39 +1,23 @@
 import { Box, Text } from '@chakra-ui/react'
-import {
-  MASS_RENAME_GENERAL_HELP,
-  MASS_RENAME_MODE_HELP,
-  type MassRenameModeHelp,
-} from '../../features/torrentMassRename/modeHelp'
+import { useI18n } from '../../i18n'
 import type { MassRenameMode } from '../../features/torrentMassRename'
 
 type MassRenameModeHelpProps = {
   mode: MassRenameMode
 }
 
-function HelpBlock({ title, summary, examples }: MassRenameModeHelp) {
-  return (
-    <Box>
-      <Text fontSize="sm" fontWeight="medium" color="fg" mb={1}>
-        {title}
-      </Text>
-      <Text fontSize="xs" color="fg.muted" lineHeight="tall" mb={examples.length > 0 ? 2 : 0}>
-        {summary}
-      </Text>
-      {examples.length > 0 && (
-        <Box as="ul" m={0} pl={4} fontSize="xs" color="fg.subtle" lineHeight="tall">
-          {examples.map((example) => (
-            <Box as="li" key={example} mb={0.5}>
-              {example}
-            </Box>
-          ))}
-        </Box>
-      )}
-    </Box>
-  )
+const MODE_HELP_KEYS: Record<MassRenameMode, string> = {
+  findReplace: 'massRename.help.findReplace',
+  prefixSuffix: 'massRename.help.prefixSuffix',
+  numbering: 'massRename.help.numbering',
+  regex: 'massRename.help.regex',
+  template: 'massRename.help.template',
 }
 
 export function MassRenameModeHelp({ mode }: MassRenameModeHelpProps) {
-  const modeHelp = MASS_RENAME_MODE_HELP[mode]
+  const { t, tList } = useI18n()
+  const base = MODE_HELP_KEYS[mode]
+  const examples = tList(`${base}.examples`)
 
   return (
     <Box
@@ -46,11 +30,27 @@ export function MassRenameModeHelp({ mode }: MassRenameModeHelpProps) {
       bg="bg.emphasized"
     >
       <Text fontSize="xs" color="fg.muted" lineHeight="tall" mb={3}>
-        {MASS_RENAME_GENERAL_HELP.summary}
+        {t('massRename.general.summary')}
       </Text>
-      <HelpBlock {...modeHelp} />
+      <Box>
+        <Text fontSize="sm" fontWeight="medium" color="fg" mb={1}>
+          {t(`${base}.title`)}
+        </Text>
+        <Text fontSize="xs" color="fg.muted" lineHeight="tall" mb={examples.length > 0 ? 2 : 0}>
+          {t(`${base}.summary`)}
+        </Text>
+        {examples.length > 0 && (
+          <Box as="ul" m={0} pl={4} fontSize="xs" color="fg.subtle" lineHeight="tall">
+            {examples.map((example) => (
+              <Box as="li" key={example} mb={0.5}>
+                {example}
+              </Box>
+            ))}
+          </Box>
+        )}
+      </Box>
       <Text fontSize="xs" color="fg.subtle" mt={3} lineHeight="tall">
-        {MASS_RENAME_GENERAL_HELP.stemOnly} {MASS_RENAME_GENERAL_HELP.sort}
+        {t('massRename.general.stemOnly')} {t('massRename.general.sort')}
       </Text>
     </Box>
   )

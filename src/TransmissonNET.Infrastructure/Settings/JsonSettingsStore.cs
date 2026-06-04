@@ -62,7 +62,8 @@ public sealed class JsonSettingsStore : ISettingsStore
                 800,
                 TorrentTableSettings.CreateDefault(),
                 UiColorSchemes.Default,
-                UiAppearances.Default));
+                UiAppearances.Default,
+                Language: UiLanguages.Default));
 
     private sealed class SettingsFile
     {
@@ -91,7 +92,8 @@ public sealed class JsonSettingsStore : ISettingsStore
                     TorrentFileAssociationStatuses.Normalize(Ui?.TorrentFileAssociation),
                     Ui?.TrayEnabled ?? true,
                     Ui?.MinimizeToTray ?? false,
-                    Ui?.CloseToTray ?? true));
+                    Ui?.CloseToTray ?? true,
+                    UiLanguages.Normalize(Ui?.Language)));
         }
 
         public static SettingsFile FromDomain(AppSettings settings) =>
@@ -150,6 +152,7 @@ public sealed class JsonSettingsStore : ISettingsStore
         public bool TrayEnabled { get; set; } = true;
         public bool MinimizeToTray { get; set; }
         public bool CloseToTray { get; set; } = true;
+        public string? Language { get; set; }
 
         public static UiFile FromDomain(UiSettings ui) =>
             new()
@@ -165,6 +168,7 @@ public sealed class JsonSettingsStore : ISettingsStore
                 TrayEnabled = ui.TrayEnabled,
                 MinimizeToTray = ui.MinimizeToTray,
                 CloseToTray = ui.CloseToTray,
+                Language = ui.Language,
             };
     }
 

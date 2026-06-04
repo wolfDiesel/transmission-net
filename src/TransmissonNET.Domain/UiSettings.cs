@@ -11,4 +11,5 @@ public sealed record UiSettings(
     string TorrentFileAssociation = TorrentFileAssociationStatuses.NotAsked,
     bool TrayEnabled = true,
     bool MinimizeToTray = false,
-    bool CloseToTray = true);
+    bool CloseToTray = true,
+    string Language = UiLanguages.Default);

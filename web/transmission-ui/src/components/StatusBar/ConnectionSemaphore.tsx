@@ -1,12 +1,14 @@
 import { Box } from '@chakra-ui/react'
+import { useI18n } from '../../i18n'
 
 type ConnectionSemaphoreProps = {
   connected: boolean
 }
 
 export function ConnectionSemaphore({ connected }: ConnectionSemaphoreProps) {
+  const { t } = useI18n()
   const color = connected ? '#22c55e' : '#ef4444'
-  const label = connected ? 'Daemon online' : 'Daemon offline'
+  const label = connected ? t('statusBar.daemonOnline') : t('statusBar.daemonOffline')
 
   return (
     <Box

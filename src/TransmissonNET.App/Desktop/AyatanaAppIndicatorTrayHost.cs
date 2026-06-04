@@ -89,9 +89,6 @@ internal sealed class AyatanaAppIndicatorTrayHost : ILinuxTrayHost
             _eventLoop = new GtkTrayEventLoop();
             _eventLoop.Start();
             GtkBootstrap.PumpEvents();
-
-            Console.Error.WriteLine(
-                $"System tray: AppIndicator active (icon={themeIcon}, file={iconFile ?? "theme"}).");
         }
         catch (Exception ex)
         {

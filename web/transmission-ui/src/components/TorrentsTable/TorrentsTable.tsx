@@ -13,7 +13,8 @@ import { ApiError, executeTorrentAction } from '../../api/torrentActions'
 import type { TorrentDto, TorrentBandwidthPriority } from '../../api/types'
 import { showAppToast } from '../AppToast'
 import { buildColumnWidthMap } from '../../features/torrentTable/columnWidths'
-import { getColumnDef } from '../../features/torrentTable/columns'
+import { useI18n } from '../../i18n'
+import { useTorrentColumnDef } from '../../hooks/useTorrentColumnDef'
 import { sortTorrents } from '../../features/torrentTable/sortTorrents'
 import { useDownloadDirHistory } from '../../hooks/useDownloadDirHistory'
 import { useTorrentTableSettings } from '../../hooks/useTorrentTableSettings'
@@ -43,6 +44,8 @@ type RowContextTarget = {
 }
 
 export function TorrentsTable({ torrents, onTorrentsChanged }: TorrentsTableProps) {
+  const { t } = useI18n()
+  const getColumnDef = useTorrentColumnDef()
   const { setTorrentPollingPaused } = useTorrentList()
   const { tableSettings, visibleColumnIds, setSort, setColumnWidth } = useTorrentTableSettings()
   const { directories, remember } = useDownloadDirHistory()
@@ -105,9 +108,13 @@ export function TorrentsTable({ torrents, onTorrentsChanged }: TorrentsTableProp
     [tableSettings, visibleColumnIds, previewWidths],
   )
 
-  const headers = visibleColumnIds
-    .map((id) => getColumnDef(id))
-    .filter((def): def is NonNullable<typeof def> => def !== undefined)
+  const headers = useMemo(
+    () =>
+      visibleColumnIds
+        .map((id) => getColumnDef(id))
+        .filter((def): def is NonNullable<typeof def> => def !== undefined),
+    [visibleColumnIds, getColumnDef],
+  )
 
   const runAction = useCallback(
     async (fn: () => Promise<void>, successMessage: string) => {
@@ -118,20 +125,20 @@ export function TorrentsTable({ torrents, onTorrentsChanged }: TorrentsTableProp
         onTorrentsChanged?.()
       } catch (e) {
         showAppToast({
-          title: e instanceof ApiError ? e.message : 'Action failed',
+          title: e instanceof ApiError ? e.message : t('common.actionFailed'),
           variant: 'error',
         })
       } finally {
         setActionBusy(false)
       }
     },
-    [onTorrentsChanged],
+    [onTorrentsChanged, t],
   )
 
   const actOn = useCallback(
     (torrent: TorrentDto, action: Parameters<typeof executeTorrentAction>[0]) =>
-      runAction(() => executeTorrentAction({ ...action, ids: [torrent.id] }), 'Done'),
-    [runAction],
+      runAction(() => executeTorrentAction({ ...action, ids: [torrent.id] }), t('common.done')),
+    [runAction, t],
   )
 
   const handleRowSelect = useCallback(
@@ -168,9 +175,9 @@ export function TorrentsTable({ torrents, onTorrentsChanged }: TorrentsTableProp
         },
         onSetPriority: (priority: TorrentBandwidthPriority) =>
           void actOn(torrent, { action: 'set-priority', ids: [torrent.id], priority }),
-      }),
+      }, t),
     )
-  }, [actOn, closeContextMenu, contextTarget])
+  }, [actOn, closeContextMenu, contextTarget, t])
 
   const handleRemoveConfirm = useCallback(
     (deleteLocalData: boolean) => {
@@ -184,9 +191,9 @@ export function TorrentsTable({ torrents, onTorrentsChanged }: TorrentsTableProp
         setRemoveTorrent(null)
         if (selectedId === removeTorrent.id) setSelectedId(null)
         if (detailsTorrent?.id === removeTorrent.id) setDetailsTorrent(null)
-      }, 'Torrent removed')
+      }, t('torrentTable.torrentRemoved'))
     },
-    [detailsTorrent?.id, removeTorrent, runAction, selectedId],
+    [detailsTorrent?.id, removeTorrent, runAction, selectedId, t],
   )
 
   const handleMoveConfirm = useCallback(
@@ -201,9 +208,9 @@ export function TorrentsTable({ torrents, onTorrentsChanged }: TorrentsTableProp
         })
         remember(location)
         setMoveTorrent(null)
-      }, 'Torrent moved')
+      }, t('torrentTable.torrentMoved'))
     },
-    [moveTorrent, remember, runAction],
+    [moveTorrent, remember, runAction, t],
   )
 
   const suppressTableScrollbar =
@@ -292,7 +299,7 @@ export function TorrentsTable({ torrents, onTorrentsChanged }: TorrentsTableProp
       <ScrollToTopButton visible={showScrollTop} onClick={scrollToTop} />
       {sortedTorrents.length === 0 && (
         <Text py={8} textAlign="center" color="fg.muted">
-          No torrents
+          {t('torrentTable.emptyRow')}
         </Text>
       )}
       {detailsTorrent && (

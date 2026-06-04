@@ -15,15 +15,19 @@ import {
   AppearanceSettingsSection,
   DaemonSessionSettingsSection,
   DaemonSettingsSection,
+  LanguageSettingsSection,
   TorrentFileAssociationSection,
   TraySettingsSection,
 } from '../components/settings'
+import { useI18n } from '../i18n'
+import type { LocaleCode } from '../i18n'
 import { normalizeAppearance, normalizeColorScheme } from '../theme/accentPalettes'
 import type { DaemonSessionSettingsDto, DesktopCapabilitiesDto } from '../api/types'
 import { showAppToast } from '../components/AppToast'
 import { useApp } from '../context/AppProvider'
 
 export function SettingsPage() {
+  const { t } = useI18n()
   const {
     settings,
     setSettings,
@@ -66,9 +70,12 @@ export function SettingsPage() {
 
   useEffect(() => {
     if (settingsError) {
-      showAppToast({ title: settingsError, variant: 'error' })
+      showAppToast({
+        title: settingsError === 'load_failed' ? t('settings.loadFailed') : settingsError,
+        variant: 'error',
+      })
     }
-  }, [settingsError])
+  }, [settingsError, t])
 
   if (settingsLoading) {
     return (
@@ -92,10 +99,10 @@ export function SettingsPage() {
         ...settings.daemon,
         password: settings.daemon.password || null,
       })
-      showAppToast({ title: 'Connection successful', variant: 'success' })
+      showAppToast({ title: t('settings.connection.connectionOk'), variant: 'success' })
     } catch (e) {
       showAppToast({
-        title: e instanceof ApiError ? e.message : 'Connection failed',
+        title: e instanceof ApiError ? e.message : t('settings.connection.connectionFailed'),
         variant: 'error',
       })
     } finally {
@@ -109,10 +116,10 @@ export function SettingsPage() {
     try {
       const saved = await api.saveDaemonSessionSettings(daemonSession)
       setDaemonSession(saved)
-      showAppToast({ title: 'Daemon settings applied', variant: 'success' })
+      showAppToast({ title: t('settings.daemon.applied'), variant: 'success' })
     } catch (e) {
       showAppToast({
-        title: e instanceof ApiError ? e.message : 'Failed to save daemon settings',
+        title: e instanceof ApiError ? e.message : t('settings.daemon.saveFailed'),
         variant: 'error',
       })
     } finally {
@@ -132,10 +139,10 @@ export function SettingsPage() {
         },
       })
       applySavedSettings(saved, password)
-      showAppToast({ title: 'Settings saved', variant: 'success' })
+      showAppToast({ title: t('settings.saved'), variant: 'success' })
     } catch (e) {
       showAppToast({
-        title: e instanceof ApiError ? e.message : 'Save failed',
+        title: e instanceof ApiError ? e.message : t('settings.saveFailed'),
         variant: 'error',
       })
     } finally {
@@ -147,10 +154,10 @@ export function SettingsPage() {
     <Box display="flex" flexDirection="column" flex="1" minH={0} maxW="800px" w="full" overflow="hidden" gap={4}>
       <Box flexShrink={0}>
         <Text fontSize="xl" fontWeight="bold" color="fg">
-          Settings
+          {t('settings.title')}
         </Text>
         <Text fontSize="sm" color="fg.muted">
-          Connection, daemon preferences, and application options
+          {t('settings.subtitle')}
         </Text>
       </Box>
 
@@ -166,9 +173,9 @@ export function SettingsPage() {
         flexDirection="column"
       >
         <Tabs.List borderColor="border" flexShrink={0}>
-          <Tabs.Trigger value="connection">Connection</Tabs.Trigger>
-          <Tabs.Trigger value="daemon">Daemon</Tabs.Trigger>
-          <Tabs.Trigger value="ui">Interface</Tabs.Trigger>
+          <Tabs.Trigger value="connection">{t('settings.tabs.connection')}</Tabs.Trigger>
+          <Tabs.Trigger value="daemon">{t('settings.tabs.daemon')}</Tabs.Trigger>
+          <Tabs.Trigger value="ui">{t('settings.tabs.ui')}</Tabs.Trigger>
         </Tabs.List>
 
         <Tabs.ContentGroup flex="1" minH={0} overflow="hidden" display="flex" flexDirection="column">
@@ -231,6 +238,15 @@ export function SettingsPage() {
           overflow="hidden"
         >
           <Box flex="1" minH={0} overflowY="auto" pr={1} display="flex" flexDirection="column" gap={4}>
+            <LanguageSettingsSection
+              language={settings.ui.language ?? 'en'}
+              onChange={(language: LocaleCode) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  ui: { ...prev.ui, language },
+                }))
+              }
+            />
             <AppearanceSettingsSection
               colorScheme={normalizeColorScheme(settings.ui.colorScheme)}
               appearance={normalizeAppearance(settings.ui.appearance)}
@@ -275,11 +291,11 @@ export function SettingsPage() {
             py={5}
           >
             <Text fontSize="sm" fontWeight="semibold" color="brand.500" mb={4}>
-              Window & refresh
+              {t('settings.window.title')}
             </Text>
             <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
               <Field.Root>
-                <Field.Label>Refresh interval (seconds)</Field.Label>
+                <Field.Label>{t('settings.window.refreshInterval')}</Field.Label>
                 <Input
                   type="number"
                   min={1}
@@ -290,7 +306,7 @@ export function SettingsPage() {
                 />
               </Field.Root>
               <Field.Root>
-                <Field.Label>Window width</Field.Label>
+                <Field.Label>{t('settings.window.windowWidth')}</Field.Label>
                 <Input
                   type="number"
                   min={320}
@@ -301,7 +317,7 @@ export function SettingsPage() {
                 />
               </Field.Root>
               <Field.Root>
-                <Field.Label>Window height</Field.Label>
+                <Field.Label>{t('settings.window.windowHeight')}</Field.Label>
                 <Input
                   type="number"
                   min={240}
@@ -313,7 +329,7 @@ export function SettingsPage() {
               </Field.Root>
             </SimpleGrid>
             <Text fontSize="sm" color="fg.muted" mt={3}>
-              Window size applies on next application start.
+              {t('settings.window.hint')}
             </Text>
           </Box>
           </Box>
@@ -324,7 +340,7 @@ export function SettingsPage() {
       {showAppSave && (
         <Flex flexShrink={0} pt={2}>
           <Button colorPalette="brand" onClick={() => void handleSave()} loading={busy === 'save'}>
-            Save settings
+            {t('common.saveSettings')}
           </Button>
         </Flex>
       )}

@@ -2,6 +2,7 @@ import { Box, Flex, Text } from '@chakra-ui/react'
 import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useApp } from '../../context/AppProvider'
+import { useI18n } from '../../i18n'
 import { useTorrentListOptional } from '../../context/TorrentListProvider'
 import { deriveTorrentCounts } from '../../features/torrentStatus/deriveTorrentCounts'
 import { deriveTorrentSpeeds } from '../../features/torrentStatus/deriveTorrentSpeeds'
@@ -11,6 +12,7 @@ import { ConnectionSemaphore } from './ConnectionSemaphore'
 import { useStatusBarPoller } from './useStatusBarPoller'
 
 export function StatusBar() {
+  const { t } = useI18n()
   const { refreshIntervalSeconds } = useApp()
   const location = useLocation()
   const torrentList = useTorrentListOptional()
@@ -61,10 +63,10 @@ export function StatusBar() {
           <Text>↓ {formatBytesPerSec(display.downloadSpeed)}</Text>
           <Text>↑ {formatBytesPerSec(display.uploadSpeed)}</Text>
           <Text>
-            Downloading: <Text as="span" color="brand.500">{display.downloading}</Text>
+            {t('statusBar.downloading')}: <Text as="span" color="brand.500">{display.downloading}</Text>
           </Text>
           <Text>
-            Completed: <Text as="span" color="brand.500">{display.completed}</Text>
+            {t('statusBar.completed')}: <Text as="span" color="brand.500">{display.completed}</Text>
           </Text>
         </Flex>
       </Flex>

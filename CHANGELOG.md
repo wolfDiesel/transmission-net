@@ -8,6 +8,11 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ### Added
 
+- `README.md`: project overview for `transmission-daemon`, features, mass rename, build and AppImage notes.
+- UI i18n: English and Russian locale files (`web/transmission-ui/src/i18n/locales/`), live language switch in Settings → Interface; `ui.language` persisted in app settings (`en` / `ru`).
+
+### Added
+
 - Linux system tray via libayatana-appindicator (GTK menu Show/Quit, close-to-tray, settings in Interface).
 - Brand icon: orange wolf on transparent background in sidebar, favicon, tray, AppImage/desktop; `sync-brand-icons.sh` syncs SVG/PNG into UI and `wwwroot` on build.
 - `GET /api/desktop/capabilities` and tray options in settings (`trayEnabled`, `closeToTray`, `minimizeToTray`).
@@ -43,6 +48,10 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 - GitHub Actions workflow `release-appimage.yml`: builds `TransmissionNET-<version>-x86_64.AppImage` on release publish or manual dispatch (Ubuntu 24.04, WebKitGTK 4.1).
 - `packaging/appimage/`: build script, desktop entry, SVG icon, WebKit/GTK display hooks for Photino on Linux.
+
+### Changed
+
+- UI strings moved from inline text and `modeHelp.ts` into locale files; torrent table columns and context menu labels follow the active language.
 
 ### Changed
 

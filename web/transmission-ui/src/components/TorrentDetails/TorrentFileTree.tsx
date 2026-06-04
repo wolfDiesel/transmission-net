@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState, type MouseEvent, type RefObject } from 
 import type { TorrentFileNodeDto } from '../../api/types'
 import { TORRENT_ROOT_SCOPE } from '../../features/torrentMassRename'
 import { FloatingContextMenu } from '../ui/FloatingContextMenu'
+import { useI18n } from '../../i18n'
 import { formatPercent, formatSize } from '../../utils/format'
 
 type TorrentFileTreeProps = {
@@ -27,6 +28,7 @@ export function TorrentFileTree({
   onMassRename,
   menuPortalContainer,
 }: TorrentFileTreeProps) {
+  const { t } = useI18n()
   const defaultExpanded = useMemo(() => collectFolderPaths(nodes, 2), [nodes])
   const [expanded, setExpanded] = useState<Set<string>>(() => defaultExpanded)
   const [contextTarget, setContextTarget] = useState<ContextTarget | null>(null)
@@ -77,7 +79,7 @@ export function TorrentFileTree({
         ? [
             {
               id: 'mass-rename',
-              label: 'Mass rename…',
+              label: t('torrentDetails.fileTree.massRename'),
               onSelect: () => onMassRename(TORRENT_ROOT_SCOPE),
             },
           ]
@@ -89,19 +91,23 @@ export function TorrentFileTree({
     const items: { id: string; label: string; onSelect: () => void }[] = []
 
     if (onRename) {
-      items.push({ id: 'rename', label: 'Rename', onSelect: () => onRename(node) })
+      items.push({
+        id: 'rename',
+        label: t('torrentDetails.fileTree.rename'),
+        onSelect: () => onRename(node),
+      })
     }
 
     if (onMassRename && node.isFolder) {
       items.push({
         id: 'mass-rename',
-        label: 'Mass rename…',
+        label: t('torrentDetails.fileTree.massRename'),
         onSelect: () => onMassRename(node.path),
       })
     }
 
     return items
-  }, [contextTarget, onMassRename, onRename])
+  }, [contextTarget, onMassRename, onRename, t])
 
   const menuX = contextTarget?.x ?? 0
   const menuY = contextTarget?.y ?? 0

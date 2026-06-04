@@ -1,6 +1,7 @@
 import { Box, Button, Field, Flex, Input, Text } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import type { TorrentFileNodeDto } from '../../api/types'
+import { useI18n } from '../../i18n'
 import { ElevatedOverlay } from '../ui/ElevatedOverlay'
 
 type TorrentFileRenamePanelProps = {
@@ -16,6 +17,7 @@ export function TorrentFileRenamePanel({
   onClose,
   onConfirm,
 }: TorrentFileRenamePanelProps) {
+  const { t } = useI18n()
   const [name, setName] = useState(node.name)
 
   useEffect(() => {
@@ -44,7 +46,7 @@ export function TorrentFileRenamePanel({
         >
           <Box px={5} pt={4} pb={3} borderBottomWidth="1px" borderColor="border">
             <Text fontWeight="semibold" color="fg">
-              Rename
+              {t('torrentDetails.renamePanel.title')}
             </Text>
           </Box>
           <Box px={5} py={4}>
@@ -52,7 +54,7 @@ export function TorrentFileRenamePanel({
               {node.path}
             </Text>
             <Field.Root>
-              <Field.Label>New name</Field.Label>
+              <Field.Label>{t('torrentDetails.renamePanel.newName')}</Field.Label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -77,7 +79,7 @@ export function TorrentFileRenamePanel({
             borderColor="border"
           >
             <Button variant="outline" borderColor="border" onClick={onClose} disabled={busy}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               colorPalette="brand"
@@ -85,7 +87,7 @@ export function TorrentFileRenamePanel({
               disabled={invalid || unchanged}
               onClick={() => onConfirm(node.path, trimmed)}
             >
-              Rename
+              {t('common.rename')}
             </Button>
           </Flex>
         </Box>

@@ -21,6 +21,7 @@ import {
   type MassRenameMode,
   type MassRenameRule,
 } from '../../features/torrentMassRename'
+import { useI18n } from '../../i18n'
 import { MassRenameModeHelp } from './MassRenameModeHelp'
 import { ElevatedOverlay } from '../ui/ElevatedOverlay'
 import { ResizableSplitPane } from '../ui/ResizableSplitPane'
@@ -36,12 +37,12 @@ type TorrentMassRenamePanelProps = {
 const PREVIEW_ROW_LIMIT = 200
 const RULE_DEBOUNCE_MS = 150
 
-const MODES: { value: MassRenameMode; label: string }[] = [
-  { value: 'regex', label: 'Regex' },
-  { value: 'findReplace', label: 'Find/Replace' },
-  { value: 'prefixSuffix', label: 'Prefix/Suffix' },
-  { value: 'numbering', label: 'Numbering' },
-  { value: 'template', label: 'Template' },
+const MODE_VALUES: MassRenameMode[] = [
+  'regex',
+  'findReplace',
+  'prefixSuffix',
+  'numbering',
+  'template',
 ]
 
 export function TorrentMassRenamePanel({
@@ -51,7 +52,16 @@ export function TorrentMassRenamePanel({
   onClose,
   onApply,
 }: TorrentMassRenamePanelProps) {
+  const { t } = useI18n()
   const [rule, setRule] = useState<MassRenameRule>(defaultMassRenameRule)
+  const modes = useMemo(
+    () =>
+      MODE_VALUES.map((value) => ({
+        value,
+        label: t(`massRename.modes.${value}`),
+      })),
+    [t],
+  )
 
   const scopeFiles = useMemo(
     () => collectScopeFiles(fileTree, scopePath),
@@ -119,11 +129,13 @@ export function TorrentMassRenamePanel({
         >
           <Box px={5} pt={4} pb={3} borderBottomWidth="1px" borderColor="border" flexShrink={0}>
             <Text fontWeight="semibold" color="fg" fontSize="md">
-              Mass rename
+              {t('massRename.title')}
             </Text>
             <Text fontSize="xs" color="fg.muted" mt={1}>
-              Scope: {formatScopeLabel(scopePath)} · {scopeFiles.length} file(s) · file names only,
-              folders unchanged
+              {t('massRename.scopeDetail', {
+                label: formatScopeLabel(scopePath),
+                count: scopeFiles.length,
+              })}
             </Text>
           </Box>
 
@@ -141,7 +153,7 @@ export function TorrentMassRenamePanel({
                 size="sm"
               >
                 <Tabs.List mb={3} flexWrap="wrap">
-                  {MODES.map((m) => (
+                  {modes.map((m) => (
                     <Tabs.Trigger key={m.value} value={m.value}>
                       {m.label}
                     </Tabs.Trigger>
@@ -158,10 +170,10 @@ export function TorrentMassRenamePanel({
                   >
                     <Checkbox.HiddenInput />
                     <Checkbox.Control borderColor="border" />
-                    <Checkbox.Label fontSize="sm">Name without extension</Checkbox.Label>
+                    <Checkbox.Label fontSize="sm">{t('massRename.stemOnly')}</Checkbox.Label>
                   </Checkbox.Root>
                   <Field.Root w="auto">
-                    <Field.Label fontSize="xs">Sort for {'{n}'}</Field.Label>
+                    <Field.Label fontSize="xs">{t('massRename.sort')}</Field.Label>
                     <select
                       value={rule.sort}
                       onChange={(e: ChangeEvent<HTMLSelectElement>) =>
@@ -176,8 +188,8 @@ export function TorrentMassRenamePanel({
                         color: 'var(--chakra-colors-fg)',
                       }}
                     >
-                      <option value="path">By path</option>
-                      <option value="name">By name</option>
+                      <option value="path">{t('massRename.sortPath')}</option>
+                      <option value="name">{t('massRename.sortName')}</option>
                     </select>
                   </Field.Root>
                 </Flex>
@@ -185,7 +197,7 @@ export function TorrentMassRenamePanel({
                 {rule.mode === 'findReplace' && (
                   <Flex direction="column" gap={3}>
                     <Field.Root>
-                      <Field.Label>Find</Field.Label>
+                      <Field.Label>{t('massRename.find')}</Field.Label>
                       <Input
                         value={rule.find}
                         onChange={(e) => updateRule({ find: e.target.value })}
@@ -194,7 +206,7 @@ export function TorrentMassRenamePanel({
                       />
                     </Field.Root>
                     <Field.Root>
-                      <Field.Label>Replace</Field.Label>
+                      <Field.Label>{t('massRename.replace')}</Field.Label>
                       <Input
                         value={rule.replace}
                         onChange={(e) => updateRule({ replace: e.target.value })}
@@ -208,7 +220,7 @@ export function TorrentMassRenamePanel({
                     >
                       <Checkbox.HiddenInput />
                       <Checkbox.Control borderColor="border" />
-                      <Checkbox.Label fontSize="sm">Case sensitive</Checkbox.Label>
+                      <Checkbox.Label fontSize="sm">{t('massRename.caseSensitive')}</Checkbox.Label>
                     </Checkbox.Root>
                   </Flex>
                 )}
@@ -216,7 +228,7 @@ export function TorrentMassRenamePanel({
                 {rule.mode === 'prefixSuffix' && (
                   <Flex direction="column" gap={3}>
                     <Field.Root>
-                      <Field.Label>Prefix</Field.Label>
+                      <Field.Label>{t('massRename.prefix')}</Field.Label>
                       <Input
                         value={rule.prefix}
                         onChange={(e) => updateRule({ prefix: e.target.value })}
@@ -225,7 +237,7 @@ export function TorrentMassRenamePanel({
                       />
                     </Field.Root>
                     <Field.Root>
-                      <Field.Label>Suffix</Field.Label>
+                      <Field.Label>{t('massRename.suffix')}</Field.Label>
                       <Input
                         value={rule.suffix}
                         onChange={(e) => updateRule({ suffix: e.target.value })}
@@ -239,7 +251,7 @@ export function TorrentMassRenamePanel({
                 {rule.mode === 'numbering' && (
                   <Flex direction="column" gap={3}>
                     <Field.Root>
-                      <Field.Label>Template</Field.Label>
+                      <Field.Label>{t('massRename.template')}</Field.Label>
                       <Input
                         value={rule.numberingTemplate}
                         onChange={(e) => updateRule({ numberingTemplate: e.target.value })}
@@ -250,7 +262,7 @@ export function TorrentMassRenamePanel({
                     </Field.Root>
                     <Flex gap={3}>
                       <Field.Root flex="1">
-                        <Field.Label>Start</Field.Label>
+                        <Field.Label>{t('massRename.start')}</Field.Label>
                         <Input
                           type="number"
                           value={rule.numberingStart}
@@ -262,7 +274,7 @@ export function TorrentMassRenamePanel({
                         />
                       </Field.Root>
                       <Field.Root flex="1">
-                        <Field.Label>Step</Field.Label>
+                        <Field.Label>{t('massRename.step')}</Field.Label>
                         <Input
                           type="number"
                           value={rule.numberingStep}
@@ -280,7 +292,7 @@ export function TorrentMassRenamePanel({
                 {rule.mode === 'regex' && (
                   <Flex direction="column" gap={3}>
                     <Field.Root>
-                      <Field.Label>Pattern</Field.Label>
+                      <Field.Label>{t('massRename.pattern')}</Field.Label>
                       <Input
                         value={rule.regexPattern}
                         onChange={(e) => updateRule({ regexPattern: e.target.value })}
@@ -289,7 +301,7 @@ export function TorrentMassRenamePanel({
                       />
                     </Field.Root>
                     <Field.Root>
-                      <Field.Label>Replacement</Field.Label>
+                      <Field.Label>{t('massRename.replacement')}</Field.Label>
                       <Input
                         value={rule.regexReplacement}
                         onChange={(e) => updateRule({ regexReplacement: e.target.value })}
@@ -299,7 +311,7 @@ export function TorrentMassRenamePanel({
                       />
                     </Field.Root>
                     <Field.Root>
-                      <Field.Label>Flags</Field.Label>
+                      <Field.Label>{t('massRename.flags')}</Field.Label>
                       <Input
                         value={rule.regexFlags}
                         onChange={(e) => updateRule({ regexFlags: e.target.value })}
@@ -313,7 +325,7 @@ export function TorrentMassRenamePanel({
 
                 {rule.mode === 'template' && (
                   <Field.Root>
-                    <Field.Label>Template</Field.Label>
+                    <Field.Label>{t('massRename.template')}</Field.Label>
                     <Input
                       value={rule.template}
                       onChange={(e) => updateRule({ template: e.target.value })}
@@ -329,10 +341,10 @@ export function TorrentMassRenamePanel({
             right={
             <Box flex="1" minH={0} display="flex" flexDirection="column" px={5} py={4} minW={0}>
               <Text fontSize="sm" fontWeight="medium" color="fg" mb={2} flexShrink={0}>
-                Preview
+                {t('massRename.preview')}
                 {changedCount > 0 && (
                   <Text as="span" color="brand.500" fontWeight="normal" ml={2}>
-                    {changedCount} change(s)
+                    {t('massRename.changes', { count: changedCount })}
                   </Text>
                 )}
               </Text>
@@ -373,13 +385,13 @@ export function TorrentMassRenamePanel({
                   top={0}
                   zIndex={1}
                 >
-                  <Box flex="1">Old name</Box>
+                  <Box flex="1">{t('massRename.oldName')}</Box>
                   <Box w="20px" />
-                  <Box flex="1">New name</Box>
+                  <Box flex="1">{t('massRename.newName')}</Box>
                 </Flex>
                 {plan.length === 0 ? (
                   <Text py={4} textAlign="center" color="fg.muted">
-                    No files in scope
+                    {t('massRename.noFilesInScope')}
                   </Text>
                 ) : (
                   <>
@@ -406,7 +418,7 @@ export function TorrentMassRenamePanel({
                     ))}
                     {previewHidden > 0 && (
                       <Text py={2} textAlign="center" color="fg.muted">
-                        … and {previewHidden} more (preview limited)
+                        {t('massRename.previewLimited', { count: previewHidden })}
                       </Text>
                     )}
                   </>
@@ -426,7 +438,7 @@ export function TorrentMassRenamePanel({
             flexShrink={0}
           >
             <Button variant="outline" borderColor="border" onClick={onClose} disabled={busy}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               colorPalette="brand"
@@ -434,7 +446,7 @@ export function TorrentMassRenamePanel({
               disabled={!validation.canApply}
               onClick={handleApply}
             >
-              Apply ({changedCount})
+              {t('massRename.applyWithCount', { count: changedCount })}
             </Button>
           </Flex>
         </Box>

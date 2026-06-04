@@ -1,10 +1,12 @@
 import { Button, Dialog, Text } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import { api, ApiError } from '../../api/client'
+import { useI18n } from '../../i18n'
 import { showAppToast } from '../AppToast'
 import { OverlayPortal } from '../ui/OverlayPortal'
 
 export function TorrentAssociationPrompt() {
+  const { t } = useI18n()
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
 
@@ -29,13 +31,13 @@ export function TorrentAssociationPrompt() {
       setOpen(false)
       showAppToast({
         title: status.isDefaultHandler
-          ? 'Файлы .torrent будут открываться в TransmissionNET'
-          : 'Ярлык создан, но система не сменила обработчик. Выберите TransmissionNET в настройках ОС.',
+          ? t('settings.torrentAssociation.success')
+          : t('settings.torrentAssociation.partial'),
         variant: status.isDefaultHandler ? 'success' : 'error',
       })
     } catch (e) {
       showAppToast({
-        title: e instanceof ApiError ? e.message : 'Не удалось зарегистрировать ассоциацию',
+        title: e instanceof ApiError ? e.message : t('settings.torrentAssociation.failed'),
         variant: 'error',
       })
     } finally {
@@ -50,7 +52,7 @@ export function TorrentAssociationPrompt() {
       setOpen(false)
     } catch (e) {
       showAppToast({
-        title: e instanceof ApiError ? e.message : 'Не удалось сохранить настройку',
+        title: e instanceof ApiError ? e.message : t('torrentAssociationPrompt.saveFailed'),
         variant: 'error',
       })
     } finally {
@@ -70,12 +72,11 @@ export function TorrentAssociationPrompt() {
         <Dialog.Positioner>
           <Dialog.Content bg="bg.emphasized" borderColor="border">
             <Dialog.Header>
-              <Dialog.Title color="fg">Открывать торренты в TransmissionNET?</Dialog.Title>
+              <Dialog.Title color="fg">{t('torrentAssociationPrompt.title')}</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
               <Text fontSize="sm" color="fg.muted">
-                Сделать TransmissionNET программой по умолчанию для файлов .torrent? Выбор сохранится в
-                настройках, повторно спрашивать не будем.
+                {t('torrentAssociationPrompt.body')}
               </Text>
             </Dialog.Body>
             <Dialog.Footer>
@@ -85,10 +86,10 @@ export function TorrentAssociationPrompt() {
                 disabled={busy}
                 onClick={() => void handleDecline()}
               >
-                Нет
+                {t('common.no')}
               </Button>
               <Button colorPalette="brand" loading={busy} onClick={() => void handleAccept()}>
-                Да
+                {t('common.yes')}
               </Button>
             </Dialog.Footer>
           </Dialog.Content>

@@ -32,6 +32,7 @@ export interface UiSettingsDto {
   trayEnabled?: boolean
   minimizeToTray?: boolean
   closeToTray?: boolean
+  language?: string
 }
 
 export interface DesktopCapabilitiesDto {

@@ -10,6 +10,7 @@ import {
   Spinner,
   Text,
 } from '@chakra-ui/react'
+import { useI18n } from '../../i18n'
 import type { DaemonSessionSettingsDto } from '../../api/types'
 
 type DaemonSessionSettingsSectionProps = {
@@ -54,6 +55,8 @@ export function DaemonSessionSettingsSection({
   onReload,
   onSave,
 }: DaemonSessionSettingsSectionProps) {
+  const { t } = useI18n()
+
   if (!settings && loading) {
     return (
       <Flex justify="center" py={8}>
@@ -73,10 +76,10 @@ export function DaemonSessionSettingsSection({
         py={5}
       >
         <Text fontSize="sm" color="fg.muted" mb={3}>
-          {loadError ?? 'Could not load daemon settings.'}
+          {loadError ?? t('settings.daemon.loadErrorFallback')}
         </Text>
         <Button variant="outline" borderColor="border" onClick={onReload}>
-          Retry
+          {t('settings.daemon.retry')}
         </Button>
       </Box>
     )
@@ -99,10 +102,10 @@ export function DaemonSessionSettingsSection({
     >
       <Box px={5} py={4} borderBottomWidth="1px" borderColor="border" bg="surface.panel">
         <Heading size="sm" color="brand.500" mb={1}>
-          Daemon preferences
+          {t('settings.daemon.preferencesTitle')}
         </Heading>
         <Text fontSize="sm" color="fg.muted">
-          Paths and limits stored in Transmission (session-get / session-set).
+          {t('settings.daemon.preferencesSubtitle')}
         </Text>
       </Box>
 
@@ -115,11 +118,11 @@ export function DaemonSessionSettingsSection({
           letterSpacing="wider"
           mb={3}
         >
-          Storage
+          {t('settings.daemon.storage')}
         </Text>
         <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
           <Field.Root gridColumn={{ base: '1', md: '1 / -1' }}>
-            <Field.Label>Download directory</Field.Label>
+            <Field.Label>{t('settings.daemon.downloadDir')}</Field.Label>
             <Input
               value={settings.downloadDir}
               onChange={(e) => update('downloadDir', e.target.value)}
@@ -128,7 +131,7 @@ export function DaemonSessionSettingsSection({
             />
           </Field.Root>
           <Field.Root gridColumn={{ base: '1', md: '1 / -1' }}>
-            <Field.Label>Incomplete directory</Field.Label>
+            <Field.Label>{t('settings.daemon.incompleteDir')}</Field.Label>
             <Input
               value={settings.incompleteDir}
               onChange={(e) => update('incompleteDir', e.target.value)}
@@ -139,12 +142,12 @@ export function DaemonSessionSettingsSection({
         </SimpleGrid>
         <Flex direction="column" gap={2} mt={4}>
           <BoolField
-            label="Use incomplete directory until download finishes"
+            label={t('settings.daemon.incompleteDirEnabled')}
             checked={settings.incompleteDirEnabled}
             onCheckedChange={(v) => update('incompleteDirEnabled', v)}
           />
           <BoolField
-            label="Move .torrent files to trash after adding"
+            label={t('settings.daemon.trashTorrent')}
             checked={settings.trashOriginalTorrentFiles}
             onCheckedChange={(v) => update('trashOriginalTorrentFiles', v)}
           />
@@ -159,11 +162,11 @@ export function DaemonSessionSettingsSection({
           mt={6}
           mb={3}
         >
-          Peers
+          {t('settings.daemon.peers')}
         </Text>
         <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
           <Field.Root>
-            <Field.Label>Global peer limit</Field.Label>
+            <Field.Label>{t('settings.daemon.globalPeerLimit')}</Field.Label>
             <Input
               type="number"
               min={0}
@@ -174,7 +177,7 @@ export function DaemonSessionSettingsSection({
             />
           </Field.Root>
           <Field.Root>
-            <Field.Label>Peer limit per torrent</Field.Label>
+            <Field.Label>{t('settings.daemon.peerLimitPerTorrent')}</Field.Label>
             <Input
               type="number"
               min={0}
@@ -195,11 +198,11 @@ export function DaemonSessionSettingsSection({
           mt={6}
           mb={3}
         >
-          Speed limits (KB/s)
+          {t('settings.daemon.speedLimits')}
         </Text>
         <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
           <Field.Root>
-            <Field.Label>Download limit</Field.Label>
+            <Field.Label>{t('settings.daemon.downloadLimit')}</Field.Label>
             <Input
               type="number"
               min={0}
@@ -211,7 +214,7 @@ export function DaemonSessionSettingsSection({
             />
           </Field.Root>
           <Field.Root>
-            <Field.Label>Upload limit</Field.Label>
+            <Field.Label>{t('settings.daemon.uploadLimit')}</Field.Label>
             <Input
               type="number"
               min={0}
@@ -225,12 +228,12 @@ export function DaemonSessionSettingsSection({
         </SimpleGrid>
         <Flex direction="column" gap={2} mt={4}>
           <BoolField
-            label="Enable download speed limit"
+            label={t('settings.daemon.enableDownloadLimit')}
             checked={settings.speedLimitDownEnabled}
             onCheckedChange={(v) => update('speedLimitDownEnabled', v)}
           />
           <BoolField
-            label="Enable upload speed limit"
+            label={t('settings.daemon.enableUploadLimit')}
             checked={settings.speedLimitUpEnabled}
             onCheckedChange={(v) => update('speedLimitUpEnabled', v)}
           />
@@ -245,11 +248,11 @@ export function DaemonSessionSettingsSection({
           mt={6}
           mb={3}
         >
-          Seeding
+          {t('settings.daemon.seeding')}
         </Text>
         <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
           <Field.Root>
-            <Field.Label>Seed ratio limit</Field.Label>
+            <Field.Label>{t('settings.daemon.seedRatioLimit')}</Field.Label>
             <Input
               type="number"
               min={0}
@@ -262,7 +265,7 @@ export function DaemonSessionSettingsSection({
             />
           </Field.Root>
           <Field.Root>
-            <Field.Label>Idle seeding limit (minutes)</Field.Label>
+            <Field.Label>{t('settings.daemon.idleSeedingLimit')}</Field.Label>
             <Input
               type="number"
               min={0}
@@ -276,12 +279,12 @@ export function DaemonSessionSettingsSection({
         </SimpleGrid>
         <Flex direction="column" gap={2} mt={4}>
           <BoolField
-            label="Use seed ratio limit"
+            label={t('settings.daemon.seedRatioLimited')}
             checked={settings.seedRatioLimited}
             onCheckedChange={(v) => update('seedRatioLimited', v)}
           />
           <BoolField
-            label="Stop seeding when idle longer than limit"
+            label={t('settings.daemon.idleSeedingLimitEnabled')}
             checked={settings.idleSeedingLimitEnabled}
             onCheckedChange={(v) => update('idleSeedingLimitEnabled', v)}
           />
@@ -293,7 +296,7 @@ export function DaemonSessionSettingsSection({
             onClick={onSave}
             loading={saving}
           >
-            Apply to daemon
+            {t('settings.daemon.apply')}
           </Button>
           <Button
             variant="outline"
@@ -301,7 +304,7 @@ export function DaemonSessionSettingsSection({
             onClick={onReload}
             loading={loading}
           >
-            Reload from daemon
+            {t('settings.daemon.reload')}
           </Button>
         </Flex>
       </Box>

@@ -10,6 +10,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { api, ApiError } from '../../api/client'
 import { executeTorrentAction } from '../../api/torrentActions'
 import type { TorrentDto, TorrentFileNodeDto } from '../../api/types'
+import { useI18n } from '../../i18n'
 import { showAppToast } from '../AppToast'
 import { useTorrentDetails } from '../../hooks/useTorrentDetails'
 import { TorrentDetailsGeneralTab } from './TorrentDetailsGeneralTab'
@@ -34,6 +35,7 @@ export function TorrentDetailsDialog({
   onExited,
   onTorrentsChanged,
 }: TorrentDetailsDialogProps) {
+  const { t } = useI18n()
   const dialogContentRef = useRef<HTMLDivElement>(null)
   const { details, loading, refreshing, error, refresh } = useTorrentDetails(
     torrent?.id ?? null,
@@ -66,20 +68,20 @@ export function TorrentDetailsDialog({
           path,
           name,
         })
-        showAppToast({ title: 'Renamed', variant: 'success' })
+        showAppToast({ title: t('torrentDetails.renamed'), variant: 'success' })
         setRenameNode(null)
         refresh()
         onTorrentsChanged?.()
       } catch (e) {
         showAppToast({
-          title: e instanceof ApiError ? e.message : 'Rename failed',
+          title: e instanceof ApiError ? e.message : t('torrentDetails.renameFailed'),
           variant: 'error',
         })
       } finally {
         setRenameBusy(false)
       }
     },
-    [torrent, refresh, onTorrentsChanged],
+    [torrent, refresh, onTorrentsChanged, t],
   )
 
   const handleMassRenameApply = useCallback(
@@ -90,12 +92,15 @@ export function TorrentDetailsDialog({
         const result = await api.renameTorrentBatch(torrent.id, operations)
         if (result.failures.length === 0) {
           showAppToast({
-            title: `Renamed ${result.applied} file(s)`,
+            title: t('torrentDetails.renamedCount', { count: result.applied }),
             variant: 'success',
           })
         } else {
           showAppToast({
-            title: `Renamed ${result.applied}, failed ${result.failures.length}`,
+            title: t('torrentDetails.renamedPartial', {
+              applied: result.applied,
+              failed: result.failures.length,
+            }),
             variant: 'error',
           })
         }
@@ -104,14 +109,14 @@ export function TorrentDetailsDialog({
         onTorrentsChanged?.()
       } catch (e) {
         showAppToast({
-          title: e instanceof ApiError ? e.message : 'Mass rename failed',
+          title: e instanceof ApiError ? e.message : t('torrentDetails.massRenameFailed'),
           variant: 'error',
         })
       } finally {
         setMassRenameBusy(false)
       }
     },
-    [torrent, refresh, onTorrentsChanged],
+    [torrent, refresh, onTorrentsChanged, t],
   )
 
   return (
@@ -181,9 +186,9 @@ export function TorrentDetailsDialog({
                   opacity={refreshing ? 0.92 : 1}
                 >
                   <Tabs.List px={4} pt={3} flexShrink={0}>
-                    <Tabs.Trigger value="general">General</Tabs.Trigger>
-                    <Tabs.Trigger value="transfer">Transfer</Tabs.Trigger>
-                    <Tabs.Trigger value="files">Files</Tabs.Trigger>
+                    <Tabs.Trigger value="general">{t('torrentDetails.tabs.general')}</Tabs.Trigger>
+                    <Tabs.Trigger value="transfer">{t('torrentDetails.tabs.transfer')}</Tabs.Trigger>
+                    <Tabs.Trigger value="files">{t('torrentDetails.tabs.files')}</Tabs.Trigger>
                   </Tabs.List>
 
                   <Tabs.Content value="general" flex="1" minH={0} overflow="auto" px={4} py={3}>

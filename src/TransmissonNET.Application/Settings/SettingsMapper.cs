@@ -24,7 +24,8 @@ internal static class SettingsMapper
                 settings.Ui.TorrentFileAssociation,
                 settings.Ui.TrayEnabled,
                 settings.Ui.MinimizeToTray,
-                settings.Ui.CloseToTray));
+                settings.Ui.CloseToTray,
+                settings.Ui.Language));
 
     public static AppSettings ToDomain(AppSettingsDto dto, AppSettings? existing = null)
     {
@@ -51,7 +52,8 @@ internal static class SettingsMapper
                     dto.Ui.TorrentFileAssociation ?? existing?.Ui.TorrentFileAssociation),
                 dto.Ui.TrayEnabled,
                 dto.Ui.MinimizeToTray,
-                dto.Ui.CloseToTray));
+                dto.Ui.CloseToTray,
+                UiLanguages.Normalize(dto.Ui.Language ?? existing?.Ui.Language)));
     }
 
     public static DaemonConnection ToConnection(DaemonConnectionDto dto, AppSettings? existing = null)

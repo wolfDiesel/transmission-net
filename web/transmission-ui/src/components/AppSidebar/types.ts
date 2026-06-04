@@ -2,6 +2,6 @@ export type SidebarMode = 'expanded' | 'collapsed' | 'floating'
 
 export type NavItemConfig = {
   to: string
-  label: string
+  labelKey: string
   end?: boolean
 }

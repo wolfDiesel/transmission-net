@@ -1,4 +1,5 @@
 import { Box, Checkbox, Text } from '@chakra-ui/react'
+import { useI18n } from '../../i18n'
 import type { UiSettingsDto } from '../../api/types'
 
 type TraySettingsSectionProps = {
@@ -7,6 +8,8 @@ type TraySettingsSectionProps = {
 }
 
 export function TraySettingsSection({ ui, onChange }: TraySettingsSectionProps) {
+  const { t } = useI18n()
+
   return (
     <Box
       borderWidth="1px"
@@ -17,7 +20,7 @@ export function TraySettingsSection({ ui, onChange }: TraySettingsSectionProps) 
       py={5}
     >
       <Text fontSize="sm" fontWeight="semibold" color="brand.500" mb={4}>
-        System tray
+        {t('settings.tray.title')}
       </Text>
       <Box display="flex" flexDirection="column" gap={3}>
         <Checkbox.Root
@@ -26,7 +29,7 @@ export function TraySettingsSection({ ui, onChange }: TraySettingsSectionProps) 
         >
           <Checkbox.HiddenInput />
           <Checkbox.Control />
-          <Checkbox.Label>Show icon in the system tray</Checkbox.Label>
+          <Checkbox.Label>{t('settings.tray.enabled')}</Checkbox.Label>
         </Checkbox.Root>
         <Checkbox.Root
           checked={ui.closeToTray ?? true}
@@ -35,7 +38,7 @@ export function TraySettingsSection({ ui, onChange }: TraySettingsSectionProps) 
         >
           <Checkbox.HiddenInput />
           <Checkbox.Control />
-          <Checkbox.Label>Close window to tray instead of quitting</Checkbox.Label>
+          <Checkbox.Label>{t('settings.tray.closeToTray')}</Checkbox.Label>
         </Checkbox.Root>
         <Checkbox.Root
           checked={ui.minimizeToTray ?? false}
@@ -44,7 +47,7 @@ export function TraySettingsSection({ ui, onChange }: TraySettingsSectionProps) 
         >
           <Checkbox.HiddenInput />
           <Checkbox.Control />
-          <Checkbox.Label>Minimize to tray (when supported by the window)</Checkbox.Label>
+          <Checkbox.Label>{t('settings.tray.minimizeToTray')}</Checkbox.Label>
         </Checkbox.Root>
       </Box>
     </Box>

@@ -2,6 +2,7 @@ import { Box, Flex, Text } from '@chakra-ui/react'
 import type { ReactNode, RefObject } from 'react'
 import { NavLink } from 'react-router-dom'
 import { navIconForPath, PinIcon } from './SidebarIcons'
+import { useI18n } from '../../i18n'
 import { NAV_ITEMS } from './navItems'
 import type { NavItemConfig } from './types'
 
@@ -89,6 +90,7 @@ const hoverIsland = {
 }
 
 function FloatingMenuRow({ item, onNavigate }: FloatingMenuRowProps) {
+  const { t } = useI18n()
   return (
     <NavLink to={item.to} end={item.end} style={{ textDecoration: 'none' }} onClick={onNavigate}>
       {({ isActive }) => {
@@ -96,7 +98,7 @@ function FloatingMenuRow({ item, onNavigate }: FloatingMenuRowProps) {
         return (
           <Flex align="center" gap={`${ISLAND_GAP}px`} role="group">
             <IslandIcon tone={tone}>{navIconForPath(item.to, 22)}</IslandIcon>
-            <IslandLabel tone={tone}>{item.label}</IslandLabel>
+            <IslandLabel tone={tone}>{t(item.labelKey)}</IslandLabel>
           </Flex>
         )
       }}
@@ -109,6 +111,7 @@ type FloatingDockRowProps = {
 }
 
 function FloatingDockRow({ onDock }: FloatingDockRowProps) {
+  const { t } = useI18n()
   const tone: IslandTone = 'idle'
   return (
     <Flex
@@ -128,7 +131,7 @@ function FloatingDockRow({ onDock }: FloatingDockRowProps) {
       <IslandIcon tone={tone}>
         <PinIcon size={20} />
       </IslandIcon>
-      <IslandLabel tone={tone}>Dock</IslandLabel>
+      <IslandLabel tone={tone}>{t('common.dock')}</IslandLabel>
     </Flex>
   )
 }

@@ -3,9 +3,11 @@ import { ColumnSettingsPanel, TorrentsTable } from '../components/TorrentsTable/
 import { useTorrentList } from '../context/TorrentListProvider'
 import { useTorrentTableSettings } from '../hooks/useTorrentTableSettings'
 import { useApp } from '../context/AppProvider'
+import { useI18n } from '../i18n'
 import { formatLastUpdated } from '../utils/format'
 
 export function TorrentsPage() {
+  const { t } = useI18n()
   const { refreshIntervalSeconds } = useApp()
   const { torrents, loading, refreshing, lastUpdated, refreshNow } = useTorrentList()
   const { tableSettings, setColumns } = useTorrentTableSettings()
@@ -23,10 +25,13 @@ export function TorrentsPage() {
       <Flex justify="space-between" align="center" flexShrink={0} gap={3} flexWrap="wrap">
         <Box>
           <Text fontSize="lg" fontWeight="semibold" color="fg">
-            Torrents
+            {t('torrentsPage.title')}
           </Text>
           <Text fontSize="xs" color="fg.muted">
-            Updated {formatLastUpdated(lastUpdated)} · every {refreshIntervalSeconds}s
+            {t('torrentsPage.updated', {
+              time: formatLastUpdated(lastUpdated),
+              seconds: refreshIntervalSeconds,
+            })}
           </Text>
         </Box>
         <ColumnSettingsPanel tableSettings={tableSettings} onChange={setColumns} />
@@ -35,7 +40,7 @@ export function TorrentsPage() {
       {torrents.length === 0 ? (
         <Flex flex="1" align="center" justify="center" minH={0}>
           <Text color="fg.muted" fontSize="sm">
-            No torrents or not connected to daemon
+            {t('torrentsPage.empty')}
           </Text>
         </Flex>
       ) : (

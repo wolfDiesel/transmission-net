@@ -16,11 +16,13 @@ import { DownloadDirCombobox } from '../components/AddTorrent/DownloadDirCombobo
 import { showAppToast } from '../components/AppToast'
 import { TorrentFileTree } from '../components/TorrentDetails/TorrentFileTree'
 import { useApp } from '../context/AppProvider'
+import { useI18n } from '../i18n'
 import { useDownloadDirHistory } from '../hooks/useDownloadDirHistory'
 import { readFileAsBase64 } from '../utils/readFileAsBase64'
 import { formatSize } from '../utils/format'
 
 export function AddTorrentPage() {
+  const { t } = useI18n()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { settingsLoading } = useApp()
@@ -71,7 +73,7 @@ export function AddTorrentPage() {
       setMetainfoBase64(loaded.metainfoBase64)
       setPreview(loaded.preview)
     } catch (e) {
-      setInspectError(e instanceof ApiError ? e.message : 'Failed to read torrent file')
+      setInspectError(e instanceof ApiError ? e.message : t('addTorrent.readFailed'))
     } finally {
       setInspecting(false)
     }
@@ -85,7 +87,7 @@ export function AddTorrentPage() {
     if (!file) return
 
     if (!file.name.toLowerCase().endsWith('.torrent')) {
-      setInspectError('Select a .torrent file')
+      setInspectError(t('addTorrent.selectTorrent'))
       return
     }
 
@@ -96,7 +98,7 @@ export function AddTorrentPage() {
       setMetainfoBase64(base64)
       setPreview(loaded)
     } catch (e) {
-      setInspectError(e instanceof ApiError ? e.message : 'Failed to read torrent file')
+      setInspectError(e instanceof ApiError ? e.message : t('addTorrent.readFailed'))
     } finally {
       setInspecting(false)
     }
@@ -113,7 +115,7 @@ export function AddTorrentPage() {
 
     const dir = downloadDir.trim()
     if (!dir) {
-      showAppToast({ title: 'Download directory is required', variant: 'error' })
+      showAppToast({ title: t('addTorrent.dirRequired'), variant: 'error' })
       return
     }
 
@@ -125,11 +127,11 @@ export function AddTorrentPage() {
         paused,
       })
       remember(dir)
-      showAppToast({ title: `Added: ${result.name}`, variant: 'success' })
+      showAppToast({ title: t('addTorrent.added', { name: result.name }), variant: 'success' })
       navigate('/')
     } catch (e) {
       showAppToast({
-        title: e instanceof ApiError ? e.message : 'Failed to add torrent',
+        title: e instanceof ApiError ? e.message : t('addTorrent.addFailed'),
         variant: 'error',
       })
     } finally {
@@ -141,15 +143,15 @@ export function AddTorrentPage() {
     <Box display="flex" flexDirection="column" flex="1" minH={0} gap={4}>
       <Box>
         <Text fontSize="lg" fontWeight="semibold" color="fg">
-          Add torrent
+          {t('addTorrent.title')}
         </Text>
         <Text fontSize="xs" color="fg.muted">
-          Choose a .torrent file to inspect contents before adding to the daemon
+          {t('addTorrent.subtitle')}
         </Text>
       </Box>
 
       <Field.Root>
-        <Field.Label>Torrent file</Field.Label>
+        <Field.Label>{t('addTorrent.torrentFile')}</Field.Label>
         <Input
           type="file"
           accept=".torrent,application/x-bittorrent"
@@ -188,12 +190,15 @@ export function AddTorrentPage() {
               {preview.name}
             </Text>
             <Text fontSize="sm" color="fg.muted">
-              File: {preview.fileName} · Total size: {formatSize(preview.totalSize)}
+              {t('addTorrent.fileMeta', {
+                file: preview.fileName,
+                size: formatSize(preview.totalSize),
+              })}
             </Text>
           </Box>
 
           <Field.Root w="full">
-            <Field.Label>Download directory</Field.Label>
+            <Field.Label>{t('addTorrent.downloadDir')}</Field.Label>
             <DownloadDirCombobox
               value={downloadDir}
               onChange={setDownloadDir}
@@ -208,12 +213,12 @@ export function AddTorrentPage() {
           >
             <Checkbox.HiddenInput />
             <Checkbox.Control borderColor="border" />
-            <Checkbox.Label fontSize="sm">Add paused (do not start immediately)</Checkbox.Label>
+            <Checkbox.Label fontSize="sm">{t('addTorrent.addPaused')}</Checkbox.Label>
           </Checkbox.Root>
 
           <Box flex="1" minH={0} display="flex" flexDirection="column">
             <Text fontSize="sm" fontWeight="medium" color="fg" mb={2}>
-              Files in torrent
+              {t('addTorrent.filesInTorrent')}
             </Text>
             <Box
               flex="1"
@@ -239,14 +244,14 @@ export function AddTorrentPage() {
                 setInspectError(null)
               }}
             >
-              Clear
+              {t('addTorrent.clear')}
             </Button>
             <Button
               colorPalette="brand"
               loading={adding}
               onClick={() => void handleAdd()}
             >
-              Add torrent
+              {t('addTorrent.add')}
             </Button>
           </Flex>
         </Flex>

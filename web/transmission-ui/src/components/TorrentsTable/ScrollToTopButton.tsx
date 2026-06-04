@@ -1,4 +1,5 @@
 import { IconButton } from '@chakra-ui/react'
+import { useI18n } from '../../i18n'
 
 function ChevronUpIcon({ size = 22 }: { size?: number }) {
   return (
@@ -14,13 +15,14 @@ type ScrollToTopButtonProps = {
 }
 
 export function ScrollToTopButton({ visible, onClick }: ScrollToTopButtonProps) {
+  const { t } = useI18n()
   if (!visible) return null
 
   return (
     <IconButton
       type="button"
-      aria-label="Scroll to top"
-      title="Back to top"
+      aria-label={t('torrentsPage.scrollToTop')}
+      title={t('torrentsPage.scrollToTop')}
       position="absolute"
       right={3}
       bottom={3}

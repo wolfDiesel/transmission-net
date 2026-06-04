@@ -6,14 +6,11 @@ import {
   SimpleGrid,
   Text,
 } from '@chakra-ui/react'
+import { useI18n } from '../../i18n'
 import type { AppearanceId, ColorSchemeId } from '../../theme/accentPalettes'
 import { ACCENT_PALETTES, APPEARANCE_IDS } from '../../theme/accentPalettes'
 
-const APPEARANCE_OPTIONS: { value: AppearanceId; label: string }[] = [
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-  { value: 'system', label: 'System' },
-]
+const APPEARANCE_VALUES: AppearanceId[] = ['light', 'dark', 'system']
 
 type AppearanceSettingsSectionProps = {
   colorScheme: ColorSchemeId
@@ -28,6 +25,8 @@ export function AppearanceSettingsSection({
   onColorSchemeChange,
   onAppearanceChange,
 }: AppearanceSettingsSectionProps) {
+  const { t } = useI18n()
+
   return (
     <Box
       borderWidth="1px"
@@ -38,11 +37,11 @@ export function AppearanceSettingsSection({
       py={5}
     >
       <Text fontSize="sm" fontWeight="semibold" color="brand.500" mb={4}>
-        Appearance
+        {t('settings.appearance.title')}
       </Text>
 
       <Text fontSize="xs" fontWeight="semibold" color="fg.muted" textTransform="uppercase" letterSpacing="wider" mb={3}>
-        Theme
+        {t('settings.appearance.theme')}
       </Text>
       <RadioGroup.Root
         value={appearance}
@@ -53,11 +52,11 @@ export function AppearanceSettingsSection({
         colorPalette="brand"
       >
         <Flex gap={3} flexWrap="wrap">
-          {APPEARANCE_OPTIONS.map((option) => (
-            <RadioGroup.Item key={option.value} value={option.value}>
+          {APPEARANCE_VALUES.map((value) => (
+            <RadioGroup.Item key={value} value={value}>
               <RadioGroup.ItemHiddenInput />
               <RadioGroup.ItemIndicator />
-              <RadioGroup.ItemText color="fg">{option.label}</RadioGroup.ItemText>
+              <RadioGroup.ItemText color="fg">{t(`settings.appearance.${value}`)}</RadioGroup.ItemText>
             </RadioGroup.Item>
           ))}
         </Flex>
@@ -72,7 +71,7 @@ export function AppearanceSettingsSection({
         mt={6}
         mb={3}
       >
-        Accent color
+        {t('settings.appearance.colorScheme')}
       </Text>
       <SimpleGrid columns={{ base: 2, sm: 3, md: 5 }} gap={3}>
         {ACCENT_PALETTES.map((palette) => {
@@ -104,7 +103,7 @@ export function AppearanceSettingsSection({
                   flexShrink={0}
                 />
                 <Text fontSize="sm" color="fg" fontWeight={selected ? 'semibold' : 'normal'}>
-                  {palette.label}
+                  {t(`settings.appearance.colors.${palette.id}`)}
                 </Text>
               </Flex>
             </Button>

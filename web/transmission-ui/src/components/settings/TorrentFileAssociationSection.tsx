@@ -2,6 +2,7 @@ import { Box, Button, Text } from '@chakra-ui/react'
 import { useCallback, useEffect, useState } from 'react'
 import { api, ApiError } from '../../api/client'
 import type { TorrentFileAssociationStatusDto } from '../../api/types'
+import { useI18n } from '../../i18n'
 import { showAppToast } from '../AppToast'
 
 type TorrentFileAssociationSectionProps = {
@@ -9,6 +10,7 @@ type TorrentFileAssociationSectionProps = {
 }
 
 export function TorrentFileAssociationSection({ onRegistered }: TorrentFileAssociationSectionProps) {
+  const { t } = useI18n()
   const [status, setStatus] = useState<TorrentFileAssociationStatusDto | null>(null)
   const [loading, setLoading] = useState(true)
   const [registering, setRegistering] = useState(false)
@@ -38,18 +40,18 @@ export function TorrentFileAssociationSection({ onRegistered }: TorrentFileAssoc
       setStatus(refreshed)
       if (refreshed.isDefaultHandler) {
         showAppToast({
-          title: 'Файлы .torrent открываются в TransmissionNET',
+          title: t('settings.torrentAssociation.success'),
           variant: 'success',
         })
       } else {
         showAppToast({
-          title: 'Ярлык создан, но система не сменила обработчик по умолчанию. Выберите TransmissionNET в настройках ОС.',
+          title: t('settings.torrentAssociation.partial'),
           variant: 'error',
         })
       }
     } catch (e) {
       showAppToast({
-        title: e instanceof ApiError ? e.message : 'Не удалось зарегистрировать ассоциацию',
+        title: e instanceof ApiError ? e.message : t('settings.torrentAssociation.failed'),
         variant: 'error',
       })
     } finally {
@@ -68,7 +70,7 @@ export function TorrentFileAssociationSection({ onRegistered }: TorrentFileAssoc
         py={5}
       >
         <Text fontSize="sm" color="fg.muted">
-          Проверка интеграции с рабочим столом…
+          {t('settings.torrentAssociation.checking')}
         </Text>
       </Box>
     )
@@ -79,10 +81,10 @@ export function TorrentFileAssociationSection({ onRegistered }: TorrentFileAssoc
   }
 
   const statusLine = status.isDefaultHandler
-    ? 'TransmissionNET — обработчик .torrent по умолчанию.'
+    ? t('settings.torrentAssociation.defaultHandler')
     : status.hasDesktopEntry
-      ? 'Ярлык есть, но приложение не выбрано по умолчанию для .torrent.'
-      : 'Ярлык не найден — будет создан при регистрации.'
+      ? t('settings.torrentAssociation.hasEntryNotDefault')
+      : t('settings.torrentAssociation.noEntry')
 
   return (
     <Box
@@ -94,11 +96,10 @@ export function TorrentFileAssociationSection({ onRegistered }: TorrentFileAssoc
       py={5}
     >
       <Text fontSize="sm" fontWeight="semibold" color="brand.500" mb={2}>
-        Файлы .torrent
+        {t('settings.torrentAssociation.title')}
       </Text>
       <Text fontSize="sm" color="fg.muted" mb={4}>
-        {statusLine} Проверяются все ярлыки в ~/.local/share/applications (включая созданные
-        AppImage Manager при добавлении в папку) и обновляются те, что относятся к этому приложению.
+        {statusLine} {t('settings.torrentAssociation.hint')}
       </Text>
       <Button
         colorPalette="brand"
@@ -106,7 +107,9 @@ export function TorrentFileAssociationSection({ onRegistered }: TorrentFileAssoc
         loading={registering}
         onClick={() => void handleRegister()}
       >
-        {status.hasDesktopEntry ? 'Обновить и зарегистрировать' : 'Зарегистрировать ассоциацию'}
+        {status.hasDesktopEntry
+          ? t('settings.torrentAssociation.refreshRegister')
+          : t('settings.torrentAssociation.register')}
       </Button>
     </Box>
   )

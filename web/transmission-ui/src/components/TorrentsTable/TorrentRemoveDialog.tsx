@@ -8,6 +8,7 @@ import {
 } from '@chakra-ui/react'
 import { OverlayPortal } from '../ui/OverlayPortal'
 import { useEffect, useState } from 'react'
+import { useI18n } from '../../i18n'
 import type { TorrentDto } from '../../api/types'
 
 type TorrentRemoveDialogProps = {
@@ -25,6 +26,7 @@ export function TorrentRemoveDialog({
   onClose,
   onConfirm,
 }: TorrentRemoveDialogProps) {
+  const { t } = useI18n()
   const [deleteLocalData, setDeleteLocalData] = useState(false)
 
   useEffect(() => {
@@ -45,11 +47,11 @@ export function TorrentRemoveDialog({
             maxW="440px"
           >
             <Dialog.Header borderBottomWidth="1px" borderColor="border" pb={3}>
-              <Dialog.Title color="brand.500">Remove torrent</Dialog.Title>
+              <Dialog.Title color="brand.500">{t('torrentTable.removeDialog.title')}</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body py={4}>
               <Text fontSize="sm" color="fg.muted" mb={2}>
-                You are about to remove:
+                {t('torrentTable.removeDialog.aboutToRemove')}
               </Text>
               <Box
                 px={3}
@@ -71,12 +73,12 @@ export function TorrentRemoveDialog({
                 <Checkbox.HiddenInput />
                 <Checkbox.Control borderColor="border" />
                 <Checkbox.Label color="fg" fontSize="sm">
-                  Also delete downloaded files from disk
+                  {t('torrentTable.removeDialog.deleteData')}
                 </Checkbox.Label>
               </Checkbox.Root>
               {deleteLocalData && (
                 <Text fontSize="xs" color="red.400" mt={2}>
-                  Files in the download folder will be permanently deleted.
+                  {t('torrentTable.removeDialog.deleteWarning')}
                 </Text>
               )}
             </Dialog.Body>
@@ -88,14 +90,14 @@ export function TorrentRemoveDialog({
                   onClick={onClose}
                   disabled={busy}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   colorPalette="red"
                   loading={busy}
                   onClick={() => onConfirm(deleteLocalData)}
                 >
-                  Remove
+                  {t('torrentTable.removeDialog.confirm')}
                 </Button>
               </Flex>
             </Dialog.Footer>

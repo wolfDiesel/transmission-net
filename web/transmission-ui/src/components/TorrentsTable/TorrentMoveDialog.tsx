@@ -1,6 +1,7 @@
 import { Button, Dialog, Field, Flex } from '@chakra-ui/react'
 import { OverlayPortal } from '../ui/OverlayPortal'
 import { useEffect, useState } from 'react'
+import { useI18n } from '../../i18n'
 import type { TorrentDto } from '../../api/types'
 import { DownloadDirCombobox } from '../AddTorrent/DownloadDirCombobox'
 
@@ -21,6 +22,7 @@ export function TorrentMoveDialog({
   onClose,
   onConfirm,
 }: TorrentMoveDialogProps) {
+  const { t } = useI18n()
   const [location, setLocation] = useState('')
   const [moveData, setMoveData] = useState(true)
 
@@ -40,11 +42,11 @@ export function TorrentMoveDialog({
         <Dialog.Positioner>
           <Dialog.Content bg="bg.emphasized" borderColor="border">
             <Dialog.Header>
-              <Dialog.Title color="fg">Move torrent</Dialog.Title>
+              <Dialog.Title color="fg">{t('torrentTable.moveDialog.title')}</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
               <Field.Root>
-                <Field.Label>Destination folder</Field.Label>
+                <Field.Label>{t('torrentTable.moveDialog.destination')}</Field.Label>
                 <DownloadDirCombobox
                   value={location}
                   onChange={setLocation}
@@ -58,14 +60,14 @@ export function TorrentMoveDialog({
                     checked={moveData}
                     onChange={(e) => setMoveData(e.target.checked)}
                   />
-                  Move data files (uncheck to use existing files at destination)
+                  {t('torrentTable.moveDialog.moveData')}
                 </Field.Label>
               </Field.Root>
             </Dialog.Body>
             <Dialog.Footer>
               <Flex gap={2}>
                 <Button variant="outline" borderColor="border" onClick={onClose}>
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   colorPalette="brand"
@@ -73,7 +75,7 @@ export function TorrentMoveDialog({
                   disabled={!location.trim()}
                   onClick={() => onConfirm(location.trim(), moveData)}
                 >
-                  Move
+                  {t('torrentTable.moveDialog.confirm')}
                 </Button>
               </Flex>
             </Dialog.Footer>

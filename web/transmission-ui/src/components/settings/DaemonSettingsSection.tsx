@@ -8,6 +8,7 @@ import {
   SimpleGrid,
   Text,
 } from '@chakra-ui/react'
+import { useI18n } from '../../i18n'
 import type { DaemonConnectionDto } from '../../api/types'
 import { buildRpcUrl } from './buildRpcUrl'
 
@@ -24,6 +25,7 @@ export function DaemonSettingsSection({
   onTest,
   testing,
 }: DaemonSettingsSectionProps) {
+  const { t } = useI18n()
   const password = daemon.password ?? ''
 
   const update = (field: keyof DaemonConnectionDto, value: string | number) => {
@@ -40,20 +42,20 @@ export function DaemonSettingsSection({
     >
       <Box px={5} py={4} borderBottomWidth="1px" borderColor="border" bg="surface.panel">
         <Heading size="sm" color="brand.500" mb={1}>
-          Transmission daemon
+          {t('settings.connection.title')}
         </Heading>
         <Text fontSize="sm" color="fg.muted">
-          RPC connection used for torrents list and status bar.
+          {t('settings.connection.subtitle')}
         </Text>
       </Box>
 
       <Box px={5} py={5}>
         <Text fontSize="xs" fontWeight="semibold" color="fg.muted" textTransform="uppercase" letterSpacing="wider" mb={3}>
-          Connection
+          {t('settings.connection.sectionConnection')}
         </Text>
         <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
           <Field.Root>
-            <Field.Label>Host</Field.Label>
+            <Field.Label>{t('settings.connection.host')}</Field.Label>
             <Input
               value={daemon.host}
               onChange={(e) => update('host', e.target.value)}
@@ -63,7 +65,7 @@ export function DaemonSettingsSection({
             />
           </Field.Root>
           <Field.Root>
-            <Field.Label>Port</Field.Label>
+            <Field.Label>{t('settings.connection.port')}</Field.Label>
             <Input
               type="number"
               min={1}
@@ -76,7 +78,7 @@ export function DaemonSettingsSection({
             />
           </Field.Root>
           <Field.Root gridColumn={{ base: '1', md: '1 / -1' }}>
-            <Field.Label>RPC path</Field.Label>
+            <Field.Label>{t('settings.connection.rpcPath')}</Field.Label>
             <Input
               value={daemon.rpcPath}
               onChange={(e) => update('rpcPath', e.target.value)}
@@ -97,7 +99,7 @@ export function DaemonSettingsSection({
           bg="surface.panel"
         >
           <Text fontSize="xs" color="fg.muted" mb={1}>
-            RPC URL
+            {t('settings.connection.rpcUrl')}
           </Text>
           <Text fontSize="sm" color="fg" fontFamily="mono">
             {buildRpcUrl(daemon)}
@@ -113,11 +115,11 @@ export function DaemonSettingsSection({
           mt={6}
           mb={3}
         >
-          Authentication
+          {t('settings.connection.sectionAuth')}
         </Text>
         <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
           <Field.Root>
-            <Field.Label>Username</Field.Label>
+            <Field.Label>{t('settings.connection.username')}</Field.Label>
             <Input
               value={daemon.username}
               onChange={(e) => update('username', e.target.value)}
@@ -127,18 +129,18 @@ export function DaemonSettingsSection({
             />
           </Field.Root>
           <Field.Root>
-            <Field.Label>Password</Field.Label>
+            <Field.Label>{t('settings.connection.password')}</Field.Label>
             <Input
               type="password"
               value={password}
               onChange={(e) => update('password', e.target.value)}
-              placeholder="empty keeps saved password"
+              placeholder={t('settings.connection.passwordPlaceholder')}
               autoComplete="current-password"
               bg="surface.panel"
               borderColor="border"
             />
             <Field.HelperText color="fg.subtle">
-              Stored locally in settings.json
+              {t('settings.connection.passwordHint')}
             </Field.HelperText>
           </Field.Root>
         </SimpleGrid>
@@ -151,7 +153,7 @@ export function DaemonSettingsSection({
             onClick={onTest}
             loading={testing}
           >
-            Test connection
+            {t('settings.connection.test')}
           </Button>
         </Flex>
       </Box>

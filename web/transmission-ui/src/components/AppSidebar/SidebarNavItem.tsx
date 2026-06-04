@@ -1,5 +1,6 @@
 import { Box } from '@chakra-ui/react'
 import { NavLink } from 'react-router-dom'
+import { useI18n } from '../../i18n'
 import { navIconForPath } from './SidebarIcons'
 import type { NavItemConfig } from './types'
 
@@ -24,6 +25,9 @@ const idleStyles = {
 }
 
 export function SidebarNavItem({ item, compact, onNavigate }: SidebarNavItemProps) {
+  const { t } = useI18n()
+  const label = t(item.labelKey)
+
   return (
     <NavLink to={item.to} end={item.end} style={{ textDecoration: 'none' }} onClick={onNavigate}>
       {({ isActive }) =>
@@ -36,8 +40,8 @@ export function SidebarNavItem({ item, compact, onNavigate }: SidebarNavItemProp
             h="11"
             borderRadius="md"
             borderWidth="1px"
-            title={item.label}
-            aria-label={item.label}
+            title={label}
+            aria-label={label}
             transition="all 0.15s"
             {...(isActive ? activeStyles : idleStyles)}
             _hover={{
@@ -70,7 +74,7 @@ export function SidebarNavItem({ item, compact, onNavigate }: SidebarNavItemProp
             }}
           >
             {navIconForPath(item.to, 20)}
-            {item.label}
+            {label}
           </Box>
         )
       }

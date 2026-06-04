@@ -11,6 +11,7 @@ import { api, ApiError } from '../api/client'
 import type { AppSettingsDto } from '../api/types'
 import { createDefaultTorrentTableSettings } from '../features/torrentTable/defaults'
 import { normalizeTorrentTableSettings } from '../features/torrentTable/normalizeTableSettings'
+import { normalizeLocale } from '../i18n'
 import { DEFAULT_APPEARANCE, DEFAULT_COLOR_SCHEME, normalizeAppearance, normalizeColorScheme } from '../theme/accentPalettes'
 
 const defaultSettings: AppSettingsDto = {
@@ -29,6 +30,7 @@ const defaultSettings: AppSettingsDto = {
     colorScheme: DEFAULT_COLOR_SCHEME,
     appearance: DEFAULT_APPEARANCE,
     downloadDirHistory: [],
+    language: 'en',
   },
 }
 
@@ -63,10 +65,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
           colorScheme: normalizeColorScheme(data.ui.colorScheme),
           appearance: normalizeAppearance(data.ui.appearance),
           downloadDirHistory: data.ui.downloadDirHistory ?? [],
+          language: normalizeLocale(data.ui.language),
         },
       })
     } catch (e) {
-      setSettingsError(e instanceof ApiError ? e.message : 'Failed to load settings')
+      setSettingsError(e instanceof ApiError ? e.message : 'load_failed')
     } finally {
       setSettingsLoading(false)
     }
