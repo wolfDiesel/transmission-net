@@ -1,0 +1,21 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="TransmissonNET.App.Avalonia.Views.MoveTorrentDialog"
+        Title="Move torrent"
+        Width="480"
+        Height="220"
+        Background="{DynamicResource SurfaceCanvasBrush}"
+        Padding="16"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+  <Border Classes="island" Padding="16">
+    <StackPanel Spacing="12">
+      <TextBox x:Name="DestinationBox" Watermark="Destination folder" />
+      <CheckBox x:Name="MoveDataCheck" Content="Move data files" IsChecked="True" />
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+        <Button Classes="btn-ghost" Content="Cancel" Click="OnCancel" />
+        <Button Classes="btn-primary" Content="Move" Click="OnConfirm" />
+      </StackPanel>
+    </StackPanel>
+  </Border>
+</Window>

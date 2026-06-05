@@ -18,12 +18,6 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
-          cache-dependency-path: web/transmission-ui/package-lock.json
-
       - name: Install packaging dependencies
         run: ./packaging/appimage/install-deps-ubuntu.sh
 

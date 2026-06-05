@@ -1,0 +1,19 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="TransmissonNET.App.Avalonia.Views.TorrentAssociationPromptWindow"
+        Width="460"
+        Height="220"
+        Background="{DynamicResource SurfaceCanvasBrush}"
+        Padding="16"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+  <Border Classes="island" Padding="16">
+    <StackPanel Spacing="12">
+      <TextBlock x:Name="BodyText" TextWrapping="Wrap" />
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+        <Button x:Name="NoButton" Classes="btn-ghost" Click="OnNo" />
+        <Button x:Name="YesButton" Classes="btn-primary" Click="OnYes" />
+      </StackPanel>
+    </StackPanel>
+  </Border>
+</Window>

@@ -10,21 +10,11 @@ dist/
 .vs/
 .idea/
 
-# Frontend
-node_modules/
-web/transmission-ui/dist/
-web/transmission-ui/node_modules/.tmp/
-
-# UI copied into app on build (npm run build / dotnet build)
-src/TransmissonNET.App/wwwroot/assets/
-src/TransmissonNET.App/wwwroot/index.html
-
 # Local settings (may contain RPC passwords)
 **/.config/TransmissonNET/settings.json
 **/settings.local.json
 .env
 .env.local
-web/transmission-ui/.env
 
 # IDE / editor / agent (not part of the product)
 .cursor/

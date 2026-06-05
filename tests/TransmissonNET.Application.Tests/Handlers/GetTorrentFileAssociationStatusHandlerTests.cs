@@ -54,6 +54,23 @@ public class GetTorrentFileAssociationStatusHandlerTests
     }
 
     [Fact]
+    public async Task HandleAsync_WhenUnsupported_ShouldNotPrompt()
+    {
+        var store = new Mock<ISettingsStore>();
+        store.Setup(s => s.LoadAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(DefaultSettings(TorrentFileAssociationStatuses.NotAsked));
+
+        var association = new Mock<ITorrentFileAssociationService>();
+        association.Setup(a => a.IsSupported).Returns(false);
+
+        var handler = new GetTorrentFileAssociationStatusHandler(association.Object, store.Object);
+        var result = await handler.HandleAsync();
+
+        Assert.False(result.ShouldPrompt);
+        Assert.False(result.IsSupported);
+    }
+
+    [Fact]
     public async Task HandleAsync_WhenDeclined_ShouldNotPrompt()
     {
         var store = new Mock<ISettingsStore>();

@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>TransmissonNET.App</AssemblyName>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Include="Themes\**" />
+    <EmbeddedResource Include="Localization\*.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.0.2" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="12.0.0" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.0.2" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.2" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.2" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\transmission-net-tray.png" Link="transmission-net-tray.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\transmission-net.png" Link="transmission-net.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TransmissonNET.Application\TransmissonNET.Application.csproj" />
+    <ProjectReference Include="..\TransmissonNET.Desktop\TransmissonNET.Desktop.csproj" />
+    <ProjectReference Include="..\TransmissonNET.Infrastructure\TransmissonNET.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

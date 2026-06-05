@@ -1,7 +1,8 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/TransmissonNET.App/TransmissonNET.App.csproj" />
+    <Project Path="src/TransmissonNET.App.Avalonia/TransmissonNET.App.Avalonia.csproj" />
     <Project Path="src/TransmissonNET.Application/TransmissonNET.Application.csproj" />
+    <Project Path="src/TransmissonNET.Desktop/TransmissonNET.Desktop.csproj" />
     <Project Path="src/TransmissonNET.Domain/TransmissonNET.Domain.csproj" />
     <Project Path="src/TransmissonNET.Infrastructure/TransmissonNET.Infrastructure.csproj" />
   </Folder>

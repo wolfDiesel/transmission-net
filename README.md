@@ -1,16 +1,16 @@
 # TransmissionNET
 
-Desktop client for [Transmission](https://transmissionbt.com/) (`transmission-daemon`). It talks to the daemon over the RPC API and ships a native Linux shell (Photino + embedded host) with a React UI.
+Desktop client for [Transmission](https://transmissionbt.com/) (`transmission-daemon`). It talks to the daemon over the RPC API and ships a native **Avalonia** UI on Linux.
 
 ## Requirements
 
 - A running `transmission-daemon` with RPC enabled (host, port, and credentials configured in the app).
-- **Linux** for the desktop build (GTK 3, WebKitGTK 4.1, optional Ayatana AppIndicator for the system tray).
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) and Node.js 22+ when building from source (the UI is built automatically via `npm` during `dotnet build`).
+- **Linux** for the desktop build (GTK 3, optional Ayatana AppIndicator for the system tray).
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) when building from source.
 
 ## Features
 
-- **Torrent list** — status, progress, speeds, peers, and per-torrent actions aligned with Transmission RPC.
+- **Torrent list** — status, progress, speeds, peers, name filter with wildcards, and per-torrent actions aligned with Transmission RPC.
 - **Add torrents** — magnet links, `.torrent` files, and metainfo preview before adding.
 - **Daemon connection** — RPC URL, authentication, and connection health in Settings.
 - **Session settings** — edit daemon session options exposed by Transmission (where supported by the RPC layer).
@@ -21,7 +21,7 @@ Desktop client for [Transmission](https://transmissionbt.com/) (`transmission-da
   - Single instance: opening a second copy or a `.torrent` file forwards to the running window.
   - Optional system tray (Show / Quit, close-to-tray, minimize-to-tray) via `libayatana-appindicator3`.
   - Register as the default handler for `.torrent` files (user-level `.desktop` + MIME).
-- **AppImage** — prebuilt x86_64 images attached to [GitHub releases](https://github.com/wolfDiesel/transmission-net/releases) (built on Ubuntu 24.04; uses system WebKitGTK on the host).
+- **AppImage** — prebuilt x86_64 images attached to [GitHub releases](https://github.com/wolfDiesel/transmission-net/releases) (built on Ubuntu 24.04).
 
 ## Mass rename
 
@@ -47,22 +47,16 @@ Sorting for `{n}` can follow full path or file name. Validation catches collisio
 ```bash
 git clone https://github.com/wolfDiesel/transmission-net.git
 cd transmission-net
-dotnet run --project src/TransmissonNET.App/TransmissonNET.App.csproj
+dotnet run --project src/TransmissonNET.App.Avalonia/TransmissonNET.App.Avalonia.csproj
 ```
 
 On **Fedora** (example runtime packages):
 
 ```bash
-sudo dnf install webkit2gtk4.1 gtk3 libayatana-appindicator3
+sudo dnf install gtk3 libayatana-appindicator3
 ```
 
 On **Ubuntu/Debian**, see `packaging/appimage/install-deps-ubuntu.sh` for the package list used in CI.
-
-To skip the UI rebuild (e.g. when iterating on the backend only):
-
-```bash
-dotnet build -p:SkipWebUiBuild=true src/TransmissonNET.App/TransmissonNET.App.csproj
-```
 
 Tests:
 
@@ -76,8 +70,6 @@ dotnet test
 chmod +x TransmissionNET-*-x86_64.AppImage
 ./TransmissionNET-*-x86_64.AppImage
 ```
-
-If WebKitGTK is missing on the system, the AppImage prints install hints (`webkit2gtk4.1` on Fedora).
 
 ## License
 

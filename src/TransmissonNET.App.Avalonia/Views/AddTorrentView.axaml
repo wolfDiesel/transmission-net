@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TransmissonNET.App.Avalonia.ViewModels"
+             x:Class="TransmissonNET.App.Avalonia.Views.AddTorrentView"
+             x:DataType="vm:AddTorrentViewModel"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch">
+  <DockPanel LastChildFill="True">
+    <StackPanel DockPanel.Dock="Top" Spacing="4" Margin="0,0,0,16">
+      <TextBlock Classes="page-title" Text="{Binding PageTitle}" />
+      <TextBlock Classes="text-muted" Text="{Binding PageSubtitle}" TextWrapping="Wrap" />
+    </StackPanel>
+
+    <Grid RowDefinitions="Auto,*" RowSpacing="16">
+      <Border Grid.Row="0" Classes="island-inner" Padding="16" HorizontalAlignment="Stretch">
+        <StackPanel Spacing="12" HorizontalAlignment="Stretch">
+          <TextBlock Classes="section-title" Text="{Binding TorrentFileLabel}" />
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <TextBox Text="{Binding TorrentFilePath}" Watermark="{Binding TorrentFileLabel}" />
+            <Button Grid.Column="1" Classes="btn-ghost" Content="{Binding BrowseLabel}" Command="{Binding BrowseTorrentCommand}" />
+          </Grid>
+          <StackPanel Spacing="4" Margin="0,8,0,0">
+            <TextBlock Classes="field-label" Text="{Binding DownloadDirLabel}" />
+            <TextBox Text="{Binding DownloadDir}" Watermark="{Binding DownloadDirLabel}" />
+          </StackPanel>
+          <CheckBox Content="{Binding AddPausedLabel}" IsChecked="{Binding AddPaused}" Margin="0,4,0,0" />
+          <Button Classes="btn-primary" Content="{Binding AddLabel}" Command="{Binding AddCommand}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left" />
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Row="1"
+              Classes="island-inner"
+              Padding="16"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              IsVisible="{Binding HasPreview}">
+        <DockPanel LastChildFill="True">
+          <StackPanel DockPanel.Dock="Top" Spacing="4" Margin="0,0,0,12">
+            <TextBlock Classes="section-title" Text="{Binding PreviewTitle}" />
+            <TextBlock Classes="text-muted" Text="{Binding PreviewMeta}" TextWrapping="Wrap" />
+          </StackPanel>
+          <ListBox ItemsSource="{Binding PreviewFiles}" />
+        </DockPanel>
+      </Border>
+    </Grid>
+  </DockPanel>
+</UserControl>

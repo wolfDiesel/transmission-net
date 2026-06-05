@@ -1,0 +1,195 @@
+<Window xmlns="https://github.com/avaloniaui"
+
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+        xmlns:vm="using:TransmissonNET.App.Avalonia.ViewModels"
+
+        xmlns:views="using:TransmissonNET.App.Avalonia.Views"
+
+        xmlns:conv="using:TransmissonNET.App.Avalonia.Converters"
+
+        x:Class="TransmissonNET.App.Avalonia.Views.MainWindow"
+
+        x:DataType="vm:MainWindowViewModel"
+
+        Background="{DynamicResource SurfaceCanvasBrush}"
+
+        MinWidth="960"
+
+        MinHeight="600"
+
+        Padding="12">
+
+
+
+  <Grid>
+
+    <DockPanel LastChildFill="True">
+
+      <Border DockPanel.Dock="Bottom"
+
+              Classes="island"
+
+              Margin="0,12,0,0"
+
+              Padding="16,10">
+
+        <Grid ColumnDefinitions="Auto,*">
+
+          <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+
+            <Ellipse Width="12" Height="12"
+
+                     Fill="{Binding StatusBar.IsDaemonConnected, Converter={x:Static conv:ConnectionBrushConverter.Instance}}" />
+
+            <TextBlock Text="{Binding StatusBar.DaemonStatus}"
+
+                       Classes="text-muted"
+
+                       VerticalAlignment="Center" />
+
+          </StackPanel>
+
+
+
+          <StackPanel Grid.Column="1"
+
+                      Orientation="Horizontal"
+
+                      Spacing="20"
+
+                      VerticalAlignment="Center"
+
+                      HorizontalAlignment="Right">
+
+            <TextBlock Classes="text-muted"
+                       Text="{Binding StatusBar.DownloadSpeed, Converter={x:Static conv:SpeedFormatterConverter.Instance}, StringFormat=↓ {0}}" />
+
+            <TextBlock Classes="text-muted"
+                       Text="{Binding StatusBar.UploadSpeed, Converter={x:Static conv:SpeedFormatterConverter.Instance}, StringFormat=↑ {0}}" />
+
+            <StackPanel Orientation="Horizontal" Spacing="4">
+
+              <TextBlock Classes="text-muted" Text="{Binding StatusBar.DownloadingLabel}" />
+
+              <TextBlock Classes="accent-text" Text="{Binding StatusBar.DownloadingCount}" />
+
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="4">
+
+              <TextBlock Classes="text-muted" Text="{Binding StatusBar.CompletedLabel}" />
+
+              <TextBlock Classes="accent-text" Text="{Binding StatusBar.CompletedCount}" />
+
+            </StackPanel>
+
+          </StackPanel>
+
+        </Grid>
+
+      </Border>
+
+
+
+      <Grid ColumnDefinitions="220,*" ColumnSpacing="12">
+
+        <Border Grid.Column="0" Classes="island" Padding="16,20">
+
+          <DockPanel LastChildFill="True">
+
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,20">
+
+              <Image Source="avares://TransmissonNET.App/Assets/transmission-net.png"
+
+                     Width="36" Height="36" />
+
+              <StackPanel VerticalAlignment="Center">
+
+                <TextBlock Text="Transmission" FontWeight="SemiBold" FontSize="15" />
+
+                <TextBlock Text="NET" Classes="accent-text" FontSize="13" Margin="0,-2,0,0" />
+
+              </StackPanel>
+
+            </StackPanel>
+
+
+
+            <StackPanel Spacing="2">
+
+              <Button Classes="nav-item"
+
+                      Classes.active="{Binding NavTorrentsActive}"
+
+                      Content="{Binding NavTorrentsLabel}"
+
+                      Command="{Binding NavigateTorrentsCommand}" />
+
+              <Button Classes="nav-item"
+
+                      Classes.active="{Binding NavAddActive}"
+
+                      Content="{Binding NavAddLabel}"
+
+                      Command="{Binding NavigateAddTorrentCommand}" />
+
+              <Button Classes="nav-item"
+
+                      Classes.active="{Binding NavSettingsActive}"
+
+                      Content="{Binding NavSettingsLabel}"
+
+                      Command="{Binding NavigateSettingsCommand}" />
+
+            </StackPanel>
+
+          </DockPanel>
+
+        </Border>
+
+
+
+        <Border Grid.Column="1"
+
+                Classes="island"
+
+                Padding="20"
+
+                HorizontalAlignment="Stretch"
+
+                VerticalAlignment="Stretch">
+
+          <ContentControl Content="{Binding CurrentPage}"
+
+                          HorizontalAlignment="Stretch"
+
+                          VerticalAlignment="Stretch"
+
+                          HorizontalContentAlignment="Stretch"
+
+                          VerticalContentAlignment="Stretch" />
+
+        </Border>
+
+      </Grid>
+
+    </DockPanel>
+
+
+
+    <views:AppToastHost x:Name="ToastHost"
+
+                        HorizontalAlignment="Right"
+
+                        VerticalAlignment="Top"
+
+                        Margin="20,20,20,0"
+
+                        ZIndex="200" />
+
+  </Grid>
+
+</Window>
+
+

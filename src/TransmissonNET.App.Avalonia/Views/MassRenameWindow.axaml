@@ -1,0 +1,181 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TransmissonNET.App.Avalonia.ViewModels"
+        xmlns:mr="using:TransmissonNET.App.Avalonia.Features.MassRename"
+        xmlns:conv="using:TransmissonNET.App.Avalonia.Converters"
+        x:Class="TransmissonNET.App.Avalonia.Views.MassRenameWindow"
+        x:DataType="vm:MassRenameViewModel"
+        Title="{Binding Title}"
+        Width="1180"
+        Height="760"
+        MinWidth="900"
+        MinHeight="560"
+        Background="{DynamicResource SurfaceCanvasBrush}"
+        Padding="16"
+        WindowStartupLocation="CenterOwner">
+  <Border Classes="island" Padding="0">
+    <DockPanel LastChildFill="True">
+      <Border DockPanel.Dock="Top" Padding="20,16" BorderBrush="{DynamicResource BorderMutedBrush}" BorderThickness="0,0,0,1">
+        <StackPanel Spacing="4">
+          <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" />
+          <TextBlock Text="{Binding ScopeDetail}" Classes="text-muted" FontSize="12" />
+        </StackPanel>
+      </Border>
+
+      <Border DockPanel.Dock="Bottom" Padding="16,12" BorderBrush="{DynamicResource BorderMutedBrush}" BorderThickness="0,1,0,0">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+          <Button Classes="btn-ghost" Content="{Binding CancelLabel}" Click="OnCancel" IsEnabled="{Binding !IsBusy}" />
+          <Button Classes="btn-primary" Content="{Binding ApplyButtonText}" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanApply}" />
+        </StackPanel>
+      </Border>
+
+      <Grid ColumnDefinitions="2*,6,3*" Margin="0">
+        <ScrollViewer Grid.Column="0"
+                      Margin="16,16,8,16"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto"
+                      ClipToBounds="True">
+          <StackPanel Spacing="12">
+            <WrapPanel Orientation="Horizontal">
+              <Button Classes="option-chip" Classes.selected="{Binding IsRegexMode}" Content="{Binding ModeLabelRegex}" Command="{Binding SelectModeCommand}" CommandParameter="0" Margin="0,0,8,8" />
+              <Button Classes="option-chip" Classes.selected="{Binding IsFindReplaceMode}" Content="{Binding ModeLabelFindReplace}" Command="{Binding SelectModeCommand}" CommandParameter="1" Margin="0,0,8,8" />
+              <Button Classes="option-chip" Classes.selected="{Binding IsPrefixSuffixMode}" Content="{Binding ModeLabelPrefixSuffix}" Command="{Binding SelectModeCommand}" CommandParameter="2" Margin="0,0,8,8" />
+              <Button Classes="option-chip" Classes.selected="{Binding IsNumberingMode}" Content="{Binding ModeLabelNumbering}" Command="{Binding SelectModeCommand}" CommandParameter="3" Margin="0,0,8,8" />
+              <Button Classes="option-chip" Classes.selected="{Binding IsTemplateMode}" Content="{Binding ModeLabelTemplate}" Command="{Binding SelectModeCommand}" CommandParameter="4" Margin="0,0,8,8" />
+            </WrapPanel>
+
+            <Border Classes="island-inner" Padding="12">
+              <StackPanel Spacing="8">
+                <TextBlock Text="{Binding GeneralSummary}" Classes="text-muted" FontSize="12" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding HelpTitle}" FontWeight="SemiBold" FontSize="13" />
+                <TextBlock Text="{Binding HelpSummary}" Classes="text-muted" FontSize="12" TextWrapping="Wrap" />
+                <ItemsControl ItemsSource="{Binding HelpExamples}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <TextBlock Text="{Binding StringFormat='• {0}'}" Classes="text-muted" FontSize="12" TextWrapping="Wrap" Margin="8,0,0,2" />
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="{Binding GeneralStemSort}" Classes="text-muted" FontSize="11" TextWrapping="Wrap" Margin="0,4,0,0" />
+              </StackPanel>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Spacing="16">
+              <CheckBox Content="{Binding StemOnlyLabel}" IsChecked="{Binding StemOnly}" />
+              <StackPanel Spacing="4">
+                <TextBlock Text="{Binding SortLabel}" Classes="text-muted" FontSize="12" />
+                <ComboBox Width="180" ItemsSource="{Binding SortOptionLabels}" SelectedIndex="{Binding SortIndex}" />
+              </StackPanel>
+            </StackPanel>
+
+            <StackPanel Spacing="10" IsVisible="{Binding IsRegexMode}">
+              <TextBlock Text="{Binding PatternLabel}" Classes="text-muted" FontSize="12" />
+              <TextBox Text="{Binding RegexPattern}" />
+              <TextBlock Text="{Binding ReplacementLabel}" Classes="text-muted" FontSize="12" />
+              <TextBox Text="{Binding RegexReplacement}" Watermark="$1 $2.mkv" />
+              <TextBlock Text="{Binding FlagsLabel}" Classes="text-muted" FontSize="12" />
+              <TextBox Text="{Binding RegexFlags}" Watermark="gim" />
+            </StackPanel>
+
+            <StackPanel Spacing="10" IsVisible="{Binding IsFindReplaceMode}">
+              <TextBlock Text="{Binding FindLabel}" Classes="text-muted" FontSize="12" />
+              <TextBox Text="{Binding Find}" />
+              <TextBlock Text="{Binding ReplaceLabel}" Classes="text-muted" FontSize="12" />
+              <TextBox Text="{Binding Replace}" />
+              <CheckBox Content="{Binding CaseSensitiveLabel}" IsChecked="{Binding CaseSensitive}" />
+            </StackPanel>
+
+            <StackPanel Spacing="10" IsVisible="{Binding IsPrefixSuffixMode}">
+              <TextBlock Text="{Binding PrefixLabel}" Classes="text-muted" FontSize="12" />
+              <TextBox Text="{Binding Prefix}" />
+              <TextBlock Text="{Binding SuffixLabel}" Classes="text-muted" FontSize="12" />
+              <TextBox Text="{Binding Suffix}" />
+            </StackPanel>
+
+            <StackPanel Spacing="10" IsVisible="{Binding IsNumberingMode}">
+              <TextBlock Text="{Binding TemplateLabel}" Classes="text-muted" FontSize="12" />
+              <TextBox Text="{Binding NumberingTemplate}" Watermark="{Binding NumberingPlaceholder}" />
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <StackPanel Grid.Column="0" Spacing="4">
+                  <TextBlock Text="{Binding StartLabel}" Classes="text-muted" FontSize="12" />
+                  <NumericUpDown Value="{Binding NumberingStart}" Minimum="0" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="4">
+                  <TextBlock Text="{Binding StepLabel}" Classes="text-muted" FontSize="12" />
+                  <NumericUpDown Value="{Binding NumberingStep}" Minimum="1" />
+                </StackPanel>
+              </Grid>
+            </StackPanel>
+
+            <StackPanel Spacing="10" IsVisible="{Binding IsTemplateMode}">
+              <TextBlock Text="{Binding TemplateLabel}" Classes="text-muted" FontSize="12" />
+              <TextBox Text="{Binding Template}" Watermark="{Binding TemplatePlaceholder}" />
+            </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+
+        <GridSplitter Grid.Column="1" Width="6" Background="Transparent" />
+
+        <DockPanel Grid.Column="2" Margin="8,16,16,16" LastChildFill="True" ClipToBounds="True">
+          <TextBlock DockPanel.Dock="Top" Text="{Binding PreviewTitle}" FontWeight="Medium" Margin="0,0,0,8" />
+
+          <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding ValidationErrors}" Margin="0,0,0,4">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding}" Foreground="{DynamicResource DangerBrush}" FontSize="12" TextWrapping="Wrap" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding ValidationWarnings}" Margin="0,0,0,8">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding}" Classes="text-muted" FontSize="12" TextWrapping="Wrap" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <Border Classes="island-inner" Padding="0">
+            <DockPanel LastChildFill="True">
+              <Grid DockPanel.Dock="Top" ColumnDefinitions="*,24,*" Background="{DynamicResource SurfaceRaisedBrush}" Margin="8,8,8,0" Height="32">
+                <TextBlock Grid.Column="0" Text="{Binding OldNameLabel}" Classes="text-muted" FontSize="12" FontWeight="Medium" VerticalAlignment="Center" Margin="8,0" />
+                <TextBlock Grid.Column="2" Text="{Binding NewNameLabel}" Classes="text-muted" FontSize="12" FontWeight="Medium" VerticalAlignment="Center" Margin="8,0" />
+              </Grid>
+
+              <TextBlock DockPanel.Dock="Bottom"
+                         Text="{Binding PreviewLimitedText}"
+                         IsVisible="{Binding ShowPreviewLimited}"
+                         Classes="text-muted"
+                         FontSize="12"
+                         HorizontalAlignment="Center"
+                         Margin="0,8" />
+
+              <TextBlock Text="{Binding NoFilesLabel}"
+                         IsVisible="{Binding !HasPreviewRows}"
+                         Classes="text-muted"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center" />
+
+              <ScrollViewer IsVisible="{Binding HasPreviewRows}">
+                <ItemsControl ItemsSource="{Binding PreviewRows}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="mr:RenamePlanEntry">
+                      <Border BorderBrush="{DynamicResource BorderMutedBrush}" BorderThickness="0,0,0,1" Padding="8,5" ToolTip.Tip="{Binding Path}">
+                        <Grid ColumnDefinitions="*,24,*">
+                          <TextBlock Grid.Column="0" Text="{Binding OldName}" FontSize="12" TextTrimming="CharacterEllipsis" Opacity="0.7" />
+                          <TextBlock Grid.Column="1" Text="→" HorizontalAlignment="Center" Classes="text-muted" FontSize="12" />
+                          <TextBlock Grid.Column="2" Text="{Binding NewName}" FontSize="12" TextTrimming="CharacterEllipsis"
+                                     Foreground="{Binding Changed, Converter={x:Static conv:ChangedToAccentConverter.Instance}}" />
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </DockPanel>
+          </Border>
+        </DockPanel>
+      </Grid>
+    </DockPanel>
+  </Border>
+</Window>
