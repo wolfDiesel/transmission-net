@@ -1,0 +1,60 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TransmissonNET.App.Avalonia.ViewModels"
+        xmlns:contracts="using:TransmissonNET.Application.Contracts"
+        x:Class="TransmissonNET.App.Avalonia.Views.TorrentDetailsWindow"
+        x:DataType="vm:TorrentDetailsViewModel"
+        Title="Torrent details"
+        Width="760"
+        Height="560"
+        Background="{DynamicResource SurfaceCanvasBrush}"
+        Padding="16"
+        WindowStartupLocation="CenterOwner">
+  <Border Classes="island" Padding="16">
+    <TabControl>
+      <TabItem Header="General">
+        <StackPanel Spacing="8" Margin="8">
+          <TextBlock Text="{Binding Name}" Classes="page-title" />
+          <TextBlock Text="{Binding Status}" Classes="text-muted" />
+          <TextBlock Text="{Binding Progress}" Classes="accent-text" />
+          <TextBlock Text="{Binding DownloadDir}" Classes="text-muted" />
+          <TextBlock Text="{Binding Hash}" Classes="text-muted" FontSize="12" />
+          <TextBlock Text="{Binding Comment}" TextWrapping="Wrap" Classes="text-muted" />
+        </StackPanel>
+      </TabItem>
+      <TabItem Header="Transfer">
+        <TextBlock Margin="8" Text="{Binding TransferSummary}" Classes="text-muted" />
+      </TabItem>
+      <TabItem Header="Files">
+        <DockPanel Margin="8">
+          <Button DockPanel.Dock="Top"
+                  Classes="btn-ghost"
+                  Content="Mass rename all…"
+                  Command="{Binding MassRenameAllCommand}"
+                  HorizontalAlignment="Left"
+                  Margin="0,0,0,8" />
+          <Border Classes="island-inner" Padding="4">
+            <TreeView ItemsSource="{Binding FileTree}"
+                      SelectedItem="{Binding SelectedFileNode}">
+              <TreeView.ContextMenu>
+                <ContextMenu>
+                  <MenuItem Header="Rename"
+                            Command="{Binding RenameSelectedFileCommand}"
+                            IsEnabled="{Binding SelectedFileNode, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                  <MenuItem Header="Mass rename folder…"
+                            Command="{Binding MassRenameSelectedFolderCommand}"
+                            IsEnabled="{Binding SelectedFileNode.IsFolder}" />
+                </ContextMenu>
+              </TreeView.ContextMenu>
+              <TreeView.ItemTemplate>
+                <TreeDataTemplate DataType="contracts:TorrentFileNodeDto" ItemsSource="{Binding Children}">
+                  <TextBlock Text="{Binding Name}" ToolTip.Tip="{Binding Path}" />
+                </TreeDataTemplate>
+              </TreeView.ItemTemplate>
+            </TreeView>
+          </Border>
+        </DockPanel>
+      </TabItem>
+    </TabControl>
+  </Border>
+</Window>

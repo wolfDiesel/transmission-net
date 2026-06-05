@@ -1,0 +1,110 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TransmissonNET.App.Avalonia.ViewModels"
+             x:Class="TransmissonNET.App.Avalonia.Views.TorrentsView"
+             x:DataType="vm:TorrentsViewModel"
+             x:Name="Root"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch">
+  <DockPanel LastChildFill="True">
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+      <StackPanel Spacing="4">
+        <TextBlock Classes="page-title" Text="{Binding PageTitle}" />
+        <TextBlock Classes="text-muted" Text="{Binding StatusText}" />
+      </StackPanel>
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+        <Button Classes="btn-ghost" Content="{Binding RefreshButtonText}" Command="{Binding RefreshCommand}" />
+        <Button Classes="btn-ghost" Content="{Binding ColumnsButtonText}">
+          <Button.Flyout>
+            <Flyout Placement="BottomEdgeAlignedRight">
+              <StackPanel Width="300" Spacing="8">
+                <TextBlock Text="{Binding ColumnsPanelTitle}" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding ColumnsPanelHint}" Classes="text-muted" FontSize="11" />
+                <ItemsControl x:Name="ColumnPickerList" ItemsSource="{Binding TableColumns}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:TorrentColumnItemViewModel">
+                      <Border Classes="column-picker-row"
+                              Margin="0,2"
+                              Padding="8,6"
+                              CornerRadius="6"
+                              BorderThickness="1"
+                              BorderBrush="{DynamicResource BorderMutedBrush}"
+                              Background="{DynamicResource SurfaceRaisedBrush}">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                          <TextBlock Grid.Column="0"
+                                     Text="⋮⋮"
+                                     Classes="text-muted"
+                                     FontSize="12"
+                                     Margin="0,0,8,0"
+                                     VerticalAlignment="Center"
+                                     PointerPressed="OnColumnDragHandlePressed" />
+                          <TextBlock Grid.Column="1"
+                                     Text="{Binding Label}"
+                                     VerticalAlignment="Center" />
+                          <CheckBox Grid.Column="2" IsChecked="{Binding Visible}" />
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+        <Button Classes="btn-primary" Content="{Binding DetailsButtonText}" Command="{Binding OpenDetailsCommand}" />
+      </StackPanel>
+    </Grid>
+
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+      <TextBox Text="{Binding NameFilterQuery}"
+               Watermark="{Binding NameFilterPlaceholder}"
+               MinWidth="200" />
+      <Button Grid.Column="1"
+              Classes="btn-ghost"
+              Content="{Binding ClearFilterButtonText}"
+              Command="{Binding ClearNameFilterCommand}"
+              IsVisible="{Binding HasNameFilter}"
+              Margin="8,0,0,0" />
+    </Grid>
+
+    <TextBlock DockPanel.Dock="Bottom"
+               Text="{Binding ErrorMessage}"
+               Foreground="{DynamicResource DangerBrush}"
+               Margin="0,12,0,0" />
+
+    <Border Classes="island-inner" Padding="4">
+      <DataGrid x:Name="TorrentsGrid"
+                ItemsSource="{Binding Torrents}"
+                SelectedItem="{Binding SelectedTorrent}"
+                AutoGenerateColumns="False"
+                IsReadOnly="True"
+                CanUserReorderColumns="False"
+                CanUserResizeColumns="True"
+                CanUserSortColumns="True"
+                Sorting="OnDataGridSorting"
+                DoubleTapped="OnRowDoubleTapped">
+        <DataGrid.Styles>
+          <Style Selector="DataGridColumnHeader">
+            <Setter Property="ContextMenu" Value="{x:Null}" />
+          </Style>
+          <Style Selector="DataGridRow">
+            <Setter Property="ContextMenu">
+              <ContextMenu DataContext="{Binding DataContext, ElementName=Root}">
+                <MenuItem Header="{Binding ContextMenuStart}" Command="{Binding StartSelectedCommand}" />
+                <MenuItem Header="{Binding ContextMenuStop}" Command="{Binding StopSelectedCommand}" />
+                <MenuItem Header="{Binding ContextMenuVerify}" Command="{Binding VerifySelectedCommand}" />
+                <Separator />
+                <MenuItem Header="{Binding ContextMenuHigh}" Command="{Binding SetPriorityCommand}" CommandParameter="high" />
+                <MenuItem Header="{Binding ContextMenuNormal}" Command="{Binding SetPriorityCommand}" CommandParameter="normal" />
+                <MenuItem Header="{Binding ContextMenuLow}" Command="{Binding SetPriorityCommand}" CommandParameter="low" />
+                <Separator />
+                <MenuItem Header="{Binding ContextMenuMove}" Command="{Binding MoveSelectedCommand}" />
+                <MenuItem Header="{Binding ContextMenuRemove}" Command="{Binding RemoveSelectedCommand}" />
+              </ContextMenu>
+            </Setter>
+          </Style>
+        </DataGrid.Styles>
+      </DataGrid>
+    </Border>
+  </DockPanel>
+</UserControl>

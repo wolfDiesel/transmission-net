@@ -2,13 +2,11 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 PKG="$ROOT/packaging/appimage"
-WWW="$ROOT/src/TransmissonNET.App/wwwroot"
-PUB="$ROOT/web/transmission-ui/public"
+ASSETS="$ROOT/src/TransmissonNET.App.Avalonia/Assets"
 
-mkdir -p "$WWW" "$PUB"
+mkdir -p "$ASSETS"
 for f in transmission-net.svg transmission-net-mark.svg transmission-net-tray.svg; do
-  cp "$PKG/$f" "$WWW/$f"
-  cp "$PKG/$f" "$PUB/$f"
+  cp "$PKG/$f" "$ASSETS/$f"
 done
 
 render_png() {
@@ -25,9 +23,7 @@ render_png() {
   fi
 }
 
-render_png "$PKG/transmission-net.svg" "$WWW/transmission-net.png" 256
-render_png "$PKG/transmission-net-tray.svg" "$WWW/transmission-net-tray.png" 128
-cp "$WWW/transmission-net.png" "$PUB/transmission-net.png"
-cp "$WWW/transmission-net-tray.png" "$PUB/transmission-net-tray.png"
+render_png "$PKG/transmission-net.svg" "$ASSETS/transmission-net.png" 256
+render_png "$PKG/transmission-net-tray.svg" "$ASSETS/transmission-net-tray.png" 128
 
-echo "Brand icons synced to wwwroot and public."
+echo "Brand icons synced to Avalonia Assets."

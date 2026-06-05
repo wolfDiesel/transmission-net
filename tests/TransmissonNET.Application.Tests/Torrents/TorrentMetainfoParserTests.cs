@@ -22,18 +22,6 @@ public class TorrentMetainfoParserTests
     }
 
     [Fact]
-    public void BencodeReader_ReadsMultiFileInfo()
-    {
-        const string bencode =
-            "d4:infod5:filesld6:lengthi10e4:pathl4:dir15:a.txteed6:lengthi20e4:pathl4:dir15:b.txteee4:name6:bundleee";
-
-        var reader = new BencodeReader(Encoding.UTF8.GetBytes(bencode));
-        var root = reader.ReadDictionary();
-
-        Assert.True(root.ContainsKey("info"));
-    }
-
-    [Fact]
     public void Parse_MultiFileTorrent()
     {
         const string bencode =

@@ -21,7 +21,4 @@ apt-get install -y --no-install-recommends \
   libgtk-3-dev \
   libayatana-appindicator3-1 \
   libnotify4 \
-  libnotify-dev \
-  libwebkit2gtk-4.1-0 \
-  libwebkit2gtk-4.1-dev \
-  libjavascriptcoregtk-4.1-0
+  libnotify-dev

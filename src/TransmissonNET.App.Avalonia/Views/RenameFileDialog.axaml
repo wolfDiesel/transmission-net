@@ -1,0 +1,21 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="TransmissonNET.App.Avalonia.Views.RenameFileDialog"
+        Title="Rename"
+        Width="440"
+        Height="220"
+        Background="{DynamicResource SurfaceCanvasBrush}"
+        Padding="16"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+  <Border Classes="island" Padding="16">
+    <StackPanel Spacing="12">
+      <TextBlock x:Name="PathText" Classes="text-muted" TextWrapping="Wrap" FontSize="12" />
+      <TextBox x:Name="NameBox" Watermark="New name" />
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+        <Button Classes="btn-ghost" Content="Cancel" Click="OnCancel" />
+        <Button Classes="btn-primary" Content="Rename" Click="OnConfirm" />
+      </StackPanel>
+    </StackPanel>
+  </Border>
+</Window>
