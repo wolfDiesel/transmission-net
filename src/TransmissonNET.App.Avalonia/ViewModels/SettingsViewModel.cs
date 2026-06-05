@@ -78,6 +78,8 @@ internal sealed partial class SettingsViewModel : ViewModelBase
     public bool IsAppearanceSystem => Appearance == UiAppearances.System;
     public bool IsLanguageEnglish => Language == UiLanguages.English;
     public bool IsLanguageRussian => Language == UiLanguages.Russian;
+    public bool IsLanguageGerman => Language == UiLanguages.German;
+    public bool IsLanguageFrench => Language == UiLanguages.French;
 
     public string ConnectionTitle => T("settings.connection.title");
     public string ConnectionSubtitle => T("settings.connection.subtitle");
@@ -121,6 +123,8 @@ internal sealed partial class SettingsViewModel : ViewModelBase
     public string LanguageLabel => T("settings.language.label");
     public string LanguageEnglishLabel => T("settings.language.en");
     public string LanguageRussianLabel => T("settings.language.ru");
+    public string LanguageGermanLabel => T("settings.language.de");
+    public string LanguageFrenchLabel => T("settings.language.fr");
     public string WindowTitle => T("settings.window.title");
     public string RefreshIntervalLabel => T("settings.window.refreshInterval");
     public string WindowWidthLabel => T("settings.window.windowWidth");
@@ -404,8 +408,12 @@ internal sealed partial class SettingsViewModel : ViewModelBase
     {
         OnPropertyChanged(nameof(IsLanguageEnglish));
         OnPropertyChanged(nameof(IsLanguageRussian));
+        OnPropertyChanged(nameof(IsLanguageGerman));
+        OnPropertyChanged(nameof(IsLanguageFrench));
         OnPropertyChanged(nameof(LanguageEnglishLabel));
         OnPropertyChanged(nameof(LanguageRussianLabel));
+        OnPropertyChanged(nameof(LanguageGermanLabel));
+        OnPropertyChanged(nameof(LanguageFrenchLabel));
     }
 
     private void NotifyLabelPropertiesChanged()
@@ -461,6 +469,8 @@ internal sealed partial class SettingsViewModel : ViewModelBase
         OnPropertyChanged(nameof(RegisterAssociationLabel));
         OnPropertyChanged(nameof(LanguageEnglishLabel));
         OnPropertyChanged(nameof(LanguageRussianLabel));
+        OnPropertyChanged(nameof(LanguageGermanLabel));
+        OnPropertyChanged(nameof(LanguageFrenchLabel));
     }
 
     private string T(string key) => _localization.T(key);

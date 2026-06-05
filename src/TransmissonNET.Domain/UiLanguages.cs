@@ -4,6 +4,8 @@ public static class UiLanguages
 {
     public const string English = "en";
     public const string Russian = "ru";
+    public const string German = "de";
+    public const string French = "fr";
 
     public const string Default = English;
 
@@ -11,6 +13,8 @@ public static class UiLanguages
     {
         English,
         Russian,
+        German,
+        French,
     };
 
     public static string Normalize(string? value) =>

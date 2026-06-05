@@ -16,9 +16,10 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ### Added
 
+- UI i18n: German (`de`) and French (`fr`) locale catalogs; language picker in Settings → Interface.
 - Torrent details → Files: three columns (name, priority icon, progress bar); file progress polls only while the Files tab is open.
 - Per-file download priority in the file tree context menu (High / Normal / Low via Transmission `torrent-set`).
-- Avalonia UI: torrent table with polling, settings, add torrent, details, mass rename, system tray, i18n (`en` / `ru`), torrent name filter with wildcards.
+- Avalonia UI: torrent table with polling, settings, add torrent, details, mass rename, system tray, i18n (`en` / `ru` / `de` / `fr`), torrent name filter with wildcards.
 - Avalonia `.torrent` launch: pending-path coordinator, Add torrent preview from file path, first-run association prompt, settings register button.
 - `TransmissonNET.Desktop` shared library for Linux tray, single-instance socket, and CLI torrent path parsing.
 - Tests for pending launch, MIME association handlers, `InspectTorrentMetainfoFromPath`, desktop message parsing, and torrent file priority RPC.
@@ -30,6 +31,7 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ### Fixed
 
+- Torrent details window: stop file poll timer, unsubscribe localization handler, and clear view model on close to avoid leaks.
 - Avalonia torrent table: stable row order on refresh/filter; progress bar binding; status bar speeds from torrent list; byte size units (GB vs TB).
 - Linux single-instance: remove stale `transmission-net.sock` when the previous process died without cleanup.
 - Linux tray: resolve `g_object_unref` from libgobject (fixes crash on Quit from tray menu on Fedora).

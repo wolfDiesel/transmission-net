@@ -18,6 +18,8 @@ internal sealed class LocalizationService
     {
         LoadCatalog("en");
         LoadCatalog("ru");
+        LoadCatalog("de");
+        LoadCatalog("fr");
     }
 
     public void SetLanguage(string? language)

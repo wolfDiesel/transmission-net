@@ -161,10 +161,12 @@
                 <StackPanel Spacing="12">
                   <TextBlock Classes="section-title" Text="{Binding LanguageTitle}" />
                   <TextBlock Classes="field-label" Text="{Binding LanguageLabel}" />
-                  <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Classes="option-chip" Classes.selected="{Binding IsLanguageEnglish}" Content="{Binding LanguageEnglishLabel}" Command="{Binding SelectLanguageCommand}" CommandParameter="en" />
-                    <Button Classes="option-chip" Classes.selected="{Binding IsLanguageRussian}" Content="{Binding LanguageRussianLabel}" Command="{Binding SelectLanguageCommand}" CommandParameter="ru" />
-                  </StackPanel>
+                  <WrapPanel Orientation="Horizontal">
+                    <Button Classes="option-chip" Classes.selected="{Binding IsLanguageEnglish}" Content="{Binding LanguageEnglishLabel}" Command="{Binding SelectLanguageCommand}" CommandParameter="en" Margin="0,0,8,8" />
+                    <Button Classes="option-chip" Classes.selected="{Binding IsLanguageRussian}" Content="{Binding LanguageRussianLabel}" Command="{Binding SelectLanguageCommand}" CommandParameter="ru" Margin="0,0,8,8" />
+                    <Button Classes="option-chip" Classes.selected="{Binding IsLanguageGerman}" Content="{Binding LanguageGermanLabel}" Command="{Binding SelectLanguageCommand}" CommandParameter="de" Margin="0,0,8,8" />
+                    <Button Classes="option-chip" Classes.selected="{Binding IsLanguageFrench}" Content="{Binding LanguageFrenchLabel}" Command="{Binding SelectLanguageCommand}" CommandParameter="fr" Margin="0,0,8,8" />
+                  </WrapPanel>
                 </StackPanel>
               </Border>
 

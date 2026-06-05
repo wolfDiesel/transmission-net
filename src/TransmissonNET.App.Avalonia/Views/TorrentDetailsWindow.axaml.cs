@@ -40,7 +40,14 @@ public partial class TorrentDetailsWindow : Window
 
     private void OnClosed(object? sender, EventArgs e)
     {
+        Loaded -= OnLoaded;
+        Closed -= OnClosed;
+        DetailsTabs.SelectionChanged -= OnTabSelectionChanged;
+
         if (DataContext is TorrentDetailsViewModel vm)
+        {
             vm.Dispose();
+            DataContext = null;
+        }
     }
 }

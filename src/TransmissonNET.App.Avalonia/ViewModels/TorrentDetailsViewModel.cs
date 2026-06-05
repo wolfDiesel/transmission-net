@@ -18,8 +18,10 @@ internal sealed partial class TorrentDetailsViewModel : ViewModelBase, IDisposab
     private readonly LocalizationService _localization;
     private readonly int _torrentId;
     private readonly DispatcherTimer _filePollTimer;
+    private readonly EventHandler _filePollTickHandler;
     private bool _filesLoaded;
     private bool _filesTabActive;
+    private bool _disposed;
 
     [ObservableProperty] private string _name = string.Empty;
     [ObservableProperty] private string _status = string.Empty;
@@ -54,13 +56,17 @@ internal sealed partial class TorrentDetailsViewModel : ViewModelBase, IDisposab
         _torrentId = torrentId;
         Name = title;
         _filePollTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
-        _filePollTimer.Tick += async (_, _) => await RefreshFileProgressAsync();
+        _filePollTickHandler = async (_, _) => await OnFilePollTickAsync();
+        _filePollTimer.Tick += _filePollTickHandler;
         _localization.LanguageChanged += RefreshLabels;
         RefreshLabels();
     }
 
     public async Task LoadSummaryAsync()
     {
+        if (_disposed)
+            return;
+
         try
         {
             var details = await FetchDetailsAsync();
@@ -80,6 +86,9 @@ internal sealed partial class TorrentDetailsViewModel : ViewModelBase, IDisposab
 
     public async void SetFilesTabActive(bool active)
     {
+        if (_disposed)
+            return;
+
         if (_filesTabActive == active)
             return;
 
@@ -169,10 +178,33 @@ internal sealed partial class TorrentDetailsViewModel : ViewModelBase, IDisposab
         await OpenMassRenameAsync(SelectedFileNode.Path);
     }
 
-    public void Dispose() => _filePollTimer.Stop();
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+
+        _disposed = true;
+        _filesTabActive = false;
+        _filePollTimer.Stop();
+        _filePollTimer.Tick -= _filePollTickHandler;
+        _localization.LanguageChanged -= RefreshLabels;
+        FileTree.Clear();
+        SelectedFileNode = null;
+    }
+
+    private async Task OnFilePollTickAsync()
+    {
+        if (_disposed)
+            return;
+
+        await RefreshFileProgressAsync();
+    }
 
     private async Task LoadFilesAsync()
     {
+        if (_disposed)
+            return;
+
         try
         {
             var details = await FetchDetailsAsync();
@@ -206,7 +238,7 @@ internal sealed partial class TorrentDetailsViewModel : ViewModelBase, IDisposab
 
     private async Task RefreshFileProgressAsync()
     {
-        if (!_filesTabActive)
+        if (_disposed || !_filesTabActive)
             return;
 
         try

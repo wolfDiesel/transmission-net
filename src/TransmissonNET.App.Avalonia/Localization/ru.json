@@ -147,6 +147,8 @@
   "settings.language.label": "Язык интерфейса",
   "settings.language.en": "English",
   "settings.language.ru": "Русский",
+  "settings.language.de": "Deutsch",
+  "settings.language.fr": "Français",
   "settings.window.title": "Окно и обновление",
   "settings.window.refreshInterval": "Интервал обновления (сек)",
   "settings.window.windowWidth": "Ширина окна",
