@@ -145,6 +145,39 @@ public class TransmissionRpcClientTests
     }
 
     [Fact]
+    public async Task SetTorrentFilePriorityAsync_SendsPriorityHigh()
+    {
+        var mockHttp = new MockHttpMessageHandler();
+        mockHttp.Expect(HttpMethod.Post, Connection.RpcUrl)
+            .Respond(_ =>
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(SessionSuccessJson(rpcVersion: 17), Encoding.UTF8, "application/json"),
+                };
+                response.Headers.Add(SessionHeader, "session-abc");
+                return response;
+            });
+
+        mockHttp.Expect(HttpMethod.Post, Connection.RpcUrl)
+            .Respond("application/json", SessionSpeedsJson());
+
+        mockHttp.Expect(HttpMethod.Post, Connection.RpcUrl)
+            .With(req =>
+            {
+                var body = req.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+                return body.Contains("torrent-set")
+                    && body.Contains("\"priority-high\":[2]");
+            })
+            .Respond("application/json", """{"result":"success","arguments":{}}""");
+
+        var client = new TransmissionRpcClient(mockHttp.ToHttpClient());
+        await client.SetTorrentFilePriorityAsync(Connection, 1, [2], TorrentBandwidthPriority.High);
+
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
     public async Task StartTorrentsAsync_SendsTorrentStart()
     {
         var mockHttp = new MockHttpMessageHandler();

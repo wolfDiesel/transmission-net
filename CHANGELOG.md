@@ -16,10 +16,12 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ### Added
 
+- Torrent details → Files: three columns (name, priority icon, progress bar); file progress polls only while the Files tab is open.
+- Per-file download priority in the file tree context menu (High / Normal / Low via Transmission `torrent-set`).
 - Avalonia UI: torrent table with polling, settings, add torrent, details, mass rename, system tray, i18n (`en` / `ru`), torrent name filter with wildcards.
 - Avalonia `.torrent` launch: pending-path coordinator, Add torrent preview from file path, first-run association prompt, settings register button.
 - `TransmissonNET.Desktop` shared library for Linux tray, single-instance socket, and CLI torrent path parsing.
-- Tests for pending launch, MIME association handlers, `InspectTorrentMetainfoFromPath`, and desktop message parsing.
+- Tests for pending launch, MIME association handlers, `InspectTorrentMetainfoFromPath`, desktop message parsing, and torrent file priority RPC.
 - Linux system tray via libayatana-appindicator; tray options in settings (`trayEnabled`, `closeToTray`, `minimizeToTray`).
 - Linux `.torrent` integration: user `.desktop` entry + `xdg-mime`; match/update all TransmissionNET shortcuts under `~/.local/share/applications/`.
 - Linux single-instance: second launch forwards path via Unix socket; running app focuses window and opens Add torrent.

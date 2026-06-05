@@ -55,6 +55,13 @@ public interface ITransmissionClient
         TorrentBandwidthPriority priority,
         CancellationToken cancellationToken = default);
 
+    Task SetTorrentFilePriorityAsync(
+        DaemonConnection connection,
+        int torrentId,
+        IReadOnlyList<int> fileIndices,
+        TorrentBandwidthPriority priority,
+        CancellationToken cancellationToken = default);
+
     Task SetTorrentLocationAsync(
         DaemonConnection connection,
         IReadOnlyList<int> ids,

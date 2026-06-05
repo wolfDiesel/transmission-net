@@ -8,4 +8,5 @@ public sealed record TorrentActionDto(
     string? Location = null,
     bool Move = false,
     string? Path = null,
-    string? Name = null);
+    string? Name = null,
+    IReadOnlyList<int>? FileIndices = null);

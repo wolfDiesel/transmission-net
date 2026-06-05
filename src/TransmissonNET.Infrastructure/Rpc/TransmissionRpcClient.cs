@@ -156,6 +156,42 @@ public sealed class TransmissionRpcClient(HttpClient http) : ITransmissionClient
         }
     }
 
+    public async Task SetTorrentFilePriorityAsync(
+        DaemonConnection connection,
+        int torrentId,
+        IReadOnlyList<int> fileIndices,
+        TorrentBandwidthPriority priority,
+        CancellationToken cancellationToken = default)
+    {
+        if (fileIndices.Count == 0)
+            return;
+
+        try
+        {
+            await EnsureSessionAsync(connection, cancellationToken);
+            var priorityKey = priority switch
+            {
+                TorrentBandwidthPriority.Low => "priority-low",
+                TorrentBandwidthPriority.High => "priority-high",
+                _ => "priority-normal",
+            };
+
+            await CallAsync(
+                connection,
+                _methodNaming.TorrentSet,
+                new Dictionary<string, object>
+                {
+                    ["ids"] = new[] { torrentId },
+                    [priorityKey] = fileIndices.ToArray(),
+                },
+                cancellationToken);
+        }
+        catch (TransmissionRpcException ex)
+        {
+            throw new DaemonConnectionException(ex.Message, ex);
+        }
+    }
+
     public async Task SetTorrentLocationAsync(
         DaemonConnection connection,
         IReadOnlyList<int> ids,

@@ -42,6 +42,18 @@ public sealed class ExecuteTorrentActionHandler(
                     ParsePriority(dto.Priority),
                     cancellationToken);
                 break;
+            case "set-file-priority":
+                if (ids.Length != 1)
+                    throw new SettingsValidationException("File priority requires exactly one torrent.");
+                if (dto.FileIndices is null || dto.FileIndices.Count == 0)
+                    throw new SettingsValidationException("At least one file index is required.");
+                await transmissionClient.SetTorrentFilePriorityAsync(
+                    settings.Daemon,
+                    ids[0],
+                    dto.FileIndices,
+                    ParsePriority(dto.Priority),
+                    cancellationToken);
+                break;
             case "move":
                 if (string.IsNullOrWhiteSpace(dto.Location))
                     throw new SettingsValidationException("Location is required.");

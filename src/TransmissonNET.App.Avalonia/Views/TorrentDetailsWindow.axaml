@@ -1,18 +1,18 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:TransmissonNET.App.Avalonia.ViewModels"
-        xmlns:contracts="using:TransmissonNET.Application.Contracts"
+        xmlns:views="using:TransmissonNET.App.Avalonia.Views"
         x:Class="TransmissonNET.App.Avalonia.Views.TorrentDetailsWindow"
         x:DataType="vm:TorrentDetailsViewModel"
         Title="Torrent details"
-        Width="760"
+        Width="820"
         Height="560"
         Background="{DynamicResource SurfaceCanvasBrush}"
         Padding="16"
         WindowStartupLocation="CenterOwner">
   <Border Classes="island" Padding="16">
-    <TabControl>
-      <TabItem Header="General">
+    <TabControl x:Name="DetailsTabs">
+      <TabItem Header="{Binding TabGeneral}">
         <StackPanel Spacing="8" Margin="8">
           <TextBlock Text="{Binding Name}" Classes="page-title" />
           <TextBlock Text="{Binding Status}" Classes="text-muted" />
@@ -22,33 +22,85 @@
           <TextBlock Text="{Binding Comment}" TextWrapping="Wrap" Classes="text-muted" />
         </StackPanel>
       </TabItem>
-      <TabItem Header="Transfer">
+      <TabItem Header="{Binding TabTransfer}">
         <TextBlock Margin="8" Text="{Binding TransferSummary}" Classes="text-muted" />
       </TabItem>
-      <TabItem Header="Files">
+      <TabItem Header="{Binding TabFiles}">
         <DockPanel Margin="8">
           <Button DockPanel.Dock="Top"
                   Classes="btn-ghost"
-                  Content="Mass rename all…"
+                  Content="{Binding MassRenameAllLabel}"
                   Command="{Binding MassRenameAllCommand}"
                   HorizontalAlignment="Left"
                   Margin="0,0,0,8" />
+          <Grid DockPanel.Dock="Top"
+                ColumnDefinitions="*,36,168"
+                Margin="20,0,4,6">
+            <TextBlock Grid.Column="0"
+                       Text="{Binding FileColumnName}"
+                       Classes="text-muted"
+                       FontSize="11"
+                       FontWeight="SemiBold" />
+            <TextBlock Grid.Column="1"
+                       Text="{Binding FileColumnPriority}"
+                       Classes="text-muted"
+                       FontSize="11"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center" />
+            <TextBlock Grid.Column="2"
+                       Text="{Binding FileColumnProgress}"
+                       Classes="text-muted"
+                       FontSize="11"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center" />
+          </Grid>
           <Border Classes="island-inner" Padding="4">
             <TreeView ItemsSource="{Binding FileTree}"
                       SelectedItem="{Binding SelectedFileNode}">
               <TreeView.ContextMenu>
                 <ContextMenu>
-                  <MenuItem Header="Rename"
+                  <MenuItem Header="{Binding RenameFileLabel}"
                             Command="{Binding RenameSelectedFileCommand}"
                             IsEnabled="{Binding SelectedFileNode, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                  <MenuItem Header="Mass rename folder…"
+                  <MenuItem Header="{Binding MassRenameFolderLabel}"
                             Command="{Binding MassRenameSelectedFolderCommand}"
                             IsEnabled="{Binding SelectedFileNode.IsFolder}" />
+                  <Separator />
+                  <MenuItem Header="{Binding FilePriorityLabel}"
+                            IsEnabled="{Binding CanSetFilePriority}">
+                    <MenuItem Header="{Binding PriorityHighLabel}"
+                              Command="{Binding SetFilePriorityCommand}"
+                              CommandParameter="high" />
+                    <MenuItem Header="{Binding PriorityNormalLabel}"
+                              Command="{Binding SetFilePriorityCommand}"
+                              CommandParameter="normal" />
+                    <MenuItem Header="{Binding PriorityLowLabel}"
+                              Command="{Binding SetFilePriorityCommand}"
+                              CommandParameter="low" />
+                  </MenuItem>
                 </ContextMenu>
               </TreeView.ContextMenu>
               <TreeView.ItemTemplate>
-                <TreeDataTemplate DataType="contracts:TorrentFileNodeDto" ItemsSource="{Binding Children}">
-                  <TextBlock Text="{Binding Name}" ToolTip.Tip="{Binding Path}" />
+                <TreeDataTemplate DataType="vm:TorrentFileNodeItemViewModel" ItemsSource="{Binding Children}">
+                  <Grid ColumnDefinitions="*,36,168">
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding Name}"
+                               ToolTip.Tip="{Binding Path}"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding PriorityGlyph}"
+                               IsVisible="{Binding ShowPriority}"
+                               Foreground="{Binding PriorityBrush}"
+                               FontSize="12"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               ToolTip.Tip="{Binding PriorityToolTip}" />
+                    <views:FileProgressBar Grid.Column="2"
+                                           DataContext="{Binding}"
+                                           Margin="4,2,0,2" />
+                  </Grid>
                 </TreeDataTemplate>
               </TreeView.ItemTemplate>
             </TreeView>
