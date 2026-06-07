@@ -57,6 +57,8 @@
   "torrentTable.contextMenu.remove": "Supprimer…",
   "torrentTable.removeDialog.title": "Supprimer le torrent",
   "torrentTable.removeDialog.aboutToRemove": "Vous êtes sur le point de supprimer :",
+  "torrentTable.removeDialog.aboutToRemoveMultiple": "Vous êtes sur le point de supprimer {count} torrents :",
+  "torrentTable.removeDialog.andMore": "…et {count} de plus",
   "torrentTable.removeDialog.deleteData": "Supprimer aussi les fichiers téléchargés du disque",
   "torrentTable.removeDialog.deleteWarning": "Les fichiers du dossier de téléchargement seront supprimés définitivement.",
   "torrentTable.removeDialog.confirm": "Supprimer",

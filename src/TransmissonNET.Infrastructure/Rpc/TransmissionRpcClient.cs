@@ -122,7 +122,11 @@ public sealed class TransmissionRpcClient(HttpClient http) : ITransmissionClient
             await CallAsync(
                 connection,
                 _methodNaming.TorrentRemove,
-                new { ids, deleteLocalData },
+                new Dictionary<string, object>
+                {
+                    ["ids"] = ids,
+                    [_methodNaming.DeleteLocalDataArg] = deleteLocalData,
+                },
                 cancellationToken);
         }
         catch (TransmissionRpcException ex)

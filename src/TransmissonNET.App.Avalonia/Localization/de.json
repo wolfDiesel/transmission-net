@@ -57,6 +57,8 @@
   "torrentTable.contextMenu.remove": "Entfernen…",
   "torrentTable.removeDialog.title": "Torrent entfernen",
   "torrentTable.removeDialog.aboutToRemove": "Sie sind dabei, Folgendes zu entfernen:",
+  "torrentTable.removeDialog.aboutToRemoveMultiple": "Sie sind dabei, {count} Torrents zu entfernen:",
+  "torrentTable.removeDialog.andMore": "…und {count} weitere",
   "torrentTable.removeDialog.deleteData": "Heruntergeladene Dateien auch von der Festplatte löschen",
   "torrentTable.removeDialog.deleteWarning": "Dateien im Download-Ordner werden dauerhaft gelöscht.",
   "torrentTable.removeDialog.confirm": "Entfernen",

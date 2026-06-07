@@ -16,6 +16,7 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ### Added
 
+- Multi-select in the torrent table and torrent details file tree (Ctrl/Shift); context menu actions apply to all selected items.
 - UI i18n: German (`de`) and French (`fr`) locale catalogs; language picker in Settings → Interface.
 - Torrent details → Files: three columns (name, priority icon, progress bar); file progress polls only while the Files tab is open.
 - Per-file download priority in the file tree context menu (High / Normal / Low via Transmission `torrent-set`).
@@ -31,6 +32,8 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ### Fixed
 
+- Remove torrent with “delete downloaded files”: RPC now sends `delete-local-data` / `delete_local_data` so Transmission actually deletes local data.
+- Bulk remove dialog: scrollable torrent list, max height ⅔ of screen (footer stays visible).
 - Torrent details window: stop file poll timer, unsubscribe localization handler, and clear view model on close to avoid leaks.
 - Avalonia torrent table: stable row order on refresh/filter; progress bar binding; status bar speeds from torrent list; byte size units (GB vs TB).
 - Linux single-instance: remove stale `transmission-net.sock` when the previous process died without cleanup.

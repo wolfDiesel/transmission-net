@@ -276,6 +276,75 @@ public class TransmissionRpcClientTests
         Assert.Equal("session-get", naming.SessionGet);
         Assert.Equal("torrent-get", naming.TorrentGet);
         Assert.Equal("session-set", naming.SessionSet);
+        Assert.Equal("delete-local-data", naming.DeleteLocalDataArg);
+    }
+
+    [Fact]
+    public async Task RemoveTorrentsAsync_SendsDeleteLocalData_WhenRpcVersion17()
+    {
+        var mockHttp = new MockHttpMessageHandler();
+        mockHttp.Expect(HttpMethod.Post, Connection.RpcUrl)
+            .Respond(_ =>
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(SessionSuccessJson(rpcVersion: 17), Encoding.UTF8, "application/json"),
+                };
+                response.Headers.Add(SessionHeader, "session-abc");
+                return response;
+            });
+
+        mockHttp.Expect(HttpMethod.Post, Connection.RpcUrl)
+            .Respond("application/json", SessionSpeedsJson());
+
+        mockHttp.Expect(HttpMethod.Post, Connection.RpcUrl)
+            .With(req =>
+            {
+                var body = req.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+                return body.Contains("torrent-remove")
+                    && body.Contains("\"delete-local-data\":true")
+                    && body.Contains("\"ids\":[3,4]");
+            })
+            .Respond("application/json", """{"result":"success","arguments":{}}""");
+
+        var client = new TransmissionRpcClient(mockHttp.ToHttpClient());
+        await client.RemoveTorrentsAsync(Connection, [3, 4], deleteLocalData: true);
+
+        mockHttp.VerifyNoOutstandingExpectation();
+    }
+
+    [Fact]
+    public async Task RemoveTorrentsAsync_SendsDeleteLocalData_WhenRpcVersion16()
+    {
+        var mockHttp = new MockHttpMessageHandler();
+        mockHttp.Expect(HttpMethod.Post, Connection.RpcUrl)
+            .Respond(_ =>
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(SessionSuccessJson(rpcVersion: 16), Encoding.UTF8, "application/json"),
+                };
+                response.Headers.Add(SessionHeader, "session-abc");
+                return response;
+            });
+
+        mockHttp.Expect(HttpMethod.Post, Connection.RpcUrl)
+            .Respond("application/json", SessionSpeedsJson());
+
+        mockHttp.Expect(HttpMethod.Post, Connection.RpcUrl)
+            .With(req =>
+            {
+                var body = req.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+                return body.Contains("torrent_remove")
+                    && body.Contains("\"delete_local_data\":true")
+                    && body.Contains("\"ids\":[5]");
+            })
+            .Respond("application/json", """{"result":"success","arguments":{}}""");
+
+        var client = new TransmissionRpcClient(mockHttp.ToHttpClient());
+        await client.RemoveTorrentsAsync(Connection, [5], deleteLocalData: true);
+
+        mockHttp.VerifyNoOutstandingExpectation();
     }
 
     private const string SessionHeader = "X-Transmission-Session-Id";

@@ -57,6 +57,8 @@
   "torrentTable.contextMenu.remove": "Remove…",
   "torrentTable.removeDialog.title": "Remove torrent",
   "torrentTable.removeDialog.aboutToRemove": "You are about to remove:",
+  "torrentTable.removeDialog.aboutToRemoveMultiple": "You are about to remove {count} torrents:",
+  "torrentTable.removeDialog.andMore": "…and {count} more",
   "torrentTable.removeDialog.deleteData": "Also delete downloaded files from disk",
   "torrentTable.removeDialog.deleteWarning": "Files in the download folder will be permanently deleted.",
   "torrentTable.removeDialog.confirm": "Remove",

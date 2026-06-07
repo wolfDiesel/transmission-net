@@ -18,6 +18,8 @@ internal sealed class RpcMethodNaming
 
     public string TorrentRemove => _rpcVersion >= 17 ? "torrent-remove" : "torrent_remove";
 
+    public string DeleteLocalDataArg => _rpcVersion >= 17 ? "delete-local-data" : "delete_local_data";
+
     public string TorrentVerify => _rpcVersion >= 17 ? "torrent-verify" : "torrent_verify";
 
     public string TorrentSet => _rpcVersion >= 17 ? "torrent-set" : "torrent_set";

@@ -34,7 +34,17 @@ internal sealed partial class TorrentDetailsViewModel : ViewModelBase, IDisposab
     [ObservableProperty] private TorrentFileNodeItemViewModel? _selectedFileNode;
     [ObservableProperty] private string? _errorMessage;
 
-    public bool CanSetFilePriority => SelectedFileNode is { IsFolder: false };
+    private IReadOnlyList<TorrentFileNodeItemViewModel> _selectedFileNodes = Array.Empty<TorrentFileNodeItemViewModel>();
+
+    public event Action<IReadOnlyList<string>>? FileTreeSelectionRestoreRequested;
+
+    public bool CanRenameFile =>
+        GetSelectedFileNodes().Count == 1 && GetSelectedFileNodes()[0] is { IsFolder: false };
+
+    public bool CanMassRenameFolder =>
+        GetSelectedFileNodes().Count == 1 && GetSelectedFileNodes()[0].IsFolder;
+
+    public bool CanSetFilePriority => GetSelectedFileIndices().Count > 0;
     [ObservableProperty] private string _tabGeneral = string.Empty;
     [ObservableProperty] private string _tabTransfer = string.Empty;
     [ObservableProperty] private string _tabFiles = string.Empty;
@@ -104,18 +114,30 @@ internal sealed partial class TorrentDetailsViewModel : ViewModelBase, IDisposab
         _filePollTimer.Stop();
     }
 
+    public void SetSelectedFileNodes(IReadOnlyList<TorrentFileNodeItemViewModel> nodes)
+    {
+        _selectedFileNodes = nodes;
+        SelectedFileNode = nodes.Count switch
+        {
+            0 => null,
+            1 => nodes[0],
+            _ => nodes[^1],
+        };
+        NotifyFileSelectionChanged();
+    }
+
     [RelayCommand]
     private async Task RenameSelectedFileAsync()
     {
-        if (SelectedFileNode is null)
+        if (GetSelectedFileNodes() is not [var node] || node.IsFolder)
             return;
 
-        var dialog = new RenameFileDialog(SelectedFileNode.Path, SelectedFileNode.Name);
+        var dialog = new RenameFileDialog(node.Path, node.Name);
         var owner = GetOwnerWindow();
         if (owner is not null)
             await dialog.ShowDialog(owner);
 
-        if (!dialog.Confirmed || dialog.NewName == SelectedFileNode.Name)
+        if (!dialog.Confirmed || dialog.NewName == node.Name)
             return;
 
         try
@@ -127,7 +149,7 @@ internal sealed partial class TorrentDetailsViewModel : ViewModelBase, IDisposab
                 null,
                 null,
                 false,
-                SelectedFileNode.Path,
+                node.Path,
                 dialog.NewName);
             await _handlers.InvokeAsync(sp =>
                 sp.GetRequiredService<ExecuteTorrentActionHandler>().HandleAsync(dto));
@@ -145,7 +167,8 @@ internal sealed partial class TorrentDetailsViewModel : ViewModelBase, IDisposab
     [RelayCommand]
     private async Task SetFilePriorityAsync(string priority)
     {
-        if (SelectedFileNode is not { IsFolder: false, FileIndex: { } fileIndex })
+        var fileIndices = GetSelectedFileIndices();
+        if (fileIndices.Count == 0)
             return;
 
         try
@@ -155,7 +178,7 @@ internal sealed partial class TorrentDetailsViewModel : ViewModelBase, IDisposab
                 [_torrentId],
                 false,
                 priority,
-                FileIndices: [fileIndex]);
+                FileIndices: fileIndices);
             await _handlers.InvokeAsync(sp =>
                 sp.GetRequiredService<ExecuteTorrentActionHandler>().HandleAsync(dto));
             if (_filesTabActive)
@@ -173,9 +196,9 @@ internal sealed partial class TorrentDetailsViewModel : ViewModelBase, IDisposab
     [RelayCommand]
     private async Task MassRenameSelectedFolderAsync()
     {
-        if (SelectedFileNode is not { IsFolder: true })
+        if (GetSelectedFileNodes() is not [var node] || !node.IsFolder)
             return;
-        await OpenMassRenameAsync(SelectedFileNode.Path);
+        await OpenMassRenameAsync(node.Path);
     }
 
     public void Dispose()
@@ -190,6 +213,7 @@ internal sealed partial class TorrentDetailsViewModel : ViewModelBase, IDisposab
         _localization.LanguageChanged -= RefreshLabels;
         FileTree.Clear();
         SelectedFileNode = null;
+        _selectedFileNodes = Array.Empty<TorrentFileNodeItemViewModel>();
     }
 
     private async Task OnFilePollTickAsync()
@@ -214,21 +238,20 @@ internal sealed partial class TorrentDetailsViewModel : ViewModelBase, IDisposab
                 return;
             }
 
-            var selectedPath = SelectedFileNode?.Path;
+            var selectedPaths = GetSelectedFileNodes().Select(node => node.Path).ToList();
             var tree = TorrentFileTreeBuilder.Build(details.Files);
 
             if (!_filesLoaded || FileTree.Count == 0)
             {
                 FileTree = TorrentFileNodeItemViewModel.FromDtos(tree, _localization);
                 _filesLoaded = true;
+                if (selectedPaths.Count > 0)
+                    FileTreeSelectionRestoreRequested?.Invoke(selectedPaths);
             }
             else
             {
                 ApplyFileTree(tree);
             }
-
-            if (!string.IsNullOrEmpty(selectedPath))
-                SelectedFileNode = TorrentFileNodeItemViewModel.FindByPath(FileTree, selectedPath);
         }
         catch (Exception ex)
         {
@@ -326,8 +349,26 @@ internal sealed partial class TorrentDetailsViewModel : ViewModelBase, IDisposab
         FileColumnProgress = _localization.T("torrentDetails.fileTree.columnProgress");
     }
 
-    partial void OnSelectedFileNodeChanged(TorrentFileNodeItemViewModel? value) =>
+    private IReadOnlyList<TorrentFileNodeItemViewModel> GetSelectedFileNodes() =>
+        _selectedFileNodes.Count > 0
+            ? _selectedFileNodes
+            : SelectedFileNode is not null
+                ? [SelectedFileNode]
+                : Array.Empty<TorrentFileNodeItemViewModel>();
+
+    private IReadOnlyList<int> GetSelectedFileIndices() =>
+        GetSelectedFileNodes()
+            .Where(node => !node.IsFolder && node.FileIndex.HasValue)
+            .Select(node => node.FileIndex!.Value)
+            .Distinct()
+            .ToList();
+
+    private void NotifyFileSelectionChanged()
+    {
+        OnPropertyChanged(nameof(CanRenameFile));
+        OnPropertyChanged(nameof(CanMassRenameFolder));
         OnPropertyChanged(nameof(CanSetFilePriority));
+    }
 
     private static global::Avalonia.Controls.Window? GetOwnerWindow() =>
         global::Avalonia.Application.Current?.ApplicationLifetime is global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop

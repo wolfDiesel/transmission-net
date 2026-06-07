@@ -39,6 +39,8 @@ internal sealed partial class TorrentsViewModel : ViewModelBase
     [ObservableProperty]
     private TorrentRowViewModel? _selectedTorrent;
 
+    private IReadOnlyList<TorrentRowViewModel> _selectedTorrents = Array.Empty<TorrentRowViewModel>();
+
     [ObservableProperty]
     private string _statusText = string.Empty;
 
@@ -135,6 +137,9 @@ internal sealed partial class TorrentsViewModel : ViewModelBase
     }
 
     public void SetPollingPaused(bool paused) => _pollingPaused = paused;
+
+    public void SetSelectedTorrents(IReadOnlyList<TorrentRowViewModel> selected) =>
+        _selectedTorrents = selected;
 
     public IReadOnlyList<TorrentTableColumnSettingDto> GetVisibleColumnsInOrder() =>
         TableColumns
@@ -448,42 +453,50 @@ internal sealed partial class TorrentsViewModel : ViewModelBase
     [RelayCommand]
     private async Task StartSelectedAsync()
     {
-        if (SelectedTorrent is null)
+        var ids = GetSelectedIds();
+        if (ids.Count == 0)
             return;
-        await ExecuteActionAsync("start", [SelectedTorrent.Id]);
+        await ExecuteActionAsync("start", ids);
     }
 
     [RelayCommand]
     private async Task StopSelectedAsync()
     {
-        if (SelectedTorrent is null)
+        var ids = GetSelectedIds();
+        if (ids.Count == 0)
             return;
-        await ExecuteActionAsync("stop", [SelectedTorrent.Id]);
+        await ExecuteActionAsync("stop", ids);
     }
 
     [RelayCommand]
     private async Task VerifySelectedAsync()
     {
-        if (SelectedTorrent is null)
+        var ids = GetSelectedIds();
+        if (ids.Count == 0)
             return;
-        await ExecuteActionAsync("verify", [SelectedTorrent.Id]);
+        await ExecuteActionAsync("verify", ids);
     }
 
     [RelayCommand]
     private async Task SetPriorityAsync(string priority)
     {
-        if (SelectedTorrent is null)
+        var ids = GetSelectedIds();
+        if (ids.Count == 0)
             return;
-        await ExecuteActionAsync("set-priority", [SelectedTorrent.Id], priority: priority);
+        await ExecuteActionAsync("set-priority", ids, priority: priority);
     }
 
     [RelayCommand]
     private async Task RemoveSelectedAsync()
     {
-        if (SelectedTorrent is null)
+        var targets = GetSelectedTorrents();
+        if (targets.Count == 0)
             return;
 
-        var dialog = new RemoveTorrentDialog(SelectedTorrent.Name);
+        var prompt = targets.Count == 1
+            ? $"{_localization.T("torrentTable.removeDialog.aboutToRemove")} {targets[0].Name}"
+            : BuildMultiRemovePrompt(targets);
+        var dialog = new RemoveTorrentDialog(prompt);
         var owner = GetOwnerWindow();
         if (owner is not null)
             await dialog.ShowDialog(owner);
@@ -491,17 +504,18 @@ internal sealed partial class TorrentsViewModel : ViewModelBase
         if (!dialog.Confirmed)
             return;
 
-        await ExecuteActionAsync("remove", [SelectedTorrent.Id], deleteLocalData: dialog.DeleteLocalData);
+        await ExecuteActionAsync("remove", targets.Select(t => t.Id).ToList(), deleteLocalData: dialog.DeleteLocalData);
         await RefreshAsync();
     }
 
     [RelayCommand]
     private async Task MoveSelectedAsync()
     {
-        if (SelectedTorrent is null)
+        var targets = GetSelectedTorrents();
+        if (targets.Count == 0)
             return;
 
-        var dialog = new MoveTorrentDialog(SelectedTorrent.DownloadDir);
+        var dialog = new MoveTorrentDialog(targets[0].DownloadDir);
         var owner = GetOwnerWindow();
         if (owner is not null)
             await dialog.ShowDialog(owner);
@@ -511,7 +525,7 @@ internal sealed partial class TorrentsViewModel : ViewModelBase
 
         await ExecuteActionAsync(
             "move",
-            [SelectedTorrent.Id],
+            targets.Select(t => t.Id).ToList(),
             location: dialog.Destination,
             move: dialog.MoveData);
         await RefreshAsync();
@@ -538,6 +552,31 @@ internal sealed partial class TorrentsViewModel : ViewModelBase
             SetPollingPaused(false);
             await RefreshAsync();
         }
+    }
+
+    private IReadOnlyList<TorrentRowViewModel> GetSelectedTorrents() =>
+        _selectedTorrents.Count > 0
+            ? _selectedTorrents
+            : SelectedTorrent is not null
+                ? [SelectedTorrent]
+                : Array.Empty<TorrentRowViewModel>();
+
+    private IReadOnlyList<int> GetSelectedIds() =>
+        GetSelectedTorrents().Select(t => t.Id).ToList();
+
+    private string BuildMultiRemovePrompt(IReadOnlyList<TorrentRowViewModel> targets)
+    {
+        var header = _localization.Format(
+            "torrentTable.removeDialog.aboutToRemoveMultiple",
+            ("count", targets.Count.ToString()));
+        var names = string.Join(
+            Environment.NewLine,
+            targets.Take(8).Select(t => $"• {t.Name}"));
+        if (targets.Count > 8)
+            names += Environment.NewLine + _localization.Format(
+                "torrentTable.removeDialog.andMore",
+                ("count", (targets.Count - 8).ToString()));
+        return $"{header}{Environment.NewLine}{names}";
     }
 
     private async Task ExecuteActionAsync(

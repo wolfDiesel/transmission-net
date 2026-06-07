@@ -3,19 +3,27 @@
         x:Class="TransmissonNET.App.Avalonia.Views.RemoveTorrentDialog"
         Title="Remove torrent"
         Width="420"
-        Height="240"
+        MinHeight="180"
+        SizeToContent="Height"
         Background="{DynamicResource SurfaceCanvasBrush}"
         Padding="16"
         WindowStartupLocation="CenterOwner"
         CanResize="False">
   <Border Classes="island" Padding="16">
-    <StackPanel Spacing="12">
-      <TextBlock x:Name="TorrentNameText" TextWrapping="Wrap" />
-      <CheckBox x:Name="DeleteDataCheck" Content="Also delete downloaded files from disk" />
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-        <Button Classes="btn-ghost" Content="Cancel" Click="OnCancel" />
-        <Button Classes="btn-primary" Content="Remove" Click="OnConfirm" />
+    <Grid RowDefinitions="Auto,Auto" RowSpacing="12">
+      <ScrollViewer x:Name="PromptScroll"
+                    Grid.Row="0"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Disabled">
+        <TextBlock x:Name="TorrentNameText" TextWrapping="Wrap" />
+      </ScrollViewer>
+      <StackPanel x:Name="FooterPanel" Grid.Row="1" Spacing="12">
+        <CheckBox x:Name="DeleteDataCheck" Content="Also delete downloaded files from disk" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+          <Button Classes="btn-ghost" Content="Cancel" Click="OnCancel" />
+          <Button Classes="btn-primary" Content="Remove" Click="OnConfirm" />
+        </StackPanel>
       </StackPanel>
-    </StackPanel>
+    </Grid>
   </Border>
 </Window>

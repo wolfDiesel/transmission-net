@@ -55,16 +55,17 @@
                        HorizontalAlignment="Center" />
           </Grid>
           <Border Classes="island-inner" Padding="4">
-            <TreeView ItemsSource="{Binding FileTree}"
-                      SelectedItem="{Binding SelectedFileNode}">
+            <TreeView x:Name="FileTreeView"
+                      ItemsSource="{Binding FileTree}"
+                      SelectionMode="Multiple">
               <TreeView.ContextMenu>
                 <ContextMenu>
                   <MenuItem Header="{Binding RenameFileLabel}"
                             Command="{Binding RenameSelectedFileCommand}"
-                            IsEnabled="{Binding SelectedFileNode, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            IsEnabled="{Binding CanRenameFile}" />
                   <MenuItem Header="{Binding MassRenameFolderLabel}"
                             Command="{Binding MassRenameSelectedFolderCommand}"
-                            IsEnabled="{Binding SelectedFileNode.IsFolder}" />
+                            IsEnabled="{Binding CanMassRenameFolder}" />
                   <Separator />
                   <MenuItem Header="{Binding FilePriorityLabel}"
                             IsEnabled="{Binding CanSetFilePriority}">

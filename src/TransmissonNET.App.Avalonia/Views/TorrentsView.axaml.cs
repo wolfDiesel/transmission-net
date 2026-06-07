@@ -20,6 +20,7 @@ public partial class TorrentsView : UserControl
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
+        TorrentsGrid.SelectionChanged += OnTorrentsGridSelectionChanged;
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e)
@@ -36,7 +37,22 @@ public partial class TorrentsView : UserControl
             _viewModel.TableLayoutChanged += RebuildColumns;
             _viewModel.SortStateChanged += UpdateSortHeaders;
             RebuildColumns();
+            SyncGridSelection();
         }
+    }
+
+    private void OnTorrentsGridSelectionChanged(object? sender, SelectionChangedEventArgs e) =>
+        SyncGridSelection();
+
+    private void SyncGridSelection()
+    {
+        if (_viewModel is null)
+            return;
+
+        var selected = TorrentsGrid.SelectedItems
+            .OfType<TorrentRowViewModel>()
+            .ToList();
+        _viewModel.SetSelectedTorrents(selected);
     }
 
     private async void OnRowDoubleTapped(object? sender, TappedEventArgs e)

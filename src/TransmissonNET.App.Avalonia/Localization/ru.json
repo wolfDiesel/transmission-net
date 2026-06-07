@@ -57,6 +57,8 @@
   "torrentTable.contextMenu.remove": "Удалить…",
   "torrentTable.removeDialog.title": "Удалить торрент",
   "torrentTable.removeDialog.aboutToRemove": "Будет удалён торрент:",
+  "torrentTable.removeDialog.aboutToRemoveMultiple": "Будет удалено торрентов: {count}",
+  "torrentTable.removeDialog.andMore": "…и ещё {count}",
   "torrentTable.removeDialog.deleteData": "Также удалить скачанные файлы с диска",
   "torrentTable.removeDialog.deleteWarning": "Файлы в папке загрузки будут удалены безвозвратно.",
   "torrentTable.removeDialog.confirm": "Удалить",

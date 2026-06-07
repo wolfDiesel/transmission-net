@@ -76,6 +76,7 @@
       <DataGrid x:Name="TorrentsGrid"
                 ItemsSource="{Binding Torrents}"
                 SelectedItem="{Binding SelectedTorrent}"
+                SelectionMode="Extended"
                 AutoGenerateColumns="False"
                 IsReadOnly="True"
                 CanUserReorderColumns="False"
