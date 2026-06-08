@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:TransmissonNET.App.Avalonia.ViewModels"
         xmlns:views="using:TransmissonNET.App.Avalonia.Views"
+        xmlns:controls="using:TransmissonNET.App.Avalonia.Controls"
         x:Class="TransmissonNET.App.Avalonia.Views.TorrentDetailsWindow"
         x:DataType="vm:TorrentDetailsViewModel"
         Title="Torrent details"
@@ -27,8 +28,8 @@
       </TabItem>
       <TabItem Header="{Binding TabFiles}">
         <DockPanel Margin="8">
-          <Button DockPanel.Dock="Top"
-                  Classes="btn-ghost"
+          <controls:AppButton DockPanel.Dock="Top"
+                  Variant="Ghost"
                   Content="{Binding MassRenameAllLabel}"
                   Command="{Binding MassRenameAllCommand}"
                   HorizontalAlignment="Left"

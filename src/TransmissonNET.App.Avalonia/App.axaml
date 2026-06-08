@@ -28,6 +28,7 @@
   <Application.Styles>
     <FluentTheme />
     <StyleInclude Source="avares://TransmissonNET.App/Themes/AppTheme.axaml"/>
+    <StyleInclude Source="avares://TransmissonNET.App/Controls/AppButton.axaml"/>
     <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
   </Application.Styles>
 </Application>

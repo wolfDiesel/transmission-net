@@ -6,6 +6,8 @@
 
         xmlns:views="using:TransmissonNET.App.Avalonia.Views"
 
+        xmlns:controls="using:TransmissonNET.App.Avalonia.Controls"
+
         xmlns:conv="using:TransmissonNET.App.Avalonia.Converters"
 
         x:Class="TransmissonNET.App.Avalonia.Views.MainWindow"
@@ -116,9 +118,9 @@
 
 
 
-            <StackPanel Spacing="2">
+            <StackPanel Spacing="2" ClipToBounds="False">
 
-              <Button Classes="nav-item"
+              <controls:AppButton Variant="Nav"
 
                       Classes.active="{Binding NavTorrentsActive}"
 
@@ -126,7 +128,7 @@
 
                       Command="{Binding NavigateTorrentsCommand}" />
 
-              <Button Classes="nav-item"
+              <controls:AppButton Variant="Nav"
 
                       Classes.active="{Binding NavAddActive}"
 
@@ -134,7 +136,7 @@
 
                       Command="{Binding NavigateAddTorrentCommand}" />
 
-              <Button Classes="nav-item"
+              <controls:AppButton Variant="Nav"
 
                       Classes.active="{Binding NavSettingsActive}"
 

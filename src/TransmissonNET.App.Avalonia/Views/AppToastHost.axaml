@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:conv="using:TransmissonNET.App.Avalonia.Converters"
+             xmlns:controls="using:TransmissonNET.App.Avalonia.Controls"
              xmlns:services="using:TransmissonNET.App.Avalonia.Services"
              x:Class="TransmissonNET.App.Avalonia.Views.AppToastHost"
              x:DataType="services:AppToastService"
@@ -32,8 +33,8 @@
                          TextWrapping="Wrap"
                          IsVisible="{Binding HasDescription}" />
             </StackPanel>
-            <Button Grid.Column="2"
-                    Classes="toast-close"
+            <controls:AppButton Grid.Column="2"
+                    Variant="ToastClose"
                     Content="×"
                     Command="{Binding CloseCommand}"
                     VerticalAlignment="Center" />

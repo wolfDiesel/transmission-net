@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:TransmissonNET.App.Avalonia.Controls"
         x:Class="TransmissonNET.App.Avalonia.Views.RemoveTorrentDialog"
         Title="Remove torrent"
         Width="420"
@@ -20,8 +21,8 @@
       <StackPanel x:Name="FooterPanel" Grid.Row="1" Spacing="12">
         <CheckBox x:Name="DeleteDataCheck" Content="Also delete downloaded files from disk" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-          <Button Classes="btn-ghost" Content="Cancel" Click="OnCancel" />
-          <Button Classes="btn-primary" Content="Remove" Click="OnConfirm" />
+          <controls:AppButton Variant="Ghost" Content="Cancel" Click="OnCancel" />
+          <controls:AppButton Variant="Primary" Content="Remove" Click="OnConfirm" />
         </StackPanel>
       </StackPanel>
     </Grid>

@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:TransmissonNET.App.Avalonia.ViewModels"
              xmlns:conv="using:TransmissonNET.App.Avalonia.Converters"
+             xmlns:controls="using:TransmissonNET.App.Avalonia.Controls"
              x:Class="TransmissonNET.App.Avalonia.Views.SettingsView"
              x:DataType="vm:SettingsViewModel"
              x:Name="Root"
@@ -13,8 +14,8 @@
         <TextBlock Classes="page-title" Text="{Binding PageTitle}" />
         <TextBlock Classes="text-muted" Text="{Binding PageSubtitle}" />
       </StackPanel>
-      <Button Grid.Column="1"
-              Classes="btn-primary"
+      <controls:AppButton Grid.Column="1"
+              Variant="Primary"
               Content="{Binding SaveSettingsLabel}"
               Command="{Binding SaveCommand}"
               VerticalAlignment="Center" />
@@ -59,7 +60,7 @@
               </Grid>
               <TextBlock Classes="text-muted" Text="{Binding PasswordHint}" FontSize="11" />
 
-              <Button Classes="btn-ghost" Content="{Binding TestConnectionLabel}" Command="{Binding TestConnectionCommand}" HorizontalAlignment="Left" Margin="0,8,0,0" />
+              <controls:AppButton Variant="Ghost" Content="{Binding TestConnectionLabel}" Command="{Binding TestConnectionCommand}" HorizontalAlignment="Left" Margin="0,8,0,0" />
             </StackPanel>
           </ScrollViewer>
         </TabItem>
@@ -109,8 +110,8 @@
               </StackPanel>
 
               <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
-                <Button Classes="btn-ghost" Content="{Binding ReloadDaemonLabel}" Command="{Binding LoadDaemonSessionCommand}" />
-                <Button Classes="btn-primary" Content="{Binding ApplyDaemonLabel}" Command="{Binding SaveDaemonSessionCommand}" />
+                <controls:AppButton Variant="Ghost" Content="{Binding ReloadDaemonLabel}" Command="{Binding LoadDaemonSessionCommand}" />
+                <controls:AppButton Variant="Primary" Content="{Binding ApplyDaemonLabel}" Command="{Binding SaveDaemonSessionCommand}" />
               </StackPanel>
             </StackPanel>
           </ScrollViewer>
@@ -124,9 +125,9 @@
                   <TextBlock Classes="section-title" Text="{Binding AppearanceTitle}" />
                   <TextBlock Classes="field-section" Text="{Binding ThemeSectionLabel}" />
                   <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Classes="option-chip" Classes.selected="{Binding IsAppearanceLight}" Content="{Binding AppearanceLightLabel}" Command="{Binding SelectAppearanceCommand}" CommandParameter="light" />
-                    <Button Classes="option-chip" Classes.selected="{Binding IsAppearanceDark}" Content="{Binding AppearanceDarkLabel}" Command="{Binding SelectAppearanceCommand}" CommandParameter="dark" />
-                    <Button Classes="option-chip" Classes.selected="{Binding IsAppearanceSystem}" Content="{Binding AppearanceSystemLabel}" Command="{Binding SelectAppearanceCommand}" CommandParameter="system" />
+                    <controls:AppButton Variant="OptionChip" Classes.selected="{Binding IsAppearanceLight}" Content="{Binding AppearanceLightLabel}" Command="{Binding SelectAppearanceCommand}" CommandParameter="light" />
+                    <controls:AppButton Variant="OptionChip" Classes.selected="{Binding IsAppearanceDark}" Content="{Binding AppearanceDarkLabel}" Command="{Binding SelectAppearanceCommand}" CommandParameter="dark" />
+                    <controls:AppButton Variant="OptionChip" Classes.selected="{Binding IsAppearanceSystem}" Content="{Binding AppearanceSystemLabel}" Command="{Binding SelectAppearanceCommand}" CommandParameter="system" />
                   </StackPanel>
 
                   <TextBlock Classes="field-section" Text="{Binding ColorSchemeSectionLabel}" Margin="0,8,0,0" />
@@ -138,7 +139,7 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                       <DataTemplate x:DataType="vm:PaletteChipViewModel">
-                        <Button Classes="palette-chip"
+                        <controls:AppButton Variant="PaletteChip"
                                 Classes.selected="{Binding IsSelected}"
                                 Margin="0,0,8,8"
                                 Command="{Binding #Root.((vm:SettingsViewModel)DataContext).SelectColorSchemeCommand}"
@@ -150,7 +151,7 @@
                                      StrokeThickness="1" />
                             <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
                           </StackPanel>
-                        </Button>
+                        </controls:AppButton>
                       </DataTemplate>
                     </ItemsControl.ItemTemplate>
                   </ItemsControl>
@@ -162,10 +163,10 @@
                   <TextBlock Classes="section-title" Text="{Binding LanguageTitle}" />
                   <TextBlock Classes="field-label" Text="{Binding LanguageLabel}" />
                   <WrapPanel Orientation="Horizontal">
-                    <Button Classes="option-chip" Classes.selected="{Binding IsLanguageEnglish}" Content="{Binding LanguageEnglishLabel}" Command="{Binding SelectLanguageCommand}" CommandParameter="en" Margin="0,0,8,8" />
-                    <Button Classes="option-chip" Classes.selected="{Binding IsLanguageRussian}" Content="{Binding LanguageRussianLabel}" Command="{Binding SelectLanguageCommand}" CommandParameter="ru" Margin="0,0,8,8" />
-                    <Button Classes="option-chip" Classes.selected="{Binding IsLanguageGerman}" Content="{Binding LanguageGermanLabel}" Command="{Binding SelectLanguageCommand}" CommandParameter="de" Margin="0,0,8,8" />
-                    <Button Classes="option-chip" Classes.selected="{Binding IsLanguageFrench}" Content="{Binding LanguageFrenchLabel}" Command="{Binding SelectLanguageCommand}" CommandParameter="fr" Margin="0,0,8,8" />
+                    <controls:AppButton Variant="OptionChip" Classes.selected="{Binding IsLanguageEnglish}" Content="{Binding LanguageEnglishLabel}" Command="{Binding SelectLanguageCommand}" CommandParameter="en" Margin="0,0,8,8" />
+                    <controls:AppButton Variant="OptionChip" Classes.selected="{Binding IsLanguageRussian}" Content="{Binding LanguageRussianLabel}" Command="{Binding SelectLanguageCommand}" CommandParameter="ru" Margin="0,0,8,8" />
+                    <controls:AppButton Variant="OptionChip" Classes.selected="{Binding IsLanguageGerman}" Content="{Binding LanguageGermanLabel}" Command="{Binding SelectLanguageCommand}" CommandParameter="de" Margin="0,0,8,8" />
+                    <controls:AppButton Variant="OptionChip" Classes.selected="{Binding IsLanguageFrench}" Content="{Binding LanguageFrenchLabel}" Command="{Binding SelectLanguageCommand}" CommandParameter="fr" Margin="0,0,8,8" />
                   </WrapPanel>
                 </StackPanel>
               </Border>
@@ -203,7 +204,7 @@
               <Border Classes="settings-panel" Padding="16">
                 <StackPanel Spacing="10">
                   <TextBlock Classes="section-title" Text="{Binding TorrentAssociationTitle}" />
-                  <Button Classes="btn-ghost" Content="{Binding RegisterAssociationLabel}" Command="{Binding RegisterTorrentAssociationCommand}" HorizontalAlignment="Left" />
+                  <controls:AppButton Variant="Ghost" Content="{Binding RegisterAssociationLabel}" Command="{Binding RegisterTorrentAssociationCommand}" HorizontalAlignment="Left" />
                 </StackPanel>
               </Border>
 

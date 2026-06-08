@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:TransmissonNET.App.Avalonia.Controls"
         x:Class="TransmissonNET.App.Avalonia.Views.TorrentAssociationPromptWindow"
         Width="460"
         Height="220"
@@ -11,8 +12,8 @@
     <StackPanel Spacing="12">
       <TextBlock x:Name="BodyText" TextWrapping="Wrap" />
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-        <Button x:Name="NoButton" Classes="btn-ghost" Click="OnNo" />
-        <Button x:Name="YesButton" Classes="btn-primary" Click="OnYes" />
+        <controls:AppButton x:Name="NoButton" Variant="Ghost" Click="OnNo" />
+        <controls:AppButton x:Name="YesButton" Variant="Primary" Click="OnYes" />
       </StackPanel>
     </StackPanel>
   </Border>

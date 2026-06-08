@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:TransmissonNET.App.Avalonia.ViewModels"
+        xmlns:controls="using:TransmissonNET.App.Avalonia.Controls"
         xmlns:mr="using:TransmissonNET.App.Avalonia.Features.MassRename"
         xmlns:conv="using:TransmissonNET.App.Avalonia.Converters"
         x:Class="TransmissonNET.App.Avalonia.Views.MassRenameWindow"
@@ -24,8 +25,8 @@
 
       <Border DockPanel.Dock="Bottom" Padding="16,12" BorderBrush="{DynamicResource BorderMutedBrush}" BorderThickness="0,1,0,0">
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-          <Button Classes="btn-ghost" Content="{Binding CancelLabel}" Click="OnCancel" IsEnabled="{Binding !IsBusy}" />
-          <Button Classes="btn-primary" Content="{Binding ApplyButtonText}" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanApply}" />
+          <controls:AppButton Variant="Ghost" Content="{Binding CancelLabel}" Click="OnCancel" IsEnabled="{Binding !IsBusy}" />
+          <controls:AppButton Variant="Primary" Content="{Binding ApplyButtonText}" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanApply}" />
         </StackPanel>
       </Border>
 
@@ -37,11 +38,11 @@
                       ClipToBounds="True">
           <StackPanel Spacing="12">
             <WrapPanel Orientation="Horizontal">
-              <Button Classes="option-chip" Classes.selected="{Binding IsRegexMode}" Content="{Binding ModeLabelRegex}" Command="{Binding SelectModeCommand}" CommandParameter="0" Margin="0,0,8,8" />
-              <Button Classes="option-chip" Classes.selected="{Binding IsFindReplaceMode}" Content="{Binding ModeLabelFindReplace}" Command="{Binding SelectModeCommand}" CommandParameter="1" Margin="0,0,8,8" />
-              <Button Classes="option-chip" Classes.selected="{Binding IsPrefixSuffixMode}" Content="{Binding ModeLabelPrefixSuffix}" Command="{Binding SelectModeCommand}" CommandParameter="2" Margin="0,0,8,8" />
-              <Button Classes="option-chip" Classes.selected="{Binding IsNumberingMode}" Content="{Binding ModeLabelNumbering}" Command="{Binding SelectModeCommand}" CommandParameter="3" Margin="0,0,8,8" />
-              <Button Classes="option-chip" Classes.selected="{Binding IsTemplateMode}" Content="{Binding ModeLabelTemplate}" Command="{Binding SelectModeCommand}" CommandParameter="4" Margin="0,0,8,8" />
+              <controls:AppButton Variant="OptionChip" Classes.selected="{Binding IsRegexMode}" Content="{Binding ModeLabelRegex}" Command="{Binding SelectModeCommand}" CommandParameter="0" Margin="0,0,8,8" />
+              <controls:AppButton Variant="OptionChip" Classes.selected="{Binding IsFindReplaceMode}" Content="{Binding ModeLabelFindReplace}" Command="{Binding SelectModeCommand}" CommandParameter="1" Margin="0,0,8,8" />
+              <controls:AppButton Variant="OptionChip" Classes.selected="{Binding IsPrefixSuffixMode}" Content="{Binding ModeLabelPrefixSuffix}" Command="{Binding SelectModeCommand}" CommandParameter="2" Margin="0,0,8,8" />
+              <controls:AppButton Variant="OptionChip" Classes.selected="{Binding IsNumberingMode}" Content="{Binding ModeLabelNumbering}" Command="{Binding SelectModeCommand}" CommandParameter="3" Margin="0,0,8,8" />
+              <controls:AppButton Variant="OptionChip" Classes.selected="{Binding IsTemplateMode}" Content="{Binding ModeLabelTemplate}" Command="{Binding SelectModeCommand}" CommandParameter="4" Margin="0,0,8,8" />
             </WrapPanel>
 
             <Border Classes="island-inner" Padding="12">

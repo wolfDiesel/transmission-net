@@ -16,6 +16,7 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ### Added
 
+- Avalonia `AppButton` control (primary, ghost, nav, option/palette chips, toast close) with hover shine, subtle press feedback, and outward ripple rings on click across the desktop UI.
 - Download directory history (up to 500 paths) with autocomplete on Add torrent and Move torrent; last used folder is pre-filled, paths persist in settings after add/move.
 - Multi-select in the torrent table and torrent details file tree (Ctrl/Shift); context menu actions apply to all selected items.
 - UI i18n: German (`de`) and French (`fr`) locale catalogs; language picker in Settings → Interface.

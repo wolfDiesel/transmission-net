@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:TransmissonNET.App.Avalonia.ViewModels"
+             xmlns:controls="using:TransmissonNET.App.Avalonia.Controls"
              x:Class="TransmissonNET.App.Avalonia.Views.TorrentsView"
              x:DataType="vm:TorrentsViewModel"
              x:Name="Root"
@@ -13,9 +14,9 @@
         <TextBlock Classes="text-muted" Text="{Binding StatusText}" />
       </StackPanel>
       <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-        <Button Classes="btn-ghost" Content="{Binding RefreshButtonText}" Command="{Binding RefreshCommand}" />
-        <Button Classes="btn-ghost" Content="{Binding ColumnsButtonText}">
-          <Button.Flyout>
+        <controls:AppButton Variant="Ghost" Content="{Binding RefreshButtonText}" Command="{Binding RefreshCommand}" />
+        <controls:AppButton Variant="Ghost" Content="{Binding ColumnsButtonText}">
+          <controls:AppButton.Flyout>
             <Flyout Placement="BottomEdgeAlignedRight">
               <StackPanel Width="300" Spacing="8">
                 <TextBlock Text="{Binding ColumnsPanelTitle}" FontWeight="SemiBold" />
@@ -49,9 +50,9 @@
                 </ItemsControl>
               </StackPanel>
             </Flyout>
-          </Button.Flyout>
-        </Button>
-        <Button Classes="btn-primary" Content="{Binding DetailsButtonText}" Command="{Binding OpenDetailsCommand}" />
+          </controls:AppButton.Flyout>
+        </controls:AppButton>
+        <controls:AppButton Variant="Primary" Content="{Binding DetailsButtonText}" Command="{Binding OpenDetailsCommand}" />
       </StackPanel>
     </Grid>
 
@@ -59,8 +60,8 @@
       <TextBox Text="{Binding NameFilterQuery}"
                Watermark="{Binding NameFilterPlaceholder}"
                MinWidth="200" />
-      <Button Grid.Column="1"
-              Classes="btn-ghost"
+      <controls:AppButton Grid.Column="1"
+              Variant="Ghost"
               Content="{Binding ClearFilterButtonText}"
               Command="{Binding ClearNameFilterCommand}"
               IsVisible="{Binding HasNameFilter}"

@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="using:TransmissonNET.App.Avalonia.Views"
+        xmlns:controls="using:TransmissonNET.App.Avalonia.Controls"
         x:Class="TransmissonNET.App.Avalonia.Views.MoveTorrentDialog"
         Title="Move torrent"
         Width="480"
@@ -15,8 +16,8 @@
                                PlaceholderText="Destination folder" />
       <CheckBox x:Name="MoveDataCheck" Content="Move data files" IsChecked="True" />
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-        <Button Classes="btn-ghost" Content="Cancel" Click="OnCancel" />
-        <Button Classes="btn-primary" Content="Move" Click="OnConfirm" />
+        <controls:AppButton Variant="Ghost" Content="Cancel" Click="OnCancel" />
+        <controls:AppButton Variant="Primary" Content="Move" Click="OnConfirm" />
       </StackPanel>
     </StackPanel>
   </Border>

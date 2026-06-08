@@ -12,6 +12,7 @@
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <AvaloniaResource Include="Themes\**" />
+    <AvaloniaResource Include="Controls\**\*.axaml" />
     <EmbeddedResource Include="Localization\*.json" />
   </ItemGroup>
 
