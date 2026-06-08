@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="using:TransmissonNET.App.Avalonia.Views"
+             xmlns:conv="using:TransmissonNET.App.Avalonia.Converters"
+             x:Class="TransmissonNET.App.Avalonia.Views.DownloadDirPicker"
+             HorizontalAlignment="Stretch">
+  <AutoCompleteBox x:Name="Input"
+                   HorizontalAlignment="Stretch"
+                   MinimumPrefixLength="1"
+                   IsTextCompletionEnabled="False"
+                   MaxDropDownHeight="280"
+                   Watermark="{Binding PlaceholderText, RelativeSource={RelativeSource AncestorType=views:DownloadDirPicker}}"
+                   Text="{Binding Text, RelativeSource={RelativeSource AncestorType=views:DownloadDirPicker}, Mode=TwoWay}">
+    <AutoCompleteBox.ItemTemplate>
+      <DataTemplate x:DataType="x:String">
+        <StackPanel Spacing="2" Margin="4,2">
+          <TextBlock Text="{Binding Converter={x:Static conv:DownloadDirDisplayNameConverter.Instance}}"
+                     FontWeight="Medium"
+                     TextTrimming="CharacterEllipsis" />
+          <TextBlock Text="{Binding}"
+                     Classes="text-muted"
+                     FontSize="11"
+                     TextTrimming="CharacterEllipsis"
+                     IsVisible="{Binding Converter={x:Static conv:DownloadDirShowPathConverter.Instance}}" />
+        </StackPanel>
+      </DataTemplate>
+    </AutoCompleteBox.ItemTemplate>
+  </AutoCompleteBox>
+</UserControl>

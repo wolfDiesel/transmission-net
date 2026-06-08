@@ -16,6 +16,7 @@ internal static class ServiceRegistration
         services.AddSingleton<ThemeService>();
         services.AddSingleton<AppToastService>();
         services.AddSingleton<LocalizationService>();
+        services.AddSingleton<DownloadDirHistoryService>();
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<TorrentsViewModel>();
         services.AddSingleton<AddTorrentViewModel>();

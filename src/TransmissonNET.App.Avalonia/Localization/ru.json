@@ -74,6 +74,7 @@
   "addTorrent.torrentFile": "Файл торрента",
   "addTorrent.browse": "Обзор…",
   "addTorrent.downloadDir": "Каталог загрузки",
+  "addTorrent.downloadDirSearch": "Поиск папок…",
   "addTorrent.addPaused": "Добавить на паузе (не запускать сразу)",
   "addTorrent.add": "Добавить",
   "addTorrent.inspecting": "Чтение торрента…",

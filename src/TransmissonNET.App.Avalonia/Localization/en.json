@@ -74,6 +74,7 @@
   "addTorrent.torrentFile": "Torrent file",
   "addTorrent.browse": "Browse…",
   "addTorrent.downloadDir": "Download directory",
+  "addTorrent.downloadDirSearch": "Search folders…",
   "addTorrent.addPaused": "Add paused (do not start immediately)",
   "addTorrent.add": "Add torrent",
   "addTorrent.inspecting": "Reading torrent…",

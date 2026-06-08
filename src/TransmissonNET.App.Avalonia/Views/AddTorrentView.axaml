@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:TransmissonNET.App.Avalonia.ViewModels"
+             xmlns:views="using:TransmissonNET.App.Avalonia.Views"
              x:Class="TransmissonNET.App.Avalonia.Views.AddTorrentView"
              x:DataType="vm:AddTorrentViewModel"
              HorizontalAlignment="Stretch"
@@ -21,7 +22,9 @@
           </Grid>
           <StackPanel Spacing="4" Margin="0,8,0,0">
             <TextBlock Classes="field-label" Text="{Binding DownloadDirLabel}" />
-            <TextBox Text="{Binding DownloadDir}" Watermark="{Binding DownloadDirLabel}" />
+            <views:DownloadDirPicker Text="{Binding DownloadDir}"
+                                     ItemsSource="{Binding DownloadDirOptions}"
+                                     PlaceholderText="{Binding DownloadDirLabel}" />
           </StackPanel>
           <CheckBox Content="{Binding AddPausedLabel}" IsChecked="{Binding AddPaused}" Margin="0,4,0,0" />
           <Button Classes="btn-primary" Content="{Binding AddLabel}" Command="{Binding AddCommand}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left" />

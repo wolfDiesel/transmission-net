@@ -19,6 +19,7 @@ internal sealed partial class TorrentsViewModel : ViewModelBase
     private readonly HandlerInvoker _handlers;
     private readonly LocalizationService _localization;
     private readonly StatusBarViewModel _statusBar;
+    private readonly DownloadDirHistoryService _downloadDirHistory;
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(3) };
     private readonly DispatcherTimer _saveTimer = new() { Interval = TimeSpan.FromMilliseconds(400) };
     private int _refreshSeconds = 3;
@@ -114,11 +115,13 @@ internal sealed partial class TorrentsViewModel : ViewModelBase
     public TorrentsViewModel(
         HandlerInvoker handlers,
         LocalizationService localization,
-        StatusBarViewModel statusBar)
+        StatusBarViewModel statusBar,
+        DownloadDirHistoryService downloadDirHistory)
     {
         _handlers = handlers;
         _localization = localization;
         _statusBar = statusBar;
+        _downloadDirHistory = downloadDirHistory;
         _timer.Tick += async (_, _) => await RefreshAsync();
         _saveTimer.Tick += async (_, _) => await FlushTableSettingsAsync();
         _localization.LanguageChanged += OnLanguageChanged;
@@ -127,6 +130,7 @@ internal sealed partial class TorrentsViewModel : ViewModelBase
 
     public async Task InitializeAsync()
     {
+        await _downloadDirHistory.LoadAsync();
         var settings = await _handlers.InvokeAsync(sp => sp.GetRequiredService<GetSettingsHandler>().HandleAsync());
         _appSettings = settings;
         _refreshSeconds = Math.Max(1, settings.Ui.RefreshIntervalSeconds);
@@ -515,7 +519,9 @@ internal sealed partial class TorrentsViewModel : ViewModelBase
         if (targets.Count == 0)
             return;
 
-        var dialog = new MoveTorrentDialog(targets[0].DownloadDir);
+        var dialog = new MoveTorrentDialog(
+            targets[0].DownloadDir,
+            _downloadDirHistory.Directories);
         var owner = GetOwnerWindow();
         if (owner is not null)
             await dialog.ShowDialog(owner);
@@ -523,11 +529,13 @@ internal sealed partial class TorrentsViewModel : ViewModelBase
         if (!dialog.Confirmed || string.IsNullOrWhiteSpace(dialog.Destination))
             return;
 
+        var destination = dialog.Destination.Trim();
         await ExecuteActionAsync(
             "move",
             targets.Select(t => t.Id).ToList(),
-            location: dialog.Destination,
+            location: destination,
             move: dialog.MoveData);
+        _downloadDirHistory.Remember(destination);
         await RefreshAsync();
     }
 

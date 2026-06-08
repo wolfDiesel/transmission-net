@@ -14,6 +14,7 @@ internal sealed partial class AddTorrentViewModel : ViewModelBase
     private readonly HandlerInvoker _handlers;
     private readonly LocalizationService _localization;
     private readonly AppToastService _toasts;
+    private readonly DownloadDirHistoryService _downloadDirHistory;
     private string? _metainfoBase64;
 
     [ObservableProperty] private string _torrentFilePath = string.Empty;
@@ -33,19 +34,38 @@ internal sealed partial class AddTorrentViewModel : ViewModelBase
 
     public bool HasPreview => !string.IsNullOrWhiteSpace(PreviewTitle);
 
-    public AddTorrentViewModel(HandlerInvoker handlers, LocalizationService localization, AppToastService toasts)
+    public ObservableCollection<string> DownloadDirOptions => _downloadDirHistory.Directories;
+
+    public AddTorrentViewModel(
+        HandlerInvoker handlers,
+        LocalizationService localization,
+        AppToastService toasts,
+        DownloadDirHistoryService downloadDirHistory)
     {
         _handlers = handlers;
         _localization = localization;
         _toasts = toasts;
+        _downloadDirHistory = downloadDirHistory;
         _localization.LanguageChanged += RefreshLabels;
         RefreshLabels();
     }
 
     public async Task InitializeAsync()
     {
-        var settings = await _handlers.InvokeAsync(sp => sp.GetRequiredService<GetSettingsHandler>().HandleAsync());
-        DownloadDir = settings.Ui.DownloadDirHistory?.FirstOrDefault() ?? string.Empty;
+        await _downloadDirHistory.LoadAsync();
+
+        var sessionDir = string.Empty;
+        try
+        {
+            var daemon = await _handlers.InvokeAsync(sp =>
+                sp.GetRequiredService<GetDaemonSessionSettingsHandler>().HandleAsync());
+            sessionDir = daemon.DownloadDir;
+        }
+        catch
+        {
+        }
+
+        DownloadDir = _downloadDirHistory.ResolveDefault(sessionDir);
     }
 
     public async Task OpenFromPathAsync(string path)
@@ -103,9 +123,11 @@ internal sealed partial class AddTorrentViewModel : ViewModelBase
         IsBusy = true;
         try
         {
+            var destination = DownloadDir.Trim();
             var result = await _handlers.InvokeAsync(sp =>
                 sp.GetRequiredService<AddTorrentHandler>().HandleAsync(
-                    new TorrentAddRequestDto(_metainfoBase64, DownloadDir.Trim(), AddPaused)));
+                    new TorrentAddRequestDto(_metainfoBase64, destination, AddPaused)));
+            _downloadDirHistory.Remember(destination);
             _toasts.ShowSuccess(_localization.Format("addTorrent.added", ("name", result.Name)));
         }
         catch (Exception ex)
