@@ -61,10 +61,8 @@
       <_DummyBin>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.Dummy\bin\$(_ProvidersConfig)\net8.0'))</_DummyBin>
     </PropertyGroup>
 
-    <MSBuild Projects="@(TorrentProviderProject)"
-             Targets="Restore;Build"
-             Properties="Configuration=$(_ProvidersConfig);TargetFramework=net8.0;RuntimeIdentifier=;SelfContained=false;CopyLocalLockFileAssemblies=true"
-             BuildInParallel="true" />
+    <Exec Command="dotnet restore &quot;%(TorrentProviderProject.Identity)&quot;" />
+    <Exec Command="dotnet build &quot;%(TorrentProviderProject.Identity)&quot; -c $(_ProvidersConfig) -f net8.0 --no-restore -p:CopyLocalLockFileAssemblies=true -p:RuntimeIdentifier= -p:SelfContained=false" />
 
     <ItemGroup>
       <_ProviderBuilt Include="$(_RuTrackerBin)\TransmissonNET.Providers.RuTracker.dll" />
