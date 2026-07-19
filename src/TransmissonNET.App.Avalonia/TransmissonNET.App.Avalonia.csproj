@@ -62,7 +62,7 @@
     </PropertyGroup>
 
     <MSBuild Projects="@(TorrentProviderProject)"
-             Targets="Build"
+             Targets="Restore;Build"
              Properties="Configuration=$(_ProvidersConfig);TargetFramework=net8.0;RuntimeIdentifier=;SelfContained=false;CopyLocalLockFileAssemblies=true"
              BuildInParallel="true" />
 

@@ -41,7 +41,7 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ### Fixed
 
-- AppImage / `dotnet publish`: build and copy torrent provider DLLs into `providers/` (Search no longer shows empty providers).
+- AppImage / `dotnet publish`: build and copy torrent provider DLLs into `providers/` (Search no longer shows empty providers); restore provider NuGet assets before that build (CI clean checkout).
 - Remove torrent with “delete downloaded files”: RPC now sends `delete-local-data` / `delete_local_data` so Transmission actually deletes local data.
 - Bulk remove dialog: scrollable torrent list, max height ⅔ of screen (footer stays visible).
 - Torrent details window: stop file poll timer, unsubscribe localization handler, and clear view model on close to avoid leaks.
