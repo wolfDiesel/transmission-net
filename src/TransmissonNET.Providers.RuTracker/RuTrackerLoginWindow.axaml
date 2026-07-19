@@ -1,0 +1,20 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="TransmissonNET.Providers.RuTracker.RuTrackerLoginWindow"
+        Title="RuTracker login"
+        Width="420"
+        Height="260"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+  <StackPanel Margin="20" Spacing="12">
+    <TextBlock Text="RuTracker" FontSize="18" FontWeight="SemiBold" />
+    <TextBlock Text="Sign in to search and download torrents." Opacity="0.7" TextWrapping="Wrap" />
+    <TextBox x:Name="UsernameBox" PlaceholderText="Username" />
+    <TextBox x:Name="PasswordBox" PlaceholderText="Password" PasswordChar="•" />
+    <TextBlock x:Name="ErrorText" IsVisible="False" Foreground="OrangeRed" TextWrapping="Wrap" />
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="Cancel" Click="OnCancelClick" />
+      <Button Content="Login" Click="OnLoginClick" />
+    </StackPanel>
+  </StackPanel>
+</Window>

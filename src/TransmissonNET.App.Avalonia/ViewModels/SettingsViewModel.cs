@@ -17,6 +17,7 @@ internal sealed partial class SettingsViewModel : ViewModelBase
     private readonly LocalizationService _localization;
     private readonly ThemeService _theme;
     private readonly AppToastService _toasts;
+    private readonly ITorrentProviderCatalog _providers;
     private AppSettingsDto? _loaded;
 
     [ObservableProperty] private string _host = "localhost";
@@ -54,22 +55,39 @@ internal sealed partial class SettingsViewModel : ViewModelBase
     [ObservableProperty] private string _pageSubtitle = string.Empty;
     [ObservableProperty] private string _tabConnection = string.Empty;
     [ObservableProperty] private string _tabDaemon = string.Empty;
+    [ObservableProperty] private string _tabProviders = string.Empty;
     [ObservableProperty] private string _tabInterface = string.Empty;
+    [ObservableProperty] private string _providersTitle = string.Empty;
+    [ObservableProperty] private string _providersSubtitle = string.Empty;
+    [ObservableProperty] private string _providersEmpty = string.Empty;
+    [ObservableProperty] private string _requestTimeoutLabel = string.Empty;
+    [ObservableProperty] private string _baseUrlLabel = string.Empty;
+    [ObservableProperty] private string _knownMirrorsLabel = string.Empty;
+    [ObservableProperty] private string _customMirrorLabel = string.Empty;
+    [ObservableProperty] private string _customMirrorPlaceholder = string.Empty;
+    [ObservableProperty] private string _preferredQualityLabel = string.Empty;
+    [ObservableProperty] private string _maxSeriesExpandLabel = string.Empty;
 
     public ObservableCollection<PaletteChipViewModel> PaletteChips { get; } = new();
+    public ObservableCollection<ProviderSettingsItemViewModel> ProviderSettings { get; } = new();
+
+    public bool HasProviderSettings => ProviderSettings.Count > 0;
 
     public SettingsViewModel(
         HandlerInvoker handlers,
         LocalizationService localization,
         ThemeService theme,
-        AppToastService toasts)
+        AppToastService toasts,
+        ITorrentProviderCatalog providers)
     {
         _handlers = handlers;
         _localization = localization;
         _theme = theme;
         _toasts = toasts;
+        _providers = providers;
         _localization.LanguageChanged += RefreshLocalizedUi;
         RebuildPaletteChips();
+        ReloadProviderSettings();
         RefreshLocalizedUi();
     }
 
@@ -141,7 +159,16 @@ internal sealed partial class SettingsViewModel : ViewModelBase
     {
         var settings = await _handlers.InvokeAsync(sp => sp.GetRequiredService<GetSettingsHandler>().HandleAsync());
         ApplyAppSettings(settings);
+        ReloadProviderSettings();
         await LoadDaemonSessionAsync();
+    }
+
+    private void ReloadProviderSettings()
+    {
+        ProviderSettings.Clear();
+        foreach (var provider in _providers.GetProviders())
+            ProviderSettings.Add(new ProviderSettingsItemViewModel(provider));
+        OnPropertyChanged(nameof(HasProviderSettings));
     }
 
     [RelayCommand]
@@ -171,6 +198,9 @@ internal sealed partial class SettingsViewModel : ViewModelBase
         IsBusy = true;
         try
         {
+            foreach (var item in ProviderSettings)
+                item.ApplyToProvider();
+
             var saved = await _handlers.InvokeAsync(sp =>
                 sp.GetRequiredService<SaveSettingsHandler>().HandleAsync(BuildSettingsDto()));
             ApplyAppSettings(saved);
@@ -396,7 +426,18 @@ internal sealed partial class SettingsViewModel : ViewModelBase
         PageSubtitle = T("settings.subtitle");
         TabConnection = T("settings.tabs.connection");
         TabDaemon = T("settings.tabs.daemon");
+        TabProviders = T("settings.tabs.providers");
         TabInterface = T("settings.tabs.ui");
+        ProvidersTitle = T("settings.providers.title");
+        ProvidersSubtitle = T("settings.providers.subtitle");
+        ProvidersEmpty = T("settings.providers.empty");
+        RequestTimeoutLabel = T("settings.providers.requestTimeout");
+        BaseUrlLabel = T("settings.providers.baseUrl");
+        KnownMirrorsLabel = T("settings.providers.knownMirrors");
+        CustomMirrorLabel = T("settings.providers.customMirror");
+        CustomMirrorPlaceholder = T("settings.providers.customMirrorPlaceholder");
+        PreferredQualityLabel = T("settings.providers.preferredQuality");
+        MaxSeriesExpandLabel = T("settings.providers.maxSeriesExpand");
 
         RebuildPaletteChips();
         NotifyAppearanceFlags();

@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TransmissonNET.Domain\TransmissonNET.Domain.csproj" />
+    <ProjectReference Include="..\TransmissonNET.Providers.Abstractions\TransmissonNET.Providers.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -5,10 +5,16 @@
     <Project Path="src/TransmissonNET.Desktop/TransmissonNET.Desktop.csproj" />
     <Project Path="src/TransmissonNET.Domain/TransmissonNET.Domain.csproj" />
     <Project Path="src/TransmissonNET.Infrastructure/TransmissonNET.Infrastructure.csproj" />
+    <Project Path="src/TransmissonNET.Providers.Abstractions/TransmissonNET.Providers.Abstractions.csproj" />
+    <Project Path="src/TransmissonNET.Providers.RuTracker/TransmissonNET.Providers.RuTracker.csproj" />
+    <Project Path="src/TransmissonNET.Providers.LostFilm/TransmissonNET.Providers.LostFilm.csproj" />
+    <Project Path="src/TransmissonNET.Providers.Kinozal/TransmissonNET.Providers.Kinozal.csproj" />
+    <Project Path="src/TransmissonNET.Providers.Dummy/TransmissonNET.Providers.Dummy.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/TransmissonNET.App.Tests/TransmissonNET.App.Tests.csproj" />
     <Project Path="tests/TransmissonNET.Application.Tests/TransmissonNET.Application.Tests.csproj" />
     <Project Path="tests/TransmissonNET.Infrastructure.Tests/TransmissonNET.Infrastructure.Tests.csproj" />
+    <Project Path="tests/TransmissonNET.Providers.Fake/TransmissonNET.Providers.Fake.csproj" />
   </Folder>
 </Solution>

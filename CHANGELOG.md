@@ -6,6 +6,13 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ## Unreleased
 
+### Added
+
+- **Torrent search (Stage B):** pluggable provider DLLs under `providers/`, Search tab (provider tags, query, results grid), Settings → Providers (timeout, known/custom mirrors).
+- Providers: **RuTracker**, **LostFilm** (`lostfilm.download` + mirrors), **Kinozal** (`kinozal.me` + mirrors); Debug-only **Dummy** for multi-provider UI tests.
+- Search flow: login gate per provider, parallel search, Download → Add torrent preview (not direct daemon add).
+- Default provider request timeout: **10 seconds**.
+
 ### Changed
 
 - **Desktop UI:** replace Photino/WebKit + React with native **Avalonia** (`TransmissonNET.App.Avalonia`); published binary remains `TransmissonNET.App`.

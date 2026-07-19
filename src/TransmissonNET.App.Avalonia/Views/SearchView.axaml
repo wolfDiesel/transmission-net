@@ -1,0 +1,176 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TransmissonNET.App.Avalonia.ViewModels"
+             xmlns:controls="using:TransmissonNET.App.Avalonia.Controls"
+             x:Class="TransmissonNET.App.Avalonia.Views.SearchView"
+             x:Name="Root"
+             x:DataType="vm:SearchViewModel"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch">
+  <UserControl.Styles>
+    <Style Selector="Border.search-tag">
+      <Setter Property="Background" Value="{DynamicResource SurfaceRaisedBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderMutedBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding" Value="10,5" />
+    </Style>
+    <Style Selector="Button.search-tag-remove">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="2,0" />
+      <Setter Property="MinWidth" Value="18" />
+      <Setter Property="MinHeight" Value="18" />
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundMutedBrush}" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.search-tag-remove:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+    </Style>
+    <Style Selector="Ellipse.search-tag-auth">
+      <Setter Property="Width" Value="8" />
+      <Setter Property="Height" Value="8" />
+      <Setter Property="Fill" Value="{DynamicResource ForegroundMutedBrush}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Ellipse.search-tag-auth.logged-in">
+      <Setter Property="Fill" Value="{DynamicResource SuccessBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <DockPanel LastChildFill="True">
+    <StackPanel DockPanel.Dock="Top" Spacing="4" Margin="0,0,0,16">
+      <TextBlock Classes="page-title" Text="{Binding PageTitle}" />
+      <TextBlock Classes="text-muted" Text="{Binding PageSubtitle}" />
+    </StackPanel>
+
+    <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="0,0,0,12">
+      <TextBlock Classes="field-label" Text="{Binding ProvidersLabel}" />
+      <WrapPanel>
+        <ItemsControl ItemsSource="{Binding SelectedProviders}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:SearchProviderTagViewModel">
+              <Border Classes="search-tag" Margin="0,0,8,8">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Ellipse Classes="search-tag-auth"
+                           Classes.logged-in="{Binding IsLoggedIn}"
+                           IsVisible="{Binding ShowAuthIndicator}" />
+                  <TextBlock Text="{Binding DisplayName}"
+                             VerticalAlignment="Center" />
+                  <Button Classes="search-tag-remove"
+                          Content="{Binding LogoutText}"
+                          Command="{Binding LogoutCommand}"
+                          IsVisible="{Binding ShowLogout}" />
+                  <Button Classes="search-tag-remove"
+                          Content="×"
+                          Command="{Binding RemoveCommand}" />
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <controls:AppButton Variant="OptionChip"
+                            Content="{Binding AddProviderText}"
+                            IsVisible="{Binding HasAvailableProviders}"
+                            Margin="0,0,8,8">
+          <controls:AppButton.Flyout>
+            <Flyout Placement="BottomEdgeAlignedLeft">
+              <ItemsControl ItemsSource="{Binding AvailableProviders}"
+                            MinWidth="160"
+                            Margin="4">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:SearchProviderOptionViewModel">
+                    <controls:AppButton Variant="Ghost"
+                                        Content="{Binding DisplayName}"
+                                        Command="{Binding AddCommand}"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Left"
+                                        Margin="0,2" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Flyout>
+          </controls:AppButton.Flyout>
+        </controls:AppButton>
+      </WrapPanel>
+
+      <TextBlock Classes="field-label" Text="{Binding QueryLabel}" />
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        <TextBox x:Name="QueryBox"
+                 Text="{Binding Query}"
+                 PlaceholderText="{Binding QueryPlaceholder}"
+                 MinWidth="240"
+                 KeyDown="OnQueryKeyDown" />
+        <controls:AppButton Grid.Column="1"
+                            Variant="Primary"
+                            Content="{Binding SearchButtonText}"
+                            Command="{Binding SearchCommand}"
+                            IsEnabled="{Binding !IsBusy}" />
+      </Grid>
+      <TextBlock Classes="text-muted" Text="{Binding StatusText}" TextWrapping="Wrap" />
+    </StackPanel>
+
+    <TextBlock DockPanel.Dock="Bottom"
+               Text="{Binding ErrorMessage}"
+               Foreground="{DynamicResource DangerBrush}"
+               Margin="0,12,0,0"
+               TextWrapping="Wrap" />
+
+    <Border Classes="island-inner" Padding="4">
+      <Panel>
+        <TextBlock Text="{Binding EmptyText}"
+                   Classes="text-muted"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   IsVisible="{Binding !HasResults}" />
+        <DataGrid x:Name="ResultsGrid"
+                  ItemsSource="{Binding Results}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserResizeColumns="True"
+                  CanUserSortColumns="False"
+                  GridLinesVisibility="Horizontal"
+                  IsVisible="{Binding HasResults}">
+          <DataGrid.Columns>
+            <DataGridTextColumn Binding="{Binding Title}"
+                                Width="*"
+                                MinWidth="180" />
+            <DataGridTextColumn Binding="{Binding ProviderDisplayName}"
+                                Width="120" />
+            <DataGridTextColumn Binding="{Binding SizeText}"
+                                Width="90" />
+            <DataGridTemplateColumn Width="100">
+              <DataGridTemplateColumn.CellTemplate>
+                <DataTemplate x:DataType="vm:SearchResultRowViewModel">
+                  <controls:AppButton Variant="Ghost"
+                                      Content="{Binding OpenLinkButtonText}"
+                                      Command="{Binding OpenLinkCommand}"
+                                      IsVisible="{Binding HasLink}"
+                                      Margin="4,2" />
+                </DataTemplate>
+              </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+            <DataGridTemplateColumn Width="120">
+              <DataGridTemplateColumn.CellTemplate>
+                <DataTemplate x:DataType="vm:SearchResultRowViewModel">
+                  <controls:AppButton Variant="Primary"
+                                      Content="{Binding DownloadButtonText}"
+                                      Command="{Binding DownloadCommand}"
+                                      IsEnabled="{Binding !IsBusy}"
+                                      Margin="4,2" />
+                </DataTemplate>
+              </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+          </DataGrid.Columns>
+        </DataGrid>
+      </Panel>
+    </Border>
+  </DockPanel>
+</UserControl>

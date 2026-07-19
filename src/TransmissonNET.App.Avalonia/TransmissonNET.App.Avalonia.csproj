@@ -39,5 +39,47 @@
     <ProjectReference Include="..\TransmissonNET.Application\TransmissonNET.Application.csproj" />
     <ProjectReference Include="..\TransmissonNET.Desktop\TransmissonNET.Desktop.csproj" />
     <ProjectReference Include="..\TransmissonNET.Infrastructure\TransmissonNET.Infrastructure.csproj" />
+    <ProjectReference Include="..\TransmissonNET.Providers.RuTracker\TransmissonNET.Providers.RuTracker.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+    <ProjectReference Include="..\TransmissonNET.Providers.LostFilm\TransmissonNET.Providers.LostFilm.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+    <ProjectReference Include="..\TransmissonNET.Providers.Kinozal\TransmissonNET.Providers.Kinozal.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+    <ProjectReference Include="..\TransmissonNET.Providers.Dummy\TransmissonNET.Providers.Dummy.csproj"
+                      Condition="'$(Configuration)' == 'Debug'">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
   </ItemGroup>
+
+  <Target Name="CopyTorrentProviders" AfterTargets="Build">
+    <PropertyGroup>
+      <_ProvidersOut>$([System.IO.Path]::GetFullPath('$(OutputPath)providers'))</_ProvidersOut>
+      <_RuTrackerOut>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.RuTracker\bin\$(Configuration)\net8.0'))</_RuTrackerOut>
+      <_LostFilmOut>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.LostFilm\bin\$(Configuration)\net8.0'))</_LostFilmOut>
+      <_KinozalOut>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.Kinozal\bin\$(Configuration)\net8.0'))</_KinozalOut>
+      <_DummyOut>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.Dummy\bin\$(Configuration)\net8.0'))</_DummyOut>
+    </PropertyGroup>
+    <MakeDir Directories="$(_ProvidersOut)" />
+    <ItemGroup>
+      <_ProviderCopy Include="$(_RuTrackerOut)\TransmissonNET.Providers.RuTracker.dll" />
+      <_ProviderCopy Include="$(_RuTrackerOut)\HtmlAgilityPack.dll" />
+      <_ProviderCopy Include="$(_RuTrackerOut)\TransmissonNET.Providers.RuTracker.deps.json" />
+      <_ProviderCopy Include="$(_LostFilmOut)\TransmissonNET.Providers.LostFilm.dll" />
+      <_ProviderCopy Include="$(_LostFilmOut)\HtmlAgilityPack.dll" />
+      <_ProviderCopy Include="$(_LostFilmOut)\TransmissonNET.Providers.LostFilm.deps.json" />
+      <_ProviderCopy Include="$(_KinozalOut)\TransmissonNET.Providers.Kinozal.dll" />
+      <_ProviderCopy Include="$(_KinozalOut)\HtmlAgilityPack.dll" />
+      <_ProviderCopy Include="$(_KinozalOut)\TransmissonNET.Providers.Kinozal.deps.json" />
+      <_ProviderCopy Include="$(_DummyOut)\TransmissonNET.Providers.Dummy.dll"
+                     Condition="'$(Configuration)' == 'Debug'" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_ProviderCopy)" DestinationFolder="$(_ProvidersOut)" SkipUnchangedFiles="true" Condition="Exists('%(Identity)')" />
+  </Target>
 </Project>

@@ -80,6 +80,45 @@ internal sealed partial class AddTorrentViewModel : ViewModelBase
         await InspectFileAsync(path);
     }
 
+    public async Task OpenFromMetainfoBase64Async(string metainfoBase64, string? displayName = null)
+    {
+        if (string.IsNullOrWhiteSpace(metainfoBase64))
+        {
+            _toasts.ShowError(_localization.T("addTorrent.readFailed"));
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            var preview = await _handlers.InvokeAsync(sp =>
+                sp.GetRequiredService<InspectTorrentMetainfoHandler>()
+                    .HandleAsync(new TorrentMetainfoInspectRequestDto(metainfoBase64)));
+            _metainfoBase64 = metainfoBase64;
+            TorrentFilePath = displayName ?? preview.FileName;
+            PreviewTitle = preview.Name;
+            PreviewMeta = _localization.Format(
+                "addTorrent.fileMeta",
+                ("file", TorrentFilePath),
+                ("size", DisplayFormatter.Bytes(preview.TotalSize)));
+            PreviewFiles = new ObservableCollection<string>(FlattenTree(preview.FileTree));
+            OnPropertyChanged(nameof(HasPreview));
+        }
+        catch (Exception ex)
+        {
+            _metainfoBase64 = null;
+            PreviewTitle = string.Empty;
+            PreviewMeta = string.Empty;
+            PreviewFiles.Clear();
+            OnPropertyChanged(nameof(HasPreview));
+            _toasts.ShowError(_localization.T("addTorrent.readFailed"), ex.Message);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
     [RelayCommand]
     private async Task BrowseTorrentAsync()
     {

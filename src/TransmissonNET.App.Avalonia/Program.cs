@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using System.Text;
+using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
 using TransmissonNET.App.Avalonia.Services;
 using TransmissonNET.Desktop;

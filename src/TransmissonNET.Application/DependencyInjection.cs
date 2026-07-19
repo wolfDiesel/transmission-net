@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<RegisterTorrentFileAssociationHandler>();
         services.AddScoped<DeclineTorrentFileAssociationHandler>();
         services.AddScoped<GetPendingTorrentLaunchPathHandler>();
+        services.AddScoped<SearchAcrossProvidersHandler>();
         services.AddSingleton<IPendingTorrentLaunchStore, PendingTorrentLaunchStore>();
         return services;
     }

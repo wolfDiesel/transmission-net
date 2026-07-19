@@ -19,6 +19,7 @@ internal static class ServiceRegistration
         services.AddSingleton<DownloadDirHistoryService>();
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<TorrentsViewModel>();
+        services.AddSingleton<SearchViewModel>();
         services.AddSingleton<AddTorrentViewModel>();
         services.AddSingleton<SettingsViewModel>();
         services.AddSingleton<StatusBarViewModel>();

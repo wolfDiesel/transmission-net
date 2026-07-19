@@ -25,6 +25,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\TransmissonNET.Infrastructure\TransmissonNET.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\TransmissonNET.Providers.RuTracker\TransmissonNET.Providers.RuTracker.csproj" />
+    <ProjectReference Include="..\..\src\TransmissonNET.Providers.LostFilm\TransmissonNET.Providers.LostFilm.csproj" />
+    <ProjectReference Include="..\..\src\TransmissonNET.Providers.Kinozal\TransmissonNET.Providers.Kinozal.csproj" />
+    <ProjectReference Include="..\TransmissonNET.Providers.Fake\TransmissonNET.Providers.Fake.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>

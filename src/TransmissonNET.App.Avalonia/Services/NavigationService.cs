@@ -3,6 +3,7 @@ namespace TransmissonNET.App.Avalonia.Services;
 internal enum AppPage
 {
     Torrents,
+    Search,
     AddTorrent,
     Settings,
 }

@@ -130,6 +130,14 @@
 
               <controls:AppButton Variant="Nav"
 
+                      Classes.active="{Binding NavSearchActive}"
+
+                      Content="{Binding NavSearchLabel}"
+
+                      Command="{Binding NavigateSearchCommand}" />
+
+              <controls:AppButton Variant="Nav"
+
                       Classes.active="{Binding NavAddActive}"
 
                       Content="{Binding NavAddLabel}"

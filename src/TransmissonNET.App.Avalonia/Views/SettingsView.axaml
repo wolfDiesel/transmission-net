@@ -117,6 +117,83 @@
           </ScrollViewer>
         </TabItem>
 
+        <TabItem Header="{Binding TabProviders}">
+          <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="16" Margin="16" HorizontalAlignment="Stretch">
+              <StackPanel Spacing="4">
+                <TextBlock Classes="section-title" Text="{Binding ProvidersTitle}" />
+                <TextBlock Classes="text-muted" Text="{Binding ProvidersSubtitle}" TextWrapping="Wrap" />
+              </StackPanel>
+
+              <TextBlock Classes="text-muted"
+                         Text="{Binding ProvidersEmpty}"
+                         IsVisible="{Binding !HasProviderSettings}" />
+
+              <ItemsControl ItemsSource="{Binding ProviderSettings}"
+                            IsVisible="{Binding HasProviderSettings}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:ProviderSettingsItemViewModel">
+                    <Border Classes="settings-panel" Padding="16" Margin="0,0,0,12">
+                      <StackPanel Spacing="12">
+                        <TextBlock Classes="section-title" Text="{Binding DisplayName}" />
+                        <StackPanel Spacing="4" MaxWidth="280" HorizontalAlignment="Left">
+                          <TextBlock Classes="field-label"
+                                     Text="{Binding #Root.((vm:SettingsViewModel)DataContext).RequestTimeoutLabel}" />
+                          <NumericUpDown Value="{Binding RequestTimeoutSeconds}"
+                                         Minimum="1"
+                                         Maximum="600" />
+                        </StackPanel>
+                        <StackPanel Spacing="8">
+                          <TextBlock Classes="field-label"
+                                     Text="{Binding #Root.((vm:SettingsViewModel)DataContext).KnownMirrorsLabel}"
+                                     IsVisible="{Binding HasKnownMirrors}" />
+                          <ItemsControl ItemsSource="{Binding MirrorOptions}"
+                                        IsVisible="{Binding HasKnownMirrors}">
+                            <ItemsControl.ItemsPanel>
+                              <ItemsPanelTemplate>
+                                <WrapPanel />
+                              </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                              <DataTemplate x:DataType="vm:ProviderMirrorOptionViewModel">
+                                <controls:AppButton Variant="OptionChip"
+                                                    Classes.selected="{Binding IsSelected}"
+                                                    Content="{Binding Url}"
+                                                    Command="{Binding SelectCommand}"
+                                                    Margin="0,0,8,8" />
+                              </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                          </ItemsControl>
+                          <StackPanel Spacing="4" MaxWidth="420" HorizontalAlignment="Left">
+                            <TextBlock Classes="field-label"
+                                       Text="{Binding #Root.((vm:SettingsViewModel)DataContext).CustomMirrorLabel}" />
+                            <TextBox Text="{Binding BaseUrl}"
+                                     PlaceholderText="{Binding #Root.((vm:SettingsViewModel)DataContext).CustomMirrorPlaceholder}" />
+                          </StackPanel>
+                        </StackPanel>
+                        <StackPanel Spacing="12" IsVisible="{Binding ShowLostFilmExtras}">
+                          <StackPanel Spacing="4" MaxWidth="280" HorizontalAlignment="Left">
+                            <TextBlock Classes="field-label"
+                                       Text="{Binding #Root.((vm:SettingsViewModel)DataContext).PreferredQualityLabel}" />
+                            <TextBox Text="{Binding PreferredQuality}" />
+                          </StackPanel>
+                          <StackPanel Spacing="4" MaxWidth="280" HorizontalAlignment="Left">
+                            <TextBlock Classes="field-label"
+                                       Text="{Binding #Root.((vm:SettingsViewModel)DataContext).MaxSeriesExpandLabel}" />
+                            <NumericUpDown Value="{Binding MaxSeriesExpand}"
+                                           Minimum="1"
+                                           Maximum="20" />
+                          </StackPanel>
+                        </StackPanel>
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </ScrollViewer>
+        </TabItem>
+
         <TabItem Header="{Binding TabInterface}">
           <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="20" Margin="16" HorizontalAlignment="Stretch">
