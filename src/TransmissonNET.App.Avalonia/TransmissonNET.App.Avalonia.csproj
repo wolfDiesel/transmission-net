@@ -39,47 +39,55 @@
     <ProjectReference Include="..\TransmissonNET.Application\TransmissonNET.Application.csproj" />
     <ProjectReference Include="..\TransmissonNET.Desktop\TransmissonNET.Desktop.csproj" />
     <ProjectReference Include="..\TransmissonNET.Infrastructure\TransmissonNET.Infrastructure.csproj" />
-    <ProjectReference Include="..\TransmissonNET.Providers.RuTracker\TransmissonNET.Providers.RuTracker.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
-    <ProjectReference Include="..\TransmissonNET.Providers.LostFilm\TransmissonNET.Providers.LostFilm.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
-    <ProjectReference Include="..\TransmissonNET.Providers.Kinozal\TransmissonNET.Providers.Kinozal.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
-    <ProjectReference Include="..\TransmissonNET.Providers.Dummy\TransmissonNET.Providers.Dummy.csproj"
-                      Condition="'$(Configuration)' == 'Debug'">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-    </ProjectReference>
   </ItemGroup>
 
-  <Target Name="CopyTorrentProviders" AfterTargets="Build">
+  <ItemGroup>
+    <TorrentProviderProject Include="$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.RuTracker\TransmissonNET.Providers.RuTracker.csproj" />
+    <TorrentProviderProject Include="$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.LostFilm\TransmissonNET.Providers.LostFilm.csproj" />
+    <TorrentProviderProject Include="$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.Kinozal\TransmissonNET.Providers.Kinozal.csproj" />
+    <TorrentProviderProject Include="$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.Dummy\TransmissonNET.Providers.Dummy.csproj"
+                            Condition="'$(Configuration)' == 'Debug'" />
+  </ItemGroup>
+
+  <Target Name="BuildAndCopyTorrentProviders" AfterTargets="Build;Publish">
     <PropertyGroup>
-      <_ProvidersOut>$([System.IO.Path]::GetFullPath('$(OutputPath)providers'))</_ProvidersOut>
-      <_RuTrackerOut>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.RuTracker\bin\$(Configuration)\net8.0'))</_RuTrackerOut>
-      <_LostFilmOut>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.LostFilm\bin\$(Configuration)\net8.0'))</_LostFilmOut>
-      <_KinozalOut>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.Kinozal\bin\$(Configuration)\net8.0'))</_KinozalOut>
-      <_DummyOut>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.Dummy\bin\$(Configuration)\net8.0'))</_DummyOut>
+      <_ProvidersDest Condition="'$(PublishDir)' != ''">$([System.IO.Path]::GetFullPath('$(PublishDir)providers'))</_ProvidersDest>
+      <_ProvidersDest Condition="'$(_ProvidersDest)' == ''">$([System.IO.Path]::GetFullPath('$(OutputPath)providers'))</_ProvidersDest>
+      <_ProvidersConfig>$(Configuration)</_ProvidersConfig>
+      <_ProvidersConfig Condition="'$(_ProvidersConfig)' == ''">Release</_ProvidersConfig>
+      <_RuTrackerBin>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.RuTracker\bin\$(_ProvidersConfig)\net8.0'))</_RuTrackerBin>
+      <_LostFilmBin>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.LostFilm\bin\$(_ProvidersConfig)\net8.0'))</_LostFilmBin>
+      <_KinozalBin>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.Kinozal\bin\$(_ProvidersConfig)\net8.0'))</_KinozalBin>
+      <_DummyBin>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.Dummy\bin\$(_ProvidersConfig)\net8.0'))</_DummyBin>
     </PropertyGroup>
-    <MakeDir Directories="$(_ProvidersOut)" />
+
+    <MSBuild Projects="@(TorrentProviderProject)"
+             Targets="Build"
+             Properties="Configuration=$(_ProvidersConfig);TargetFramework=net8.0;RuntimeIdentifier=;SelfContained=false;CopyLocalLockFileAssemblies=true"
+             BuildInParallel="true" />
+
     <ItemGroup>
-      <_ProviderCopy Include="$(_RuTrackerOut)\TransmissonNET.Providers.RuTracker.dll" />
-      <_ProviderCopy Include="$(_RuTrackerOut)\HtmlAgilityPack.dll" />
-      <_ProviderCopy Include="$(_RuTrackerOut)\TransmissonNET.Providers.RuTracker.deps.json" />
-      <_ProviderCopy Include="$(_LostFilmOut)\TransmissonNET.Providers.LostFilm.dll" />
-      <_ProviderCopy Include="$(_LostFilmOut)\HtmlAgilityPack.dll" />
-      <_ProviderCopy Include="$(_LostFilmOut)\TransmissonNET.Providers.LostFilm.deps.json" />
-      <_ProviderCopy Include="$(_KinozalOut)\TransmissonNET.Providers.Kinozal.dll" />
-      <_ProviderCopy Include="$(_KinozalOut)\HtmlAgilityPack.dll" />
-      <_ProviderCopy Include="$(_KinozalOut)\TransmissonNET.Providers.Kinozal.deps.json" />
-      <_ProviderCopy Include="$(_DummyOut)\TransmissonNET.Providers.Dummy.dll"
-                     Condition="'$(Configuration)' == 'Debug'" />
+      <_ProviderBuilt Include="$(_RuTrackerBin)\TransmissonNET.Providers.RuTracker.dll" />
+      <_ProviderBuilt Include="$(_RuTrackerBin)\HtmlAgilityPack.dll" />
+      <_ProviderBuilt Include="$(_RuTrackerBin)\TransmissonNET.Providers.RuTracker.deps.json" />
+      <_ProviderBuilt Include="$(_LostFilmBin)\TransmissonNET.Providers.LostFilm.dll" />
+      <_ProviderBuilt Include="$(_LostFilmBin)\HtmlAgilityPack.dll" />
+      <_ProviderBuilt Include="$(_LostFilmBin)\TransmissonNET.Providers.LostFilm.deps.json" />
+      <_ProviderBuilt Include="$(_KinozalBin)\TransmissonNET.Providers.Kinozal.dll" />
+      <_ProviderBuilt Include="$(_KinozalBin)\HtmlAgilityPack.dll" />
+      <_ProviderBuilt Include="$(_KinozalBin)\TransmissonNET.Providers.Kinozal.deps.json" />
+      <_ProviderBuilt Include="$(_DummyBin)\TransmissonNET.Providers.Dummy.dll"
+                      Condition="'$(_ProvidersConfig)' == 'Debug'" />
+      <_ProviderBuiltExisting Include="@(_ProviderBuilt)" Condition="Exists('%(Identity)')" />
     </ItemGroup>
-    <Copy SourceFiles="@(_ProviderCopy)" DestinationFolder="$(_ProvidersOut)" SkipUnchangedFiles="true" Condition="Exists('%(Identity)')" />
+
+    <Error Text="Torrent provider DLLs missing after build ($(_RuTrackerBin))."
+           Condition="!Exists('$(_RuTrackerBin)\TransmissonNET.Providers.RuTracker.dll')" />
+
+    <MakeDir Directories="$(_ProvidersDest)" />
+    <Copy SourceFiles="@(_ProviderBuiltExisting)"
+          DestinationFolder="$(_ProvidersDest)"
+          SkipUnchangedFiles="true" />
+    <Message Importance="high" Text="Copied @(_ProviderBuiltExisting->Count()) provider file(s) to $(_ProvidersDest)" />
   </Target>
 </Project>
