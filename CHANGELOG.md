@@ -41,6 +41,7 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ### Fixed
 
+- RuTracker search result links: resolve relative `viewtopic.php` under `/forum/` (was 404 at site root).
 - AppImage / `dotnet publish`: build and copy torrent provider DLLs into `providers/` via `dotnet restore`/`dotnet build` (nested MSBuild restore was skipped on CI SDK 10).
 - Remove torrent with “delete downloaded files”: RPC now sends `delete-local-data` / `delete_local_data` so Transmission actually deletes local data.
 - Bulk remove dialog: scrollable torrent list, max height ⅔ of screen (footer stays visible).

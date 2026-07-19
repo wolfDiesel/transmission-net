@@ -101,9 +101,23 @@ internal static class RuTrackerHtmlParser
     {
         if (string.IsNullOrWhiteSpace(href))
             return null;
-        if (Uri.TryCreate(href, UriKind.Absolute, out var absolute))
+        if (Uri.TryCreate(href, UriKind.Absolute, out var absolute)
+            && (absolute.Scheme == Uri.UriSchemeHttp || absolute.Scheme == Uri.UriSchemeHttps))
             return absolute.ToString();
-        if (Uri.TryCreate(new Uri(baseUrl.TrimEnd('/') + "/"), href, out var combined))
+
+        var siteRoot = new Uri(baseUrl.TrimEnd('/') + "/");
+        if (href.StartsWith('/'))
+        {
+            if (Uri.TryCreate(siteRoot, href, out var fromRoot))
+                return fromRoot.ToString();
+            return href;
+        }
+
+        var trimmed = baseUrl.TrimEnd('/');
+        var forumBase = trimmed.EndsWith("/forum", StringComparison.OrdinalIgnoreCase)
+            ? new Uri(trimmed + "/")
+            : new Uri(trimmed + "/forum/");
+        if (Uri.TryCreate(forumBase, href, out var combined))
             return combined.ToString();
         return href;
     }

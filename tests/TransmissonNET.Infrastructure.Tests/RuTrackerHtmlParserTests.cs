@@ -15,8 +15,9 @@ public sealed class RuTrackerHtmlParserTests
         Assert.Equal("5956108", hits[0].Id);
         Assert.Equal("Ubuntu 24.04 LTS Desktop amd64", hits[0].Title);
         Assert.Equal(5_046_586_573L, hits[0].SizeBytes); // 4.7 GB rounded
-        Assert.Contains("5956108", hits[0].DetailUrl);
+        Assert.Equal("https://rutracker.org/forum/viewtopic.php?t=5956108", hits[0].DetailUrl);
         Assert.Equal("123456", hits[1].Id);
+        Assert.Equal("https://rutracker.org/forum/viewtopic.php?t=123456", hits[1].DetailUrl);
         Assert.NotNull(hits[1].SizeBytes);
     }
 
