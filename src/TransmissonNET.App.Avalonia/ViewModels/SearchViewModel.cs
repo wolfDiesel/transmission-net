@@ -120,33 +120,24 @@ internal sealed partial class SearchViewModel : ViewModelBase
         IsBusy = true;
         try
         {
-            foreach (var id in selected)
-            {
-                var provider = _catalog.GetById(id);
-                if (provider is null)
-                    continue;
-
-                SubscribeProviderResults(provider);
-
-                if (provider.IsLoginRequired && !provider.IsLoggedIn)
-                {
-                    await provider.LoginAsync();
-                    if (!provider.IsLoggedIn)
-                    {
-                        ErrorMessage = _localization.Format(
-                            "searchPage.loginRequired",
-                            ("name", provider.DisplayName));
-                        RefreshProviderAuthStates();
-                        return;
-                    }
-                }
-            }
-
+            if (!await EnsureProvidersLoggedInAsync(selected))
+                return;
             RefreshProviderAuthStates();
 
             var result = await _handlers.InvokeAsync(sp =>
                 sp.GetRequiredService<SearchAcrossProvidersHandler>().HandleAsync(
                     new ProviderSearchRequestDto(Query.Trim(), selected)));
+
+            if (result.Errors.Count > 0
+                && result.Errors.Any(IsSessionLostError)
+                && selected.Any(id => _catalog.GetById(id) is { IsLoginRequired: true, IsLoggedIn: false }))
+            {
+                if (!await EnsureProvidersLoggedInAsync(selected))
+                    return;
+                result = await _handlers.InvokeAsync(sp =>
+                    sp.GetRequiredService<SearchAcrossProvidersHandler>().HandleAsync(
+                        new ProviderSearchRequestDto(Query.Trim(), selected)));
+            }
 
             RebuildResultsFromProviders();
 
@@ -161,6 +152,36 @@ internal sealed partial class SearchViewModel : ViewModelBase
                 ("count", Results.Count.ToString()));
             RefreshEmptyState();
         }
+        catch (Exception ex) when (IsSessionLostError(ex.Message))
+        {
+            Console.Error.WriteLine($"[Search] session lost, re-login: {ex.Message}");
+            try
+            {
+                if (!await EnsureProvidersLoggedInAsync(selected))
+                    return;
+
+                var retry = await _handlers.InvokeAsync(sp =>
+                    sp.GetRequiredService<SearchAcrossProvidersHandler>().HandleAsync(
+                        new ProviderSearchRequestDto(Query.Trim(), selected)));
+                RebuildResultsFromProviders();
+                if (retry.Errors.Count > 0)
+                {
+                    ErrorMessage = string.Join(" · ", retry.Errors);
+                    Console.Error.WriteLine($"[Search] provider errors: {ErrorMessage}");
+                }
+
+                StatusText = _localization.Format(
+                    "searchPage.resultsCount",
+                    ("count", Results.Count.ToString()));
+                RefreshEmptyState();
+            }
+            catch (Exception retryEx)
+            {
+                Console.Error.WriteLine($"[Search] failed: {retryEx}");
+                ErrorMessage = retryEx.Message;
+                _toasts.ShowError(_localization.T("searchPage.searchFailed"), retryEx.Message);
+            }
+        }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"[Search] failed: {ex}");
@@ -172,6 +193,40 @@ internal sealed partial class SearchViewModel : ViewModelBase
             IsBusy = false;
         }
     }
+
+    private async Task<bool> EnsureProvidersLoggedInAsync(IReadOnlyList<string> selected)
+    {
+        foreach (var id in selected)
+        {
+            var provider = _catalog.GetById(id);
+            if (provider is null)
+                continue;
+
+            SubscribeProviderResults(provider);
+
+            if (provider.IsLoginRequired && !provider.IsLoggedIn)
+            {
+                await provider.LoginAsync();
+                if (!provider.IsLoggedIn)
+                {
+                    ErrorMessage = _localization.Format(
+                        "searchPage.loginRequired",
+                        ("name", provider.DisplayName));
+                    RefreshProviderAuthStates();
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsSessionLostError(string? message) =>
+        !string.IsNullOrWhiteSpace(message)
+        && (message.Contains("Cloudflare", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("session expired", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("login again", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("sign in again", StringComparison.OrdinalIgnoreCase));
 
     private void SubscribeProviderResults(ITorrentProvider provider)
     {

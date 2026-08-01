@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using TransmissonNET.Providers.Abstractions;
@@ -90,6 +91,50 @@ internal static class RuTrackerHtmlParser
     public static bool LooksLikeLoginPage(string html) =>
         html.Contains("login_username", StringComparison.OrdinalIgnoreCase)
         || html.Contains("name=\"login_password\"", StringComparison.OrdinalIgnoreCase);
+
+    public static bool LooksLikeCloudflareChallenge(HttpResponseMessage response, string? body = null)
+    {
+        ArgumentNullException.ThrowIfNull(response);
+
+        if (response.Headers.TryGetValues("cf-mitigated", out var mitigated)
+            && mitigated.Any(v => v.Contains("challenge", StringComparison.OrdinalIgnoreCase)))
+            return true;
+
+        if (LooksLikeCloudflareChallengeBody(body))
+            return true;
+
+        if ((int)response.StatusCode is 403 or 503
+            && response.Headers.TryGetValues("server", out var server)
+            && server.Any(v => v.Contains("cloudflare", StringComparison.OrdinalIgnoreCase)))
+            return true;
+
+        // RuTracker auth errors are usually HTTP 200 with the login form; opaque 403 is WAF.
+        if ((int)response.StatusCode == 403
+            && !string.IsNullOrWhiteSpace(body)
+            && !LooksLikeLoginPage(body))
+            return true;
+
+        return false;
+    }
+
+    public static bool LooksLikeCloudflareChallengeBody(string? html)
+    {
+        if (string.IsNullOrWhiteSpace(html))
+            return false;
+
+        // Real tracker pages often mention Cloudflare in scripts/footers; do not match the bare word.
+        if (html.Contains("data-topic_id", StringComparison.OrdinalIgnoreCase)
+            || html.Contains("id=\"tor-tbl\"", StringComparison.OrdinalIgnoreCase)
+            || html.Contains("name=\"login_password\"", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        return html.Contains("Just a moment", StringComparison.OrdinalIgnoreCase)
+               || html.Contains("challenges.cloudflare.com", StringComparison.OrdinalIgnoreCase)
+               || html.Contains("cdn-cgi/challenge-platform", StringComparison.OrdinalIgnoreCase)
+               || html.Contains("cf-browser-verification", StringComparison.OrdinalIgnoreCase)
+               || html.Contains("cf-challenge-running", StringComparison.OrdinalIgnoreCase)
+               || html.Contains("Enable JavaScript and cookies to continue", StringComparison.OrdinalIgnoreCase);
+    }
 
     private static string? ExtractTopicId(string html)
     {

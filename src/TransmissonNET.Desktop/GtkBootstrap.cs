@@ -22,6 +22,7 @@ internal static class GtkBootstrap
 
         try
         {
+            LinuxGdkBackend.ApplyWebKitGtkWorkarounds();
             var init = GetDelegate<gtk_init_check_delegate>(gtk, "gtk_init_check");
             init(0, IntPtr.Zero);
             s_initialized = gdk_display_get_default() != IntPtr.Zero;

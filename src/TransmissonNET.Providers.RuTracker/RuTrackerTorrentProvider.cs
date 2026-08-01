@@ -73,23 +73,27 @@ public sealed class RuTrackerTorrentProvider : ITorrentProvider, IDisposable
             if (_client.IsLoggedIn)
                 return;
 
-            var credentials = await Dispatcher.UIThread.InvokeAsync(async () =>
-            {
-                var owner = GetOwnerWindow()
-                    ?? throw new InvalidOperationException("No application window available for RuTracker login.");
-                var window = new RuTrackerLoginWindow();
-                var accepted = await window.ShowDialog<bool?>(owner);
-                if (accepted != true)
-                    return ((string Username, string Password)?)null;
+            var preferred = RuTrackerMirrors.NormalizeBaseUrl(_settings.BaseUrl);
+            _client.SetBaseUrl(preferred);
 
-                return (window.Username, window.Password);
-            });
+            (IReadOnlyList<System.Net.Cookie> Cookies, string? UserAgent)? accepted;
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                accepted = await RuTrackerWebLogin.ShowAsync(
+                    preferred, _dataDirectory, GetOwnerWindow(), cancellationToken);
+            }
+            else
+            {
+                accepted = await Dispatcher.UIThread.InvokeAsync(() =>
+                    RuTrackerWebLogin.ShowAsync(
+                        preferred, _dataDirectory, GetOwnerWindow(), cancellationToken));
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
-            if (credentials is null)
+            if (accepted is null)
                 return;
 
-            await _client.LoginAsync(credentials.Value.Username, credentials.Value.Password, cancellationToken);
+            _client.ImportWebSession(accepted.Value.Cookies, accepted.Value.UserAgent);
         }
         finally
         {
@@ -103,14 +107,7 @@ public sealed class RuTrackerTorrentProvider : ITorrentProvider, IDisposable
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var session = new RuTrackerSessionStore(
-                string.IsNullOrWhiteSpace(_settings.BaseUrl)
-                    ? RuTrackerClient.DefaultBaseUrl
-                    : _settings.BaseUrl.TrimEnd('/'),
-                _dataDirectory);
-            session.Clear();
-            _client.Dispose();
-            _client = CreateClient(_settings);
+            _client.ClearSession();
             TorrentProviderUiMarshal.ClearResults(Results, SynchronizationContext.Current);
             RuTrackerLog.Info("Logged out; session cleared");
         }

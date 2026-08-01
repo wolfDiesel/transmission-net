@@ -13,6 +13,8 @@ sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        LinuxGdkBackend.ApplyWebKitGtkWorkarounds();
+
         var launchTorrentPath = CommandLineTorrentLaunch.FindTorrentPath(args);
         if (SingleInstanceHost.TryForwardToRunningInstance(launchTorrentPath))
             return;

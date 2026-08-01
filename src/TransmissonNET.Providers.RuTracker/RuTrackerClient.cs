@@ -5,93 +5,127 @@ using TransmissonNET.Providers.Abstractions;
 
 namespace TransmissonNET.Providers.RuTracker;
 
+internal sealed class RuTrackerCloudflareException : InvalidOperationException
+{
+    public RuTrackerCloudflareException(string message) : base(message)
+    {
+    }
+}
+
 internal sealed class RuTrackerClient : IDisposable
 {
     public const string DefaultBaseUrl = "https://rutracker.org";
 
-    private readonly CookieContainer _cookies = new();
-    private readonly HttpClient _http;
-    private readonly RuTrackerSessionStore _session;
-    private readonly string _baseUrl;
-    private readonly Uri _baseUri;
+    private readonly string _dataDirectory;
+    private readonly HttpMessageHandler? _handler;
+    private CookieContainer _cookies = new();
+    private HttpClient _http;
+    private RuTrackerSessionStore _session;
+    private string _baseUrl;
+    private Uri _baseUri;
+    private string _userAgent =
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
     private bool _loggedIn;
 
     public RuTrackerClient(string? baseUrl = null, string? dataDirectory = null, HttpMessageHandler? handler = null)
     {
         RuTrackerEncoding.EnsureRegistered();
-        _baseUrl = (baseUrl ?? DefaultBaseUrl).TrimEnd('/');
+        _dataDirectory = dataDirectory
+                         ?? Path.Combine(
+                             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                             ".config",
+                             "TransmissonNET",
+                             "providers",
+                             "rutracker");
+        Directory.CreateDirectory(_dataDirectory);
+        _handler = handler;
+        _baseUrl = RuTrackerMirrors.NormalizeBaseUrl(baseUrl ?? DefaultBaseUrl).TrimEnd('/');
         _baseUri = new Uri(_baseUrl + "/");
-        _session = new RuTrackerSessionStore(_baseUrl, dataDirectory);
+        _session = new RuTrackerSessionStore(_baseUrl, _dataDirectory);
         _session.LoadInto(_cookies);
+        if (!string.IsNullOrWhiteSpace(_session.UserAgent))
+            _userAgent = _session.UserAgent;
         _loggedIn = RuTrackerSessionStore.HasSessionCookie(_cookies, _baseUri);
-        RuTrackerLog.Info($"Client created. IsLoggedIn={_loggedIn}");
-
-        var pipeline = handler ?? new HttpClientHandler
-        {
-            CookieContainer = _cookies,
-            UseCookies = true,
-            AutomaticDecompression = DecompressionMethods.All,
-            AllowAutoRedirect = true,
-        };
-
-        _http = new HttpClient(pipeline)
-        {
-            Timeout = TimeSpan.FromSeconds(10),
-        };
-        _http.DefaultRequestHeaders.UserAgent.ParseAdd(
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-        _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
-        _http.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ru-RU,ru;q=0.9,en;q=0.8");
+        _http = CreateHttp();
+        RuTrackerLog.Info($"Client created. BaseUrl={_baseUrl}/, IsLoggedIn={_loggedIn}, ua={_userAgent}");
     }
+
+    public string BaseUrl => _baseUrl + "/";
+
+    public bool IsLoggedIn => _loggedIn && RuTrackerSessionStore.HasSessionCookie(_cookies, _baseUri);
 
     public void SetTimeout(TimeSpan timeout)
     {
         _http.Timeout = timeout <= TimeSpan.Zero ? Timeout.InfiniteTimeSpan : timeout;
     }
 
-    public bool IsLoggedIn => _loggedIn && RuTrackerSessionStore.HasSessionCookie(_cookies, _baseUri);
-
-    public async Task LoginAsync(string username, string password, CancellationToken cancellationToken = default)
+    public void SetBaseUrl(string baseUrl)
     {
-        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
-            throw new InvalidOperationException("Username and password are required.");
+        var normalized = RuTrackerMirrors.NormalizeBaseUrl(baseUrl).TrimEnd('/');
+        if (string.Equals(normalized, _baseUrl, StringComparison.OrdinalIgnoreCase))
+            return;
 
-        RuTrackerLog.Info($"Login attempt for user '{username.Trim()}'");
-
-        using var content = RuTrackerEncoding.CreateFormUrlEncoded(new Dictionary<string, string>
-        {
-            ["login_username"] = username.Trim(),
-            ["login_password"] = password,
-            ["login"] = "Вход",
-        });
-
-        using var response = await _http.PostAsync($"{_baseUrl}/forum/login.php", content, cancellationToken);
-        var body = await ReadHtmlAsync(response, cancellationToken);
-        RuTrackerLog.Info($"Login HTTP {(int)response.StatusCode}, bodyLength={body.Length}, cookies={_cookies.Count}");
-
-        if (body.Contains("неверн", StringComparison.OrdinalIgnoreCase)
-            || body.Contains("incorrect", StringComparison.OrdinalIgnoreCase))
-        {
-            _loggedIn = false;
-            throw new InvalidOperationException("RuTracker rejected the credentials.");
-        }
-
-        if (!RuTrackerSessionStore.HasSessionCookie(_cookies, _baseUri)
-            && RuTrackerHtmlParser.LooksLikeLoginPage(body))
-        {
-            _loggedIn = false;
-            throw new InvalidOperationException("RuTracker rejected the credentials.");
-        }
-
-        _session.Save(_cookies);
+        _baseUrl = normalized;
+        _baseUri = new Uri(_baseUrl + "/");
+        _session = new RuTrackerSessionStore(_baseUrl, _dataDirectory);
+        RebuildHttp(keepCookies: false);
+        if (!string.IsNullOrWhiteSpace(_session.UserAgent))
+            _userAgent = _session.UserAgent;
         _loggedIn = RuTrackerSessionStore.HasSessionCookie(_cookies, _baseUri);
-        if (!_loggedIn)
+        RuTrackerLog.Info($"BaseUrl switched to {_baseUrl}/, IsLoggedIn={_loggedIn}, ua={_userAgent}");
+    }
+
+    public void ImportWebSession(IEnumerable<Cookie> cookies, string? userAgent = null)
+    {
+        ArgumentNullException.ThrowIfNull(cookies);
+
+        if (!string.IsNullOrWhiteSpace(userAgent))
+            _userAgent = userAgent.Trim();
+
+        _cookies = new CookieContainer();
+        var imported = 0;
+        foreach (var source in cookies)
         {
-            RuTrackerLog.Error("Login response had no session cookie");
-            throw new InvalidOperationException("RuTracker login did not establish a session.");
+            if (string.IsNullOrWhiteSpace(source.Name) || string.IsNullOrWhiteSpace(source.Domain))
+                continue;
+
+            try
+            {
+                var domain = source.Domain.Trim().TrimStart('.');
+                var cookie = new Cookie(source.Name, source.Value ?? string.Empty)
+                {
+                    Domain = domain,
+                    Path = string.IsNullOrWhiteSpace(source.Path) ? "/" : source.Path,
+                    Secure = source.Secure,
+                    HttpOnly = source.HttpOnly,
+                };
+                if (source.Expires != DateTime.MinValue && source.Expires.Year > 2000)
+                    cookie.Expires = source.Expires;
+
+                _cookies.Add(new Uri($"https://{domain}/"), cookie);
+                imported++;
+            }
+            catch (Exception ex)
+            {
+                RuTrackerLog.Error($"Skip imported cookie {source.Name}@{source.Domain}", ex);
+            }
         }
 
-        RuTrackerLog.Info("Login succeeded");
+        RebuildHttp(keepCookies: true);
+        _session.Save(_cookies, _userAgent);
+        _loggedIn = RuTrackerSessionStore.HasSessionCookie(_cookies, _baseUri);
+        RuTrackerLog.Info($"Imported web session: cookies={imported}, loggedIn={_loggedIn}, ua={_userAgent}");
+        if (!_loggedIn)
+            throw new InvalidOperationException("Web login did not produce a RuTracker session cookie.");
+    }
+
+    public void ClearSession()
+    {
+        _session.Clear();
+        _cookies = new CookieContainer();
+        RebuildHttp(keepCookies: true);
+        _loggedIn = false;
+        RuTrackerLog.Info("Session cleared");
     }
 
     public async Task<IReadOnlyList<TorrentSearchHit>> SearchAsync(
@@ -109,6 +143,7 @@ internal sealed class RuTrackerClient : IDisposable
             using var response = await _http.GetAsync(url, cancellationToken);
             var html = await ReadHtmlAsync(response, cancellationToken);
             RuTrackerLog.Info($"Search HTTP {(int)response.StatusCode}, bodyLength={html.Length}");
+            ThrowIfCloudflare(response, html, "search");
 
             if (!response.IsSuccessStatusCode)
                 throw new InvalidOperationException($"RuTracker search failed ({(int)response.StatusCode}).");
@@ -116,14 +151,13 @@ internal sealed class RuTrackerClient : IDisposable
             if (RuTrackerHtmlParser.LooksLikeLoginPage(html)
                 && html.Contains("login_password", StringComparison.OrdinalIgnoreCase))
             {
-                _loggedIn = false;
-                RuTrackerLog.Error("Search returned login page — session lost");
+                InvalidateSession("Search returned login page — session lost");
                 throw new InvalidOperationException("RuTracker session expired. Please login again.");
             }
 
             var hits = RuTrackerHtmlParser.ParseSearchResults(html, _baseUrl);
             RuTrackerLog.Info($"Search parsed {hits.Count} hit(s)");
-            _session.Save(_cookies);
+            _session.Save(_cookies, _userAgent);
             return hits;
         }
         catch (Exception ex) when (ex is not InvalidOperationException and not OperationCanceledException)
@@ -146,6 +180,11 @@ internal sealed class RuTrackerClient : IDisposable
         var contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
         RuTrackerLog.Info($"Download HTTP {(int)response.StatusCode}, bytes={bytes.Length}, type={contentType}");
 
+        var headHtml = RuTrackerEncoding.Decode(
+            bytes.AsSpan(0, Math.Min(bytes.Length, 4096)).ToArray(),
+            response.Content.Headers.ContentType?.CharSet);
+        ThrowIfCloudflare(response, headHtml, "download");
+
         if (!response.IsSuccessStatusCode)
             throw new InvalidOperationException($"RuTracker download failed ({(int)response.StatusCode}).");
 
@@ -154,11 +193,9 @@ internal sealed class RuTrackerClient : IDisposable
             || head.StartsWith("<", StringComparison.Ordinal)
             || head.Contains("login", StringComparison.OrdinalIgnoreCase))
         {
-            var htmlHead = RuTrackerEncoding.Decode(bytes.AsSpan(0, Math.Min(bytes.Length, 4096)).ToArray(),
-                response.Content.Headers.ContentType?.CharSet);
-            if (RuTrackerHtmlParser.LooksLikeLoginPage(htmlHead))
+            if (RuTrackerHtmlParser.LooksLikeLoginPage(headHtml))
             {
-                _loggedIn = false;
+                InvalidateSession("Download requires login");
                 throw new InvalidOperationException("RuTracker requires login to download torrents.");
             }
         }
@@ -166,11 +203,60 @@ internal sealed class RuTrackerClient : IDisposable
         if (bytes.Length < 16)
             throw new InvalidOperationException("RuTracker returned an empty torrent file.");
 
-        _session.Save(_cookies);
+        _session.Save(_cookies, _userAgent);
         return bytes;
     }
 
     public void Dispose() => _http.Dispose();
+
+    private void InvalidateSession(string reason)
+    {
+        RuTrackerLog.Error(reason);
+        ClearSession();
+    }
+
+    private void ThrowIfCloudflare(HttpResponseMessage response, string? body, string action)
+    {
+        if (!RuTrackerHtmlParser.LooksLikeCloudflareChallenge(response, body))
+            return;
+
+        RuTrackerLog.Error($"Cloudflare challenge during {action} (HTTP {(int)response.StatusCode})");
+        ClearSession();
+        throw new RuTrackerCloudflareException(
+            "RuTracker Cloudflare check expired. Please sign in again in the browser window.");
+    }
+
+    private void RebuildHttp(bool keepCookies)
+    {
+        var timeout = _http.Timeout;
+        _http.Dispose();
+        if (!keepCookies)
+        {
+            _cookies = new CookieContainer();
+            _session.LoadInto(_cookies);
+        }
+
+        _http = CreateHttp();
+        _http.Timeout = timeout;
+    }
+
+    private HttpClient CreateHttp()
+    {
+        var pipeline = _handler ?? new HttpClientHandler
+        {
+            CookieContainer = _cookies,
+            UseCookies = true,
+            AutomaticDecompression = DecompressionMethods.All,
+            AllowAutoRedirect = true,
+        };
+
+        var http = new HttpClient(pipeline) { Timeout = TimeSpan.FromSeconds(10) };
+        http.DefaultRequestHeaders.UserAgent.Clear();
+        http.DefaultRequestHeaders.UserAgent.ParseAdd(_userAgent);
+        http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
+        http.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ru-RU,ru;q=0.9,en;q=0.8");
+        return http;
+    }
 
     private static async Task<string> ReadHtmlAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {

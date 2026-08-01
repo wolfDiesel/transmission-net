@@ -6,23 +6,15 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ## Unreleased
 
+## 0.1.0 - 2026-08-01
+
 ### Added
 
 - **Torrent search (Stage B):** pluggable provider DLLs under `providers/`, Search tab (provider tags, query, results grid), Settings → Providers (timeout, known/custom mirrors).
 - Providers: **RuTracker**, **LostFilm** (`lostfilm.download` + mirrors), **Kinozal** (`kinozal.me` + mirrors); Debug-only **Dummy** for multi-provider UI tests.
 - Search flow: login gate per provider, parallel search, Download → Add torrent preview (not direct daemon add).
 - Default provider request timeout: **10 seconds**.
-
-### Changed
-
-- **Desktop UI:** replace Photino/WebKit + React with native **Avalonia** (`TransmissonNET.App.Avalonia`); published binary remains `TransmissonNET.App`.
-- **Removed:** `web/transmission-ui`, embedded Kestrel REST API, Photino host, WebKitGTK AppImage packaging, and CI Node.js build step.
-- Linux desktop helpers moved to `TransmissonNET.Desktop` (tray, single-instance, `.torrent` argv).
-- AppImage CI and `build-appimage.sh` target Avalonia only (GTK3 + Ayatana tray; no WebKit runtime).
-- `sync-brand-icons.sh` copies brand assets into Avalonia `Assets/` only.
-
-### Added
-
+- RuTracker: browser web-login via Avalonia `NativeWebDialog` (WebKitGTK; Cloudflare solved in-page); cookies via WebKitGTK P/Invoke; session cookies + WebView User-Agent persisted across restarts.
 - Avalonia `AppButton` control (primary, ghost, nav, option/palette chips, toast close) with hover shine, subtle press feedback, and outward ripple rings on click across the desktop UI.
 - Download directory history (up to 500 paths) with autocomplete on Add torrent and Move torrent; last used folder is pre-filled, paths persist in settings after add/move.
 - Multi-select in the torrent table and torrent details file tree (Ctrl/Shift); context menu actions apply to all selected items.
@@ -39,8 +31,18 @@ Release flow: update this file → commit → push → publish a GitHub release 
 - GitHub Actions `release-appimage.yml` and `packaging/appimage/` for AppImage builds.
 - `README.md`: project overview, features, mass rename, build and AppImage notes.
 
+### Changed
+
+- **Desktop UI:** replace Photino/WebKit + React with native **Avalonia** (`TransmissonNET.App.Avalonia`); published binary remains `TransmissonNET.App`.
+- **Removed:** `web/transmission-ui`, embedded Kestrel REST API, Photino host, WebKitGTK AppImage packaging, and CI Node.js build step.
+- Linux desktop helpers moved to `TransmissonNET.Desktop` (tray, single-instance, `.torrent` argv).
+- AppImage CI and `build-appimage.sh` target Avalonia (GTK3 + Ayatana tray). RuTracker login needs host **WebKitGTK 4.1** (`webkit2gtk4.1` / `libwebkit2gtk-4.1-0`) at runtime.
+- `sync-brand-icons.sh` copies brand assets into Avalonia `Assets/` only.
+
 ### Fixed
 
+- RuTracker: Linux web-login workarounds (`GDK_BACKEND=x11`, `WEBKIT_DISABLE_DMABUF_RENDERER`); false Cloudflare detection on normal tracker HTML; persist User-Agent with cookies so search works after app restart; on real Cloudflare 403 session cleared and login required again.
+- Provider plugins copy to `OutputPath/providers` on Build/`dotnet run` (not SDK default `.../publish/providers`); AppImage publish still copies into `PublishDir/providers`.
 - RuTracker search result links: resolve relative `viewtopic.php` under `/forum/` (was 404 at site root).
 - AppImage / `dotnet publish`: build and copy torrent provider DLLs into `providers/` via `dotnet restore`/`dotnet build` (nested MSBuild restore was skipped on CI SDK 10).
 - Remove torrent with “delete downloaded files”: RPC now sends `delete-local-data` / `delete_local_data` so Transmission actually deletes local data.

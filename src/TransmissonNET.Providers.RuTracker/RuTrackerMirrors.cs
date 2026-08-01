@@ -8,7 +8,6 @@ internal static class RuTrackerMirrors
     [
         "https://rutracker.org/",
         "https://rutracker.net/",
-        "https://rutracker.nl/",
     ];
 
     public static string NormalizeBaseUrl(string? url)
@@ -17,5 +16,20 @@ internal static class RuTrackerMirrors
         if (!value.EndsWith('/'))
             value += "/";
         return value;
+    }
+
+    public static IReadOnlyList<string> Candidates(string? preferred)
+    {
+        var list = new List<string>();
+        var primary = NormalizeBaseUrl(preferred);
+        list.Add(primary);
+        foreach (var mirror in FallbackUrls)
+        {
+            var n = NormalizeBaseUrl(mirror);
+            if (!list.Contains(n, StringComparer.OrdinalIgnoreCase))
+                list.Add(n);
+        }
+
+        return list;
     }
 }

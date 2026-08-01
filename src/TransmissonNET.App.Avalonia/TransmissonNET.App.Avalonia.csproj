@@ -19,6 +19,7 @@
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.0.2" />
     <PackageReference Include="Avalonia.Controls.DataGrid" Version="12.0.0" />
+    <PackageReference Include="Avalonia.Controls.WebView" Version="12.0.1" />
     <PackageReference Include="Avalonia.Desktop" Version="12.0.2" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.2" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.2" />
@@ -42,19 +43,41 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TransmissonNET.Providers.RuTracker\TransmissonNET.Providers.RuTracker.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <PrivateAssets>all</PrivateAssets>
+      <GlobalPropertiesToRemove>RuntimeIdentifier;SelfContained;PublishSingleFile;PublishAot</GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\TransmissonNET.Providers.LostFilm\TransmissonNET.Providers.LostFilm.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <PrivateAssets>all</PrivateAssets>
+      <GlobalPropertiesToRemove>RuntimeIdentifier;SelfContained;PublishSingleFile;PublishAot</GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\TransmissonNET.Providers.Kinozal\TransmissonNET.Providers.Kinozal.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <PrivateAssets>all</PrivateAssets>
+      <GlobalPropertiesToRemove>RuntimeIdentifier;SelfContained;PublishSingleFile;PublishAot</GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\TransmissonNET.Providers.Dummy\TransmissonNET.Providers.Dummy.csproj" Condition="'$(Configuration)' == 'Debug'">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <PrivateAssets>all</PrivateAssets>
+      <GlobalPropertiesToRemove>RuntimeIdentifier;SelfContained;PublishSingleFile;PublishAot</GlobalPropertiesToRemove>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
     <TorrentProviderProject Include="$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.RuTracker\TransmissonNET.Providers.RuTracker.csproj" />
     <TorrentProviderProject Include="$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.LostFilm\TransmissonNET.Providers.LostFilm.csproj" />
     <TorrentProviderProject Include="$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.Kinozal\TransmissonNET.Providers.Kinozal.csproj" />
-    <TorrentProviderProject Include="$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.Dummy\TransmissonNET.Providers.Dummy.csproj"
-                            Condition="'$(Configuration)' == 'Debug'" />
+    <TorrentProviderProject Include="$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.Dummy\TransmissonNET.Providers.Dummy.csproj" Condition="'$(Configuration)' == 'Debug'" />
   </ItemGroup>
 
-  <Target Name="BuildAndCopyTorrentProviders" AfterTargets="Build;Publish">
+  <!-- SDK always defines PublishDir (.../publish/); the running app loads providers from OutputPath. -->
+  <Target Name="BuildAndCopyTorrentProviders" AfterTargets="Build;PrepareForRun">
     <PropertyGroup>
-      <_ProvidersDest Condition="'$(PublishDir)' != ''">$([System.IO.Path]::GetFullPath('$(PublishDir)providers'))</_ProvidersDest>
-      <_ProvidersDest Condition="'$(_ProvidersDest)' == ''">$([System.IO.Path]::GetFullPath('$(OutputPath)providers'))</_ProvidersDest>
+      <_ProvidersDest>$([System.IO.Path]::GetFullPath('$(OutputPath)providers'))</_ProvidersDest>
       <_ProvidersConfig>$(Configuration)</_ProvidersConfig>
-      <_ProvidersConfig Condition="'$(_ProvidersConfig)' == ''">Release</_ProvidersConfig>
+      <_ProvidersConfig Condition="'$(_ProvidersConfig)' == ''">Debug</_ProvidersConfig>
       <_RuTrackerBin>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.RuTracker\bin\$(_ProvidersConfig)\net8.0'))</_RuTrackerBin>
       <_LostFilmBin>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.LostFilm\bin\$(_ProvidersConfig)\net8.0'))</_LostFilmBin>
       <_KinozalBin>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\TransmissonNET.Providers.Kinozal\bin\$(_ProvidersConfig)\net8.0'))</_KinozalBin>
@@ -74,18 +97,27 @@
       <_ProviderBuilt Include="$(_KinozalBin)\TransmissonNET.Providers.Kinozal.dll" />
       <_ProviderBuilt Include="$(_KinozalBin)\HtmlAgilityPack.dll" />
       <_ProviderBuilt Include="$(_KinozalBin)\TransmissonNET.Providers.Kinozal.deps.json" />
-      <_ProviderBuilt Include="$(_DummyBin)\TransmissonNET.Providers.Dummy.dll"
-                      Condition="'$(_ProvidersConfig)' == 'Debug'" />
+      <_ProviderBuilt Include="$(_DummyBin)\TransmissonNET.Providers.Dummy.dll" Condition="'$(_ProvidersConfig)' == 'Debug'" />
       <_ProviderBuiltExisting Include="@(_ProviderBuilt)" Condition="Exists('%(Identity)')" />
     </ItemGroup>
 
-    <Error Text="Torrent provider DLLs missing after build ($(_RuTrackerBin))."
-           Condition="!Exists('$(_RuTrackerBin)\TransmissonNET.Providers.RuTracker.dll')" />
+    <Error Text="Torrent provider DLLs missing after build ($(_RuTrackerBin))." Condition="!Exists('$(_RuTrackerBin)\TransmissonNET.Providers.RuTracker.dll')" />
 
     <MakeDir Directories="$(_ProvidersDest)" />
-    <Copy SourceFiles="@(_ProviderBuiltExisting)"
-          DestinationFolder="$(_ProvidersDest)"
-          SkipUnchangedFiles="true" />
-    <Message Importance="high" Text="Copied @(_ProviderBuiltExisting->Count()) provider file(s) to $(_ProvidersDest)" />
+    <Copy SourceFiles="@(_ProviderBuiltExisting)" DestinationFolder="$(_ProvidersDest)" SkipUnchangedFiles="false" OverwriteReadOnlyFiles="true" />
+    <Message Importance="high" Text="Copied @(_ProviderBuiltExisting-&gt;Count()) provider file(s) to $(_ProvidersDest)" />
+  </Target>
+
+  <Target Name="PublishCopyTorrentProviders" AfterTargets="Publish" DependsOnTargets="BuildAndCopyTorrentProviders">
+    <PropertyGroup>
+      <_PublishProvidersDest>$([System.IO.Path]::GetFullPath('$(PublishDir)providers'))</_PublishProvidersDest>
+      <_BuildProvidersSrc>$([System.IO.Path]::GetFullPath('$(OutputPath)providers'))</_BuildProvidersSrc>
+    </PropertyGroup>
+    <ItemGroup>
+      <_PublishProviderFiles Include="$(_BuildProvidersSrc)\*" />
+    </ItemGroup>
+    <MakeDir Directories="$(_PublishProvidersDest)" />
+    <Copy SourceFiles="@(_PublishProviderFiles)" DestinationFolder="$(_PublishProvidersDest)" SkipUnchangedFiles="false" OverwriteReadOnlyFiles="true" Condition="'@(_PublishProviderFiles)' != ''" />
+    <Message Importance="high" Text="Copied provider file(s) to $(_PublishProvidersDest)" />
   </Target>
 </Project>

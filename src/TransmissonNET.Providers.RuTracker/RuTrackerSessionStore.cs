@@ -26,10 +26,13 @@ internal sealed class RuTrackerSessionStore
 
     public string CookiesPath => _cookiesPath;
 
+    public string? UserAgent { get; private set; }
+
     public void Clear()
     {
         try
         {
+            UserAgent = null;
             if (File.Exists(_cookiesPath))
                 File.Delete(_cookiesPath);
             RuTrackerLog.Info($"Cleared cookie file {_cookiesPath}");
@@ -40,8 +43,11 @@ internal sealed class RuTrackerSessionStore
         }
     }
 
-    public void Save(CookieContainer container)
+    public void Save(CookieContainer container, string? userAgent = null)
     {
+        if (!string.IsNullOrWhiteSpace(userAgent))
+            UserAgent = userAgent.Trim();
+
         var cookies = EnumerateCookies(container)
             .Select(c => new StoredCookie(
                 c.Name,
@@ -55,8 +61,9 @@ internal sealed class RuTrackerSessionStore
             .Select(g => g.Last())
             .ToList();
 
-        File.WriteAllText(_cookiesPath, JsonSerializer.Serialize(cookies, JsonOptions));
-        RuTrackerLog.Info($"Saved {cookies.Count} cookie(s) to {_cookiesPath}");
+        var payload = new StoredSession(UserAgent, cookies);
+        File.WriteAllText(_cookiesPath, JsonSerializer.Serialize(payload, JsonOptions));
+        RuTrackerLog.Info($"Saved {cookies.Count} cookie(s) to {_cookiesPath} (ua set={!string.IsNullOrWhiteSpace(UserAgent)})");
     }
 
     public int LoadInto(CookieContainer container)
@@ -70,8 +77,10 @@ internal sealed class RuTrackerSessionStore
         try
         {
             var json = File.ReadAllText(_cookiesPath);
-            var cookies = JsonSerializer.Deserialize<List<StoredCookie>>(json);
-            if (cookies is null || cookies.Count == 0)
+            var cookies = ParseCookies(json, out var userAgent);
+            UserAgent = string.IsNullOrWhiteSpace(userAgent) ? null : userAgent.Trim();
+
+            if (cookies.Count == 0)
                 return 0;
 
             var loaded = 0;
@@ -85,9 +94,13 @@ internal sealed class RuTrackerSessionStore
 
                 try
                 {
+                    var domain = NormalizeDomain(c.Domain);
+                    if (!DomainMatchesHost(_baseUri.Host, domain))
+                        continue;
+
                     var cookie = new Cookie(c.Name, c.Value ?? string.Empty)
                     {
-                        Domain = NormalizeDomain(c.Domain),
+                        Domain = domain,
                         Path = string.IsNullOrWhiteSpace(c.Path) ? "/" : c.Path,
                         Secure = c.Secure,
                         HttpOnly = c.HttpOnly,
@@ -95,7 +108,8 @@ internal sealed class RuTrackerSessionStore
                     if (c.Expires is { } exp)
                         cookie.Expires = exp.ToUniversalTime();
 
-                    container.Add(_baseUri, cookie);
+                    var cookieUri = new Uri($"https://{domain}/");
+                    container.Add(cookieUri, cookie);
                     loaded++;
                 }
                 catch (Exception ex)
@@ -104,7 +118,8 @@ internal sealed class RuTrackerSessionStore
                 }
             }
 
-            RuTrackerLog.Info($"Loaded {loaded} cookie(s) from {_cookiesPath}");
+            RuTrackerLog.Info(
+                $"Loaded {loaded} cookie(s) from {_cookiesPath}, ua={(UserAgent is null ? "(none)" : UserAgent)}");
             return loaded;
         }
         catch (Exception ex)
@@ -113,6 +128,12 @@ internal sealed class RuTrackerSessionStore
             return 0;
         }
     }
+
+    public static bool IsSessionCookieName(string name) =>
+        name.Contains("bb_session", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("bb_data", StringComparison.OrdinalIgnoreCase)
+        || name.Equals("bb_userid", StringComparison.OrdinalIgnoreCase)
+        || name.Equals("bb_password", StringComparison.OrdinalIgnoreCase);
 
     public static bool HasSessionCookie(CookieContainer container, Uri baseUri)
     {
@@ -133,11 +154,22 @@ internal sealed class RuTrackerSessionStore
             yield return cookie;
     }
 
-    private static bool IsSessionCookieName(string name) =>
-        name.Contains("bb_session", StringComparison.OrdinalIgnoreCase)
-        || name.Contains("bb_data", StringComparison.OrdinalIgnoreCase)
-        || name.Equals("bb_userid", StringComparison.OrdinalIgnoreCase)
-        || name.Equals("bb_password", StringComparison.OrdinalIgnoreCase);
+    private static List<StoredCookie> ParseCookies(string json, out string? userAgent)
+    {
+        userAgent = null;
+        var trimmed = json.TrimStart();
+        if (trimmed.StartsWith('['))
+        {
+            return JsonSerializer.Deserialize<List<StoredCookie>>(json) ?? [];
+        }
+
+        var session = JsonSerializer.Deserialize<StoredSession>(json);
+        if (session is null)
+            return [];
+
+        userAgent = session.UserAgent;
+        return session.Cookies ?? [];
+    }
 
     private static string NormalizeDomain(string domain)
     {
@@ -146,6 +178,15 @@ internal sealed class RuTrackerSessionStore
             d = d[1..];
         return d;
     }
+
+    private static bool DomainMatchesHost(string host, string cookieDomain)
+    {
+        if (string.Equals(host, cookieDomain, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return host.EndsWith("." + cookieDomain, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private sealed record StoredSession(string? UserAgent, List<StoredCookie>? Cookies);
 
     private sealed record StoredCookie(
         string Name,
