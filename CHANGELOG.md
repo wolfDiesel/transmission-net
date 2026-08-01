@@ -6,7 +6,7 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ## Unreleased
 
-## 0.1.0 - 2026-08-01
+## 0.1.34 - 2026-08-01
 
 ### Added
 
