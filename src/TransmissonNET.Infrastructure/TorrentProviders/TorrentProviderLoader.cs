@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.Loader;
+using Microsoft.Extensions.DependencyInjection;
 using TransmissonNET.Application.Abstractions;
 using TransmissonNET.Providers.Abstractions;
 
@@ -29,6 +30,16 @@ public static class TorrentProviderLoader
 {
     public static TorrentProviderCatalog LoadFromDirectory(string providersDirectory)
     {
+        return LoadFromDirectory(providersDirectory, EmptyServices());
+    }
+
+    private static IServiceProvider EmptyServices() =>
+        new ServiceCollection().BuildServiceProvider();
+
+    public static TorrentProviderCatalog LoadFromDirectory(
+        string providersDirectory,
+        IServiceProvider services)
+    {
         var providers = new List<ITorrentProvider>();
         var errors = new List<string>();
 
@@ -50,14 +61,7 @@ public static class TorrentProviderLoader
                     if (type.IsAbstract || type.IsInterface || !typeof(ITorrentProvider).IsAssignableFrom(type))
                         continue;
 
-                    var ctor = type.GetConstructor(Type.EmptyTypes);
-                    if (ctor is null)
-                    {
-                        errors.Add($"{fileName}: {type.FullName} has no public parameterless constructor.");
-                        continue;
-                    }
-
-                    if (Activator.CreateInstance(type) is ITorrentProvider provider)
+                    if (ActivatorUtilities.CreateInstance(services, type) is ITorrentProvider provider)
                         providers.Add(provider);
                 }
             }

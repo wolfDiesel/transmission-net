@@ -1,0 +1,33 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="TransmissonNET.App.Avalonia.Views.AboutWindow"
+        Title="About"
+        Width="380"
+        Height="240"
+        Background="{DynamicResource SurfaceCanvasBrush}"
+        Padding="20"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+  <DockPanel LastChildFill="True">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,14">
+      <Image Source="avares://TransmissonNET.App/Assets/transmission-net.png"
+             Width="48" Height="48" />
+      <StackPanel VerticalAlignment="Center">
+        <TextBlock Text="TransmissionNET" FontWeight="SemiBold" FontSize="18" />
+        <TextBlock Classes="text-muted" FontSize="12">Desktop client for Transmission RPC</TextBlock>
+      </StackPanel>
+    </StackPanel>
+
+    <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,8,0,0">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <TextBlock x:Name="VersionLabel" Classes="text-muted" />
+        <TextBlock x:Name="VersionValue" Classes="accent-text" FontWeight="SemiBold" />
+      </StackPanel>
+    </StackPanel>
+
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                HorizontalAlignment="Right" Spacing="8" Margin="0,18,0,0">
+      <Button x:Name="CloseButton" MinWidth="90" Content="Close" />
+    </StackPanel>
+  </DockPanel>
+</Window>

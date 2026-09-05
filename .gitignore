@@ -20,6 +20,7 @@ dist/
 .cursor/
 .vscode/
 Plan/
+.kodik/
 
 # OS
 .DS_Store

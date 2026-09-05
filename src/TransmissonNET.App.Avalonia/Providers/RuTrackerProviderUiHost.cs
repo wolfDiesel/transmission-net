@@ -1,13 +1,52 @@
 using System.Net;
 using System.Runtime.InteropServices;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using TransmissonNET.Providers.Abstractions;
 
-namespace TransmissonNET.Providers.RuTracker;
+namespace TransmissonNET.App.Avalonia.Providers;
 
+/// <summary>
+/// Host implementation of <see cref="IProviderUiHost"/> for RuTracker.
+/// The RuTracker plugin itself no longer references Avalonia; the host owns the login window.
+/// </summary>
+public sealed class RuTrackerProviderUiHost : IProviderUiHost
+{
+    public async Task<ProviderLoginResult?> LoginAsync(
+        string providerId,
+        string baseUrl,
+        string dataDirectory,
+        CancellationToken cancellationToken = default)
+    {
+        if (!string.Equals(providerId, "rutracker", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException($"RuTrackerProviderUiHost cannot handle provider '{providerId}'.");
+
+        var owner = GetOwnerWindow();
+        var result = await RuTrackerWebLogin.ShowAsync(baseUrl, dataDirectory, owner, cancellationToken);
+        if (result is null)
+            return null;
+
+        return new ProviderLoginResult(result.Value.Cookies, result.Value.UserAgent);
+    }
+
+    private static Window? GetOwnerWindow()
+    {
+        if (global::Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            return desktop.MainWindow;
+        return null;
+    }
+}
+
+/// <summary>
+/// Static logic moved from the RuTracker provider: shows a small control window plus a
+/// native WebKit dialog, polls cookies from WebKit until a session is detected, and
+/// returns the accepted session. The plugin only consumes <see cref="IProviderUiHost"/>.
+/// </summary>
 internal static class RuTrackerWebLogin
 {
     public static async Task<(IReadOnlyList<Cookie> Cookies, string? UserAgent)?> ShowAsync(
@@ -18,7 +57,7 @@ internal static class RuTrackerWebLogin
     {
         ApplyWebKitGtkWorkarounds();
 
-        var loginUrl = RuTrackerMirrors.NormalizeBaseUrl(baseUrl).TrimEnd('/') + "/forum/login.php";
+        var loginUrl = RuTrackerMirrorsNormalize(baseUrl).TrimEnd('/') + "/forum/login.php";
         var webData = Path.Combine(dataDirectory, "webview");
         Directory.CreateDirectory(webData);
 
@@ -33,7 +72,7 @@ internal static class RuTrackerWebLogin
 
         var panel = new StackPanel
         {
-            Margin = new Avalonia.Thickness(16),
+            Margin = new global::Avalonia.Thickness(16),
             Spacing = 12,
             Children =
             {
@@ -150,7 +189,7 @@ internal static class RuTrackerWebLogin
             }
             catch (Exception ex)
             {
-                RuTrackerLog.Error("Web login cookie poll failed", ex);
+                RuTrackerLogError("Web login cookie poll failed", ex);
                 status.Text = ex.Message;
             }
             finally
@@ -183,14 +222,7 @@ internal static class RuTrackerWebLogin
         };
 
         cancelButton.Click += (_, _) => Complete(null);
-        host.Closing += (_, e) =>
-        {
-            if (!completing)
-            {
-                e.Cancel = true;
-                Complete(null);
-            }
-        };
+        host.Closing += (_, _) => Complete(null);
 
         dialog.NavigationCompleted += async (_, _) => await RefreshCookiesAsync(autoAccept: true);
         dialog.Closing += OnDialogClosing;
@@ -211,6 +243,9 @@ internal static class RuTrackerWebLogin
             dialog.Show(owner);
         else
             dialog.Show();
+
+        host.Topmost = true;
+        host.Activate();
 
         return await tcs.Task;
     }
@@ -242,7 +277,7 @@ internal static class RuTrackerWebLogin
 
     private static bool HasSession(IEnumerable<Cookie> cookies) =>
         cookies.Any(c =>
-            RuTrackerSessionStore.IsSessionCookieName(c.Name)
+            RuTrackerCookieNames.IsSessionCookieName(c.Name)
             && !string.IsNullOrWhiteSpace(c.Value)
             && c.Value is not ("deleted" or "0"));
 
@@ -250,7 +285,7 @@ internal static class RuTrackerWebLogin
     {
         var domain = (cookie.Domain ?? string.Empty).Trim().TrimStart('.');
         if (string.IsNullOrEmpty(domain))
-            return RuTrackerSessionStore.IsSessionCookieName(cookie.Name)
+            return RuTrackerCookieNames.IsSessionCookieName(cookie.Name)
                    || cookie.Name.Contains("cf_", StringComparison.OrdinalIgnoreCase)
                    || cookie.Name.Contains("bb_", StringComparison.OrdinalIgnoreCase);
 
@@ -259,14 +294,29 @@ internal static class RuTrackerWebLogin
                || domain.EndsWith("cloudflare.com", StringComparison.OrdinalIgnoreCase);
     }
 
+    internal static string RuTrackerMirrorsNormalize(string baseUrl) =>
+        baseUrl.TrimEnd('/');
+
+    internal static void RuTrackerLogError(string message, Exception ex)
+    {
+        System.Diagnostics.Debug.WriteLine($"[RuTracker] {message}: {ex.Message}");
+    }
+
     private static void ApplyWebKitGtkWorkarounds()
     {
         if (!OperatingSystem.IsLinux())
             return;
 
-        SetEnv("GDK_BACKEND", "x11");
+        // Respect an explicitly configured backend (Wayland) instead of
+        // forcing X11, which pushes the web view through XWayland and can
+        // make rendering sluggish.
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GDK_BACKEND")))
+            SetEnv("GDK_BACKEND", "x11");
+
+        // Disable the DMA-BUF renderer only (safe on Fedora); never disable
+        // WebKit compositing entirely — that makes the view software-only,
+        // gray, and extremely slow (see commit e178578).
         SetEnv("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
-        SetEnv("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
     }
 
     private static void SetEnv(string name, string value)
@@ -277,4 +327,17 @@ internal static class RuTrackerWebLogin
 
     [DllImport("libc", SetLastError = true)]
     private static extern int setenv(string name, string value, int overwrite);
+}
+
+/// <summary>
+/// Cookie-name predicates shared between the host UI and the provider session logic.
+/// Kept in App.Avalonia to avoid forcing plugin assemblies to reference the UI layer.
+/// </summary>
+internal static class RuTrackerCookieNames
+{
+    public static bool IsSessionCookieName(string name) =>
+        name.Contains("bb_session", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("bb_data", StringComparison.OrdinalIgnoreCase)
+        || name.Equals("bb_userid", StringComparison.OrdinalIgnoreCase)
+        || name.Equals("bb_password", StringComparison.OrdinalIgnoreCase);
 }

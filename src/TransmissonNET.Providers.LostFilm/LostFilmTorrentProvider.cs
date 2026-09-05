@@ -1,8 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Text.Json;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Threading;
 using TransmissonNET.Providers.Abstractions;
 
 namespace TransmissonNET.Providers.LostFilm;
@@ -12,11 +9,22 @@ public sealed class LostFilmTorrentProvider : ITorrentProvider, IDisposable
     private readonly string _dataDirectory;
     private readonly string _settingsPath;
     private readonly SemaphoreSlim _gate = new(1, 1);
+    private readonly IProviderUiHost _uiHost;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Reserved for F6 session storage.")]
+    private readonly IProviderSessionStore _sessionStore;
     private LostFilmClient _client;
     private LostFilmProviderSettings _settings;
 
-    public LostFilmTorrentProvider()
+    public LostFilmTorrentProvider(
+        TorrentProviderSettings settings,
+        IProviderUiHost uiHost,
+        IProviderSessionStore sessionStore)
     {
+        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(uiHost);
+        ArgumentNullException.ThrowIfNull(sessionStore);
+        _uiHost = uiHost;
+        _sessionStore = sessionStore;
         _dataDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             ".config",
@@ -83,29 +91,19 @@ public sealed class LostFilmTorrentProvider : ITorrentProvider, IDisposable
             if (_client.IsLoggedIn)
                 return;
 
-            var credentials = await Dispatcher.UIThread.InvokeAsync(async () =>
-            {
-                var owner = GetOwnerWindow()
-                    ?? throw new InvalidOperationException("No application window available for LostFilm login.");
-                var window = new LostFilmLoginWindow();
-                var accepted = await window.ShowDialog<bool?>(owner);
-                if (accepted != true)
-                    return ((string Email, string Password, string Cookie)?)null;
-
-                return (window.Email, window.Password, window.SessionCookie);
-            });
+            var accepted = await _uiHost.LoginAsync("lostfilm", _settings.BaseUrl, _dataDirectory, cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
-            if (credentials is null)
+            if (accepted is null)
                 return;
 
-            if (!string.IsNullOrWhiteSpace(credentials.Value.Cookie))
+            if (!string.IsNullOrWhiteSpace(accepted.SessionCookie))
             {
-                _client.LoginWithSessionCookie(credentials.Value.Cookie);
+                _client.LoginWithSessionCookie(accepted.SessionCookie);
                 return;
             }
 
-            await _client.LoginAsync(credentials.Value.Email, credentials.Value.Password, cancellationToken);
+            await _client.LoginAsync(accepted.Email ?? string.Empty, accepted.Password ?? string.Empty, cancellationToken);
         }
         finally
         {
@@ -219,13 +217,6 @@ public sealed class LostFilmTorrentProvider : ITorrentProvider, IDisposable
         {
             LostFilmLog.Error("Failed to save settings", ex);
         }
-    }
-
-    private static Window? GetOwnerWindow()
-    {
-        if (global::Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            return desktop.MainWindow;
-        return null;
     }
 }
 

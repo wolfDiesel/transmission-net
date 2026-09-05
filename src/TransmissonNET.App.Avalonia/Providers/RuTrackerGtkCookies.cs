@@ -3,8 +3,13 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Platform;
 
-namespace TransmissonNET.Providers.RuTracker;
+namespace TransmissonNET.App.Avalonia.Providers;
 
+/// <summary>
+/// Reads cookies from a WebKitGTK <see cref="NativeWebDialog"/> view via native
+/// libsoup/glib calls. Moved from the RuTracker provider into the UI host so the
+/// plugin no longer depends on Avalonia/WebKit types.
+/// </summary>
 internal static class RuTrackerGtkCookies
 {
     public static async Task<IReadOnlyList<Cookie>> TryGetAllAsync(
@@ -17,14 +22,14 @@ internal static class RuTrackerGtkCookies
         var handle = dialog.TryGetWebViewPlatformHandle() as IGtkWebViewPlatformHandle;
         if (handle is null || handle.WebKitWebView == IntPtr.Zero)
         {
-            RuTrackerLog.Info("GTK cookie read: no WebKitWebView handle yet");
+            RuTrackerLogInfo("GTK cookie read: no WebKitWebView handle yet");
             return [];
         }
 
         if (!NativeLibrary.TryLoad("libwebkit2gtk-4.1.so.0", out var webkit)
             && !NativeLibrary.TryLoad("libwebkit2gtk-4.0.so.0", out webkit))
         {
-            RuTrackerLog.Error("GTK cookie read: libwebkit2gtk not found");
+            RuTrackerLogError("GTK cookie read: libwebkit2gtk not found");
             return [];
         }
 
@@ -32,7 +37,7 @@ internal static class RuTrackerGtkCookies
             && !NativeLibrary.TryLoad("libsoup-2.4.so.0", out soup))
         {
             NativeLibrary.Free(webkit);
-            RuTrackerLog.Error("GTK cookie read: libsoup not found");
+            RuTrackerLogError("GTK cookie read: libsoup not found");
             return [];
         }
 
@@ -40,7 +45,7 @@ internal static class RuTrackerGtkCookies
         {
             NativeLibrary.Free(soup);
             NativeLibrary.Free(webkit);
-            RuTrackerLog.Error("GTK cookie read: libglib not found");
+            RuTrackerLogError("GTK cookie read: libglib not found");
             return [];
         }
 
@@ -79,7 +84,7 @@ internal static class RuTrackerGtkCookies
 
             if (manager == IntPtr.Zero)
             {
-                RuTrackerLog.Error("GTK cookie read: cookie manager is null");
+                RuTrackerLogError("GTK cookie read: cookie manager is null");
                 return [];
             }
 
@@ -132,14 +137,14 @@ internal static class RuTrackerGtkCookies
                     }
 
                     listFreeFull(list, Marshal.GetFunctionPointerForDelegate(freeCookie));
-                    RuTrackerLog.Info(
+                    RuTrackerLogInfo(
                         $"GTK cookie read: {cookies.Count} cookie(s): "
                         + string.Join(", ", cookies.Select(c => c.Name)));
                     tcs.TrySetResult(cookies);
                 }
                 catch (Exception ex)
                 {
-                    RuTrackerLog.Error("GTK cookie read finish failed", ex);
+                    RuTrackerLogError("GTK cookie read finish failed: " + ex.Message);
                     tcs.TrySetResult([]);
                 }
             };
@@ -170,6 +175,12 @@ internal static class RuTrackerGtkCookies
             NativeLibrary.Free(webkit);
         }
     }
+
+    private static void RuTrackerLogInfo(string message) =>
+        System.Diagnostics.Debug.WriteLine($"[RuTracker] {message}");
+
+    private static void RuTrackerLogError(string message) =>
+        System.Diagnostics.Debug.WriteLine($"[RuTracker] {message}");
 
     private static void PumpMainLoop()
     {

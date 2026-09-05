@@ -65,6 +65,7 @@ publish_app() {
     -p:PublishSingleFile=false \
     -p:DebugType=none \
     -p:DebugSymbols=false \
+    -p:Version="${APPIMAGE_VERSION:-0.0.0-dev}" \
     -o "$PUBLISH"
 }
 

@@ -4,6 +4,7 @@ using TransmissonNET.Infrastructure.Desktop;
 using TransmissonNET.Infrastructure.Rpc;
 using TransmissonNET.Infrastructure.Settings;
 using TransmissonNET.Infrastructure.TorrentProviders;
+using TransmissonNET.Providers.Abstractions;
 
 namespace TransmissonNET.Infrastructure;
 
@@ -20,8 +21,10 @@ public static class DependencyInjection
         services.AddSingleton<ITorrentProviderCatalog>(sp =>
         {
             var providersDir = Path.Combine(AppContext.BaseDirectory, "providers");
-            return TorrentProviderLoader.LoadFromDirectory(providersDir);
+            return TorrentProviderLoader.LoadFromDirectory(providersDir, sp);
         });
+        services.AddSingleton<IProviderSessionStore, NullProviderSessionStore>();
+        services.AddTransient<TorrentProviderSettings>();
         return services;
     }
 }

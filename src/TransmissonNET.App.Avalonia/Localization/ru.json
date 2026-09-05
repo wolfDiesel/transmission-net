@@ -275,6 +275,7 @@
   "massRename.help.template.summary": "Полностью задаёт новое имя. {n}/{n:02} — счётчик; Start/Step из Numbering. {name}, {ext}, {basename}, {path}.",
   "massRename.help.template.examples": "{n:02} - {name}{ext},{basename}_new{ext},S01E{n:02}_{name}{ext}",
   "nav.search": "Поиск",
+  "nav.about": "О программе",
   "searchPage.title": "Поиск",
   "searchPage.subtitle": "Поиск раздач по провайдерам",
   "searchPage.providers": "Провайдеры",
@@ -316,5 +317,8 @@
   "settings.providers.customMirror": "Своё зеркало (URL)",
   "settings.providers.customMirrorPlaceholder": "https://example.tracker/",
   "settings.providers.preferredQuality": "Качество (1080 / HD / SD / MP4)",
-  "settings.providers.maxSeriesExpand": "Сколько сериалов раскрывать"
+  "settings.providers.maxSeriesExpand": "Сколько сериалов раскрывать",
+  "about.title": "О программе",
+  "about.version": "Версия",
+  "about.close": "Закрыть"
 }

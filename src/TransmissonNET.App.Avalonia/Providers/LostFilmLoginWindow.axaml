@@ -1,6 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="TransmissonNET.Providers.LostFilm.LostFilmLoginWindow"
+        x:Class="TransmissonNET.App.Avalonia.Providers.LostFilmLoginWindow"
         Title="LostFilm login"
         Width="440"
         Height="360"
