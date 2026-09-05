@@ -6,10 +6,13 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ## Unreleased
 
+## 0.1.36 - 2026-09-05
+
 ### Fixed
 
 - RuTracker web-login: window can now be closed via the host window close button; login cascade prompts only the first not-logged-in provider during search.
 - WebKit login: dropped `WEBKIT_DISABLE_COMPOSITING_MODE` and respect `GDK_BACKEND` to fix slow gray rendering.
+- RuTracker search: report request timeouts as a clear timeout message (not a vague “operation canceled”); provider errors now surface as toast notifications instead of the status bar.
 
 ### Added
 

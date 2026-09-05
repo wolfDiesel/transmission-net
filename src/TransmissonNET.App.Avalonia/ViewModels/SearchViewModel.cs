@@ -143,8 +143,9 @@ internal sealed partial class SearchViewModel : ViewModelBase
 
             if (result.Errors.Count > 0)
             {
-                ErrorMessage = string.Join(" · ", result.Errors);
-                Console.Error.WriteLine($"[Search] provider errors: {ErrorMessage}");
+                var providerErrors = string.Join(" · ", result.Errors);
+                Console.Error.WriteLine($"[Search] provider errors: {providerErrors}");
+                _toasts.ShowError(_localization.T("searchPage.searchFailed"), providerErrors);
             }
 
             StatusText = _localization.Format(
@@ -166,8 +167,9 @@ internal sealed partial class SearchViewModel : ViewModelBase
                 RebuildResultsFromProviders();
                 if (retry.Errors.Count > 0)
                 {
-                    ErrorMessage = string.Join(" · ", retry.Errors);
-                    Console.Error.WriteLine($"[Search] provider errors: {ErrorMessage}");
+                    var retryErrors = string.Join(" · ", retry.Errors);
+                    Console.Error.WriteLine($"[Search] provider errors: {retryErrors}");
+                    _toasts.ShowError(_localization.T("searchPage.searchFailed"), retryErrors);
                 }
 
                 StatusText = _localization.Format(

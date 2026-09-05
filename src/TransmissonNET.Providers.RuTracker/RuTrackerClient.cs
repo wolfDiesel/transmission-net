@@ -160,6 +160,13 @@ internal sealed class RuTrackerClient : IDisposable
             _session.Save(_cookies, _userAgent);
             return hits;
         }
+        catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            RuTrackerLog.Error("Search timed out", ex);
+            throw new TimeoutException(
+                "RuTracker search timed out. Try again or increase the provider timeout.",
+                ex);
+        }
         catch (Exception ex) when (ex is not InvalidOperationException and not OperationCanceledException)
         {
             RuTrackerLog.Error("Search failed", ex);
