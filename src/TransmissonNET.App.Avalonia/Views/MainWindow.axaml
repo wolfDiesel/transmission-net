@@ -152,6 +152,14 @@
 
                       Command="{Binding NavigateSettingsCommand}" />
 
+
+
+              <controls:AppButton Variant="Nav"
+
+                      Content="{Binding NavAboutLabel}"
+
+                      Command="{Binding ShowAboutCommand}" />
+
             </StackPanel>
 
           </DockPanel>

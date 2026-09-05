@@ -196,6 +196,7 @@ internal sealed partial class SearchViewModel : ViewModelBase
 
     private async Task<bool> EnsureProvidersLoggedInAsync(IReadOnlyList<string> selected)
     {
+        var loginRequested = false;
         foreach (var id in selected)
         {
             var provider = _catalog.GetById(id);
@@ -206,6 +207,10 @@ internal sealed partial class SearchViewModel : ViewModelBase
 
             if (provider.IsLoginRequired && !provider.IsLoggedIn)
             {
+                if (loginRequested)
+                    continue;
+
+                loginRequested = true;
                 await provider.LoginAsync();
                 if (!provider.IsLoggedIn)
                 {

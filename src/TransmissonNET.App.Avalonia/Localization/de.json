@@ -275,6 +275,7 @@
   "massRename.help.template.summary": "Definiert den vollständigen neuen Namen aus Platzhaltern. {n} / {n:02} — Zähler mit der gewählten Sortierung; Start und Schritt kommen aus den Nummerierungsfeldern (gemeinsam). {name} — Stamm, {ext} — Erweiterung mit Punkt, {basename} — Name mit Erweiterung, {path} — Dateipfad im Torrent.",
   "massRename.help.template.examples": "{n:02} - {name}{ext} — Index und ursprünglicher Name,{basename}_new{ext},S01E{n:02}_{name}{ext}",
   "nav.search": "Suche",
+  "nav.about": "Über",
   "searchPage.title": "Suche",
   "searchPage.subtitle": "Torrents über Anbieter suchen",
   "searchPage.providers": "Anbieter",
@@ -316,5 +317,8 @@
   "settings.providers.customMirror": "Eigene Spiegel-URL",
   "settings.providers.customMirrorPlaceholder": "https://example.tracker/",
   "settings.providers.preferredQuality": "Bevorzugte Qualität (1080 / HD / SD / MP4)",
-  "settings.providers.maxSeriesExpand": "Max. Serien zum Aufklappen"
+  "settings.providers.maxSeriesExpand": "Max. Serien zum Aufklappen",
+  "about.title": "Über",
+  "about.version": "Version",
+  "about.close": "Schließen"
 }

@@ -7,6 +7,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- Version comes from the GitHub release tag in CI (APPIMAGE_VERSION);
+         local/dev builds default to 0.0.0-dev. -->
+    <Version Condition="'$(APPIMAGE_VERSION)' != ''">$(APPIMAGE_VERSION)</Version>
+    <Version Condition="'$(Version)' == ''">0.0.0-dev</Version>
+    <InformationalVersion Condition="'$(APPIMAGE_VERSION)' != ''">$(APPIMAGE_VERSION)</InformationalVersion>
+    <InformationalVersion Condition="'$(InformationalVersion)' == ''">0.0.0-dev</InformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>

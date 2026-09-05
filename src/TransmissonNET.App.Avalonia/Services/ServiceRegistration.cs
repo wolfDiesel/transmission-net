@@ -1,7 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using TransmissonNET.Application;
+using TransmissonNET.App.Avalonia.Providers;
 using TransmissonNET.App.Avalonia.ViewModels;
 using TransmissonNET.Infrastructure;
+using TransmissonNET.Providers.Abstractions;
 
 namespace TransmissonNET.App.Avalonia.Services;
 
@@ -11,6 +13,10 @@ internal static class ServiceRegistration
     {
         services.AddTransmissonNetApplication();
         services.AddTransmissonNetInfrastructure();
+        services.AddSingleton<RuTrackerProviderUiHost>();
+        services.AddSingleton<LostFilmProviderUiHost>();
+        services.AddSingleton<KinozalProviderUiHost>();
+        services.AddSingleton<IProviderUiHost, ProviderUiHostRouter>();
         services.AddSingleton<HandlerInvoker>();
         services.AddSingleton<NavigationService>();
         services.AddSingleton<ThemeService>();

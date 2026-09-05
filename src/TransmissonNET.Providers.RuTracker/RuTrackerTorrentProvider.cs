@@ -1,8 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Text.Json;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Threading;
 using TransmissonNET.Providers.Abstractions;
 
 namespace TransmissonNET.Providers.RuTracker;
@@ -12,11 +9,22 @@ public sealed class RuTrackerTorrentProvider : ITorrentProvider, IDisposable
     private readonly string _dataDirectory;
     private readonly string _settingsPath;
     private readonly SemaphoreSlim _gate = new(1, 1);
+    private readonly IProviderUiHost _uiHost;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Reserved for F6 session storage.")]
+    private readonly IProviderSessionStore _sessionStore;
     private RuTrackerClient _client;
     private TorrentProviderSettings _settings;
 
-    public RuTrackerTorrentProvider()
+    public RuTrackerTorrentProvider(
+        TorrentProviderSettings settings,
+        IProviderUiHost uiHost,
+        IProviderSessionStore sessionStore)
     {
+        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(uiHost);
+        ArgumentNullException.ThrowIfNull(sessionStore);
+        _uiHost = uiHost;
+        _sessionStore = sessionStore;
         _dataDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             ".config",
@@ -76,24 +84,13 @@ public sealed class RuTrackerTorrentProvider : ITorrentProvider, IDisposable
             var preferred = RuTrackerMirrors.NormalizeBaseUrl(_settings.BaseUrl);
             _client.SetBaseUrl(preferred);
 
-            (IReadOnlyList<System.Net.Cookie> Cookies, string? UserAgent)? accepted;
-            if (Dispatcher.UIThread.CheckAccess())
-            {
-                accepted = await RuTrackerWebLogin.ShowAsync(
-                    preferred, _dataDirectory, GetOwnerWindow(), cancellationToken);
-            }
-            else
-            {
-                accepted = await Dispatcher.UIThread.InvokeAsync(() =>
-                    RuTrackerWebLogin.ShowAsync(
-                        preferred, _dataDirectory, GetOwnerWindow(), cancellationToken));
-            }
+            var accepted = await _uiHost.LoginAsync("rutracker", preferred, _dataDirectory, cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
             if (accepted is null)
                 return;
 
-            _client.ImportWebSession(accepted.Value.Cookies, accepted.Value.UserAgent);
+            _client.ImportWebSession(accepted.Cookies, accepted.UserAgent);
         }
         finally
         {
@@ -205,12 +202,5 @@ public sealed class RuTrackerTorrentProvider : ITorrentProvider, IDisposable
         {
             RuTrackerLog.Error("Failed to save settings", ex);
         }
-    }
-
-    private static Window? GetOwnerWindow()
-    {
-        if (global::Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            return desktop.MainWindow;
-        return null;
     }
 }

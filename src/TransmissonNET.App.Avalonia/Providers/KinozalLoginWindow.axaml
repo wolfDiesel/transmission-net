@@ -1,6 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="TransmissonNET.Providers.Kinozal.KinozalLoginWindow"
+        x:Class="TransmissonNET.App.Avalonia.Providers.KinozalLoginWindow"
         Title="Kinozal login"
         Width="420"
         Height="260"
