@@ -320,5 +320,7 @@
   "settings.providers.maxSeriesExpand": "Сколько сериалов раскрывать",
   "about.title": "О программе",
   "about.version": "Версия",
+  "about.author": "Автор",
+  "about.description": "Десктопный клиент для Transmission RPC: торренты, поиск по трекерам, массовое переименование и системный трей.",
   "about.close": "Закрыть"
 }

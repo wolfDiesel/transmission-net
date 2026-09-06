@@ -320,5 +320,7 @@
   "settings.providers.maxSeriesExpand": "Max series to expand",
   "about.title": "About",
   "about.version": "Version",
+  "about.author": "Author",
+  "about.description": "Desktop client for Transmission RPC: torrents, tracker search, mass rename, and system tray.",
   "about.close": "Close"
 }

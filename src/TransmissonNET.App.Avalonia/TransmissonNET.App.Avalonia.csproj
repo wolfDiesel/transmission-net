@@ -13,6 +13,10 @@
     <Version Condition="'$(Version)' == ''">0.0.0-dev</Version>
     <InformationalVersion Condition="'$(APPIMAGE_VERSION)' != ''">$(APPIMAGE_VERSION)</InformationalVersion>
     <InformationalVersion Condition="'$(InformationalVersion)' == ''">0.0.0-dev</InformationalVersion>
+    <!-- Keep the display version clean: MSBuild otherwise appends +<sha> to
+         InformationalVersion from git metadata, e.g. 0.1.36+7e709c7. -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <ItemGroup>

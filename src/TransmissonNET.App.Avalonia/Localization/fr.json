@@ -320,5 +320,7 @@
   "settings.providers.maxSeriesExpand": "Séries à développer (max)",
   "about.title": "À propos",
   "about.version": "Version",
+  "about.author": "Auteur",
+  "about.description": "Client de bureau pour Transmission RPC : torrents, recherche par traqueurs, renommage en masse et barre d’état système.",
   "about.close": "Fermer"
 }

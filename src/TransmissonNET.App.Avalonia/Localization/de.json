@@ -320,5 +320,7 @@
   "settings.providers.maxSeriesExpand": "Max. Serien zum Aufklappen",
   "about.title": "Über",
   "about.version": "Version",
+  "about.author": "Autor",
+  "about.description": "Desktop-Client für Transmission RPC: Torrents, Tracker-Suche, Massenumbenennen und System-Tray.",
   "about.close": "Schließen"
 }

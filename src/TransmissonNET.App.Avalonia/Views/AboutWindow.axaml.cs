@@ -14,9 +14,10 @@ internal partial class AboutWindow : Window
         WindowEscClose.Attach(this);
 
         Title = localization.T("about.title");
-        VersionLabel.Text = localization.T("about.version");
         CloseButton.Content = localization.T("about.close");
         VersionValue.Text = AppVersionInfo.Version;
+        AuthorValue.Text = localization.T("about.author");
+        DescriptionValue.Text = localization.T("about.description");
     }
 
     private void OnClose(object? sender, RoutedEventArgs e) => Close();

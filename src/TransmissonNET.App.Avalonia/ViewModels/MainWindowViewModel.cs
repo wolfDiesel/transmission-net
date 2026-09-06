@@ -136,8 +136,8 @@ internal sealed partial class MainWindowViewModel : ViewModelBase
 internal static class AppVersionInfo
 {
     public static string Version =>
-        typeof(AppVersionInfo).Assembly
+        (typeof(AppVersionInfo).Assembly
             .GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>()
-            ?.InformationalVersion
-        ?? "0.0.0-dev";
+            ?.InformationalVersion ?? "0.0.0-dev")
+        .Split('+')[0];
 }

@@ -6,6 +6,16 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ## Unreleased
 
+## 0.1.37 - 2026-09-06
+
+### Fixed
+
+- About window: show a clean version without the git `+sha` suffix (MSBuild `IncludeSourceRevisionInInformationalVersion` disabled and runtime fallback strip).
+
+### Added
+
+- About window (i18n: ru/en/de/fr) with author and short description sections, showing the app version from the build tag (CI `APPIMAGE_VERSION`).
+
 ## 0.1.36 - 2026-09-05
 
 ### Fixed
@@ -16,7 +26,6 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ### Added
 
-- About window (i18n: ru/en/de/fr) showing the app version from the build tag (CI `APPIMAGE_VERSION`).
 - Provider login hosting moved out of plugins into the app shell (DI-driven); plugins no longer depend on Avalonia.
 
 ## 0.1.34 - 2026-08-01
