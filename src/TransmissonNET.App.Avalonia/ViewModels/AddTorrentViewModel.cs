@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using TransmissonNET.Application.Contracts;
 using TransmissonNET.Application.Handlers;
+using TransmissonNET.Application.Torrents;
 using TransmissonNET.App.Avalonia.Services;
 
 namespace TransmissonNET.App.Avalonia.ViewModels;
@@ -15,6 +16,7 @@ internal sealed partial class AddTorrentViewModel : ViewModelBase
     private readonly LocalizationService _localization;
     private readonly AppToastService _toasts;
     private readonly DownloadDirHistoryService _downloadDirHistory;
+    private readonly AddTorrentFlowCoordinator _addTorrentFlow;
     private string? _metainfoBase64;
 
     [ObservableProperty] private string _torrentFilePath = string.Empty;
@@ -40,12 +42,14 @@ internal sealed partial class AddTorrentViewModel : ViewModelBase
         HandlerInvoker handlers,
         LocalizationService localization,
         AppToastService toasts,
-        DownloadDirHistoryService downloadDirHistory)
+        DownloadDirHistoryService downloadDirHistory,
+        AddTorrentFlowCoordinator addTorrentFlow)
     {
         _handlers = handlers;
         _localization = localization;
         _toasts = toasts;
         _downloadDirHistory = downloadDirHistory;
+        _addTorrentFlow = addTorrentFlow;
         _localization.LanguageChanged += RefreshLabels;
         RefreshLabels();
     }
@@ -162,12 +166,9 @@ internal sealed partial class AddTorrentViewModel : ViewModelBase
         IsBusy = true;
         try
         {
-            var destination = DownloadDir.Trim();
-            var result = await _handlers.InvokeAsync(sp =>
-                sp.GetRequiredService<AddTorrentHandler>().HandleAsync(
-                    new TorrentAddRequestDto(_metainfoBase64, destination, AddPaused)));
-            _downloadDirHistory.Remember(destination);
+            var result = await _addTorrentFlow.AddAndFocusAsync(_metainfoBase64, DownloadDir, AddPaused);
             _toasts.ShowSuccess(_localization.Format("addTorrent.added", ("name", result.Name)));
+            ClearForm();
         }
         catch (Exception ex)
         {
@@ -177,6 +178,17 @@ internal sealed partial class AddTorrentViewModel : ViewModelBase
         {
             IsBusy = false;
         }
+    }
+
+    private void ClearForm()
+    {
+        _metainfoBase64 = null;
+        TorrentFilePath = string.Empty;
+        AddPaused = false;
+        PreviewTitle = string.Empty;
+        PreviewMeta = string.Empty;
+        PreviewFiles.Clear();
+        OnPropertyChanged(nameof(HasPreview));
     }
 
     private async Task InspectFileAsync(string path)

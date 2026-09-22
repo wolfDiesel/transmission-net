@@ -145,6 +145,17 @@ internal sealed partial class TorrentsViewModel : ViewModelBase
     public void SetSelectedTorrents(IReadOnlyList<TorrentRowViewModel> selected) =>
         _selectedTorrents = selected;
 
+    public async Task SelectTorrentAsync(int id)
+    {
+        await RefreshAsync();
+
+        if (!string.IsNullOrWhiteSpace(NameFilterQuery))
+            NameFilterQuery = string.Empty;
+
+        SelectedTorrent = Torrents.FirstOrDefault(row => row.Id == id);
+        _selectedTorrents = Array.Empty<TorrentRowViewModel>();
+    }
+
     public IReadOnlyList<TorrentTableColumnSettingDto> GetVisibleColumnsInOrder() =>
         TableColumns
             .Where(column => column.Visible)

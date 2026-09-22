@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using TransmissonNET.Application;
+using TransmissonNET.Application.Abstractions;
+using TransmissonNET.Application.Torrents;
 using TransmissonNET.App.Avalonia.Providers;
 using TransmissonNET.App.Avalonia.ViewModels;
 using TransmissonNET.Infrastructure;
@@ -19,6 +21,9 @@ internal static class ServiceRegistration
         services.AddSingleton<IProviderUiHost, ProviderUiHostRouter>();
         services.AddSingleton<HandlerInvoker>();
         services.AddSingleton<NavigationService>();
+        services.AddSingleton<IAddTorrentService, AddTorrentService>();
+        services.AddSingleton<IAddTorrentCompletionActions, AddTorrentCompletionActions>();
+        services.AddSingleton<AddTorrentFlowCoordinator>();
         services.AddSingleton<ThemeService>();
         services.AddSingleton<AppToastService>();
         services.AddSingleton<LocalizationService>();
