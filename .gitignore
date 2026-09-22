@@ -19,8 +19,15 @@ dist/
 # IDE / editor / agent (not part of the product)
 .cursor/
 .vscode/
-Plan/
 .kodik/
+
+# Working scratch under Plan/ stays ignored; SDD specs/docs are tracked
+Plan/*
+!Plan/README.md
+!Plan/constitution.md
+!Plan/reference/
+!Plan/specs/
+!Plan/templates/
 
 # OS
 .DS_Store
