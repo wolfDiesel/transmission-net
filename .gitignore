@@ -21,13 +21,15 @@ dist/
 .vscode/
 .kodik/
 
-# Working scratch under Plan/ stays ignored; SDD specs/docs are tracked
+# Working scratch under Plan/ stays ignored; SDD specs/docs/tooling are tracked
 Plan/*
 !Plan/README.md
 !Plan/constitution.md
+!Plan/adr/
 !Plan/reference/
 !Plan/specs/
 !Plan/templates/
+!Plan/scripts/
 
 # OS
 .DS_Store
