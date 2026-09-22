@@ -6,6 +6,12 @@ Release flow: update this file → commit → push → publish a GitHub release 
 
 ## Unreleased
 
+## 0.1.38 - 2026-09-22
+
+### Added
+
+- Add torrent: after a successful add the app switches to the Torrents list and selects the newly added torrent; the Add torrent form is cleared.
+
 ## 0.1.37 - 2026-09-06
 
 ### Fixed
